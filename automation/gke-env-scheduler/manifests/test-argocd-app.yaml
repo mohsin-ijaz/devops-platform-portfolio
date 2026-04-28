@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devenv-test-apps
+  namespace: argocd
+spec:
+  project: devenv-test
+  
+  source:
+    repoURL: https://github.com/your-org/your-repo  # UPDATE THIS
+    targetRevision: HEAD
+    path: manifests  # Path to test-namespace.yaml
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: devenv-test
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

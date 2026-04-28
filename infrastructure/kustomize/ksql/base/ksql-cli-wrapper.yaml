@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ksql-cli-wrapper
+  labels:
+    app: ksql
+data:
+  ksql: |
+    #!/bin/bash
+    # KSQL CLI wrapper that disables JMX to avoid port conflicts
+    # This allows the CLI to connect to the running KSQL server without trying to bind JMX port
+    exec env -u KSQL_OPTS /usr/bin/ksql "$@"

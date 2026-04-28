@@ -1,0 +1,149 @@
+
+# Python installation
+- name: Ensure Python is installed
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Python
+      raw: |
+        apt-get update
+        apt-get install -y python3
+      changed_when: false
+
+# Install base dependencies
+- name: Install base packages
+  hosts: all
+  become: true
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - ca-certificates
+          - gnupg
+          - lsb-release
+        update_cache: yes
+
+# Install K3s Master
+- name: Install K3s Master
+  hosts: master
+  become: true
+  vars:
+    k3s_install_script: "https://get.k3s.io"
+  tasks:
+    - name: Install K3s Master
+      shell: |
+        curl -sfL {{ k3s_install_script }} | INSTALL_K3S_EXEC="\
+          --node-ip={{ ansible_default_ipv4.address }} \
+          --advertise-address={{ ansible_default_ipv4.address }} \
+          --tls-san={{ ansible_default_ipv4.address }} \
+          --write-kubeconfig-mode 644" sh -
+      args:
+        creates: /usr/local/bin/k3s
+
+    - name: Wait for node-token file
+      wait_for:
+        path: /var/lib/rancher/k3s/server/node-token
+        timeout: 60
+
+    - name: Read node token
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_token
+
+    - name: Set master facts for workers
+      set_fact:
+        master_private_ip: "{{ ansible_default_ipv4.address }}"
+        node_token: "{{ k3s_token['content'] | b64decode | trim }}"
+      delegate_to: localhost
+
+    - name: Install kustomize on master node
+      shell: |
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        mv kustomize /usr/local/bin/
+      args:
+        executable: /bin/bash
+        creates: /usr/local/bin/kustomize
+
+# Install K3s Workers
+- name: Install K3s Workers
+  hosts: workers
+  become: true
+  vars:
+    master_ip: "{{ hostvars[groups['master'][0]].master_private_ip }}"
+    node_token: "{{ hostvars[groups['master'][0]].node_token }}"
+  tasks:
+    - name: Debug node_token and master_ip
+      debug:
+        msg: "Using MASTER_IP={{ master_ip }}, NODE_TOKEN={{ node_token }}"
+
+    # - name: Uninstall old k3s-agent (if exists)
+    #   shell: /usr/local/bin/k3s-agent-uninstall.sh
+    #   args:
+    #     executable: /bin/bash
+    #   ignore_errors: true
+
+    - name: Install K3s Agent
+      shell: |
+        curl -sfL https://get.k3s.io | \
+        K3S_URL=https://{{ master_ip }}:6443 \
+        K3S_TOKEN={{ node_token }} \
+        sh -s - --debug
+      args:
+        creates: /etc/systemd/system/k3s-agent.service
+
+    - name: Wait for worker to appear in cluster
+      delegate_to: "{{ groups['master'][0] }}"
+      retries: 10
+      delay: 10
+      until: node_check.rc == 0
+      shell: |
+        KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl get nodes | grep {{ inventory_hostname }}
+      register: node_check
+
+# Deploy app and db via Kustomize
+- name: Deploy Laravel + MySQL to K3s Cluster
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    kubeconfig_path: ./kubeconfig.yaml
+    master_node: "{{ groups['master'][0] }}"
+    master_ip: "{{ hostvars[groups['master'][0]].ansible_host }}"
+    ssh_key_path: ../terraform/ci-ssh-key
+  tasks:
+    - name: Wait for kubeconfig on master (via SSH)
+      shell: |
+        ssh -o StrictHostKeyChecking=no -i {{ ssh_key_path }} ubuntu@{{ master_ip }}         'sudo test -f /etc/rancher/k3s/k3s.yaml'
+      register: result
+      until: result.rc == 0
+      retries: 6
+      delay: 10
+
+    - name: Copy kubeconfig from master via scp
+      shell: |
+        scp -o StrictHostKeyChecking=no -i {{ ssh_key_path }}         ubuntu@{{ master_ip }}:/etc/rancher/k3s/k3s.yaml {{ kubeconfig_path }}
+
+    - name: Replace localhost in kubeconfig with master public IP
+      replace:
+        path: "{{ kubeconfig_path }}"
+        regexp: '127\\.0\\.0\\.1'
+        replace: "{{ master_ip }}"
+
+    - name: Add insecure TLS skip (testing only)
+      lineinfile:
+        path: "{{ kubeconfig_path }}"
+        insertafter: '^ +server:'
+        line: "    insecure-skip-tls-verify: true"
+
+    - name: Copy local manifests to master
+      shell: |
+        scp -r -o StrictHostKeyChecking=no -i {{ ssh_key_path }} ./files ubuntu@{{ master_ip }}:/home/ubuntu/
+
+    - name: Apply DB manifests using Kustomize via SSH
+      shell: |
+        ssh -o StrictHostKeyChecking=no -i {{ ssh_key_path }} ubuntu@{{ master_ip }} "        cd /home/ubuntu/files/DBs &&         kustomize build base |         sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply --validate=false -f -"
+
+    - name: Apply Laravel app manifests using Kustomize via SSH
+      shell: |
+        ssh -o StrictHostKeyChecking=no -i {{ ssh_key_path }} ubuntu@{{ master_ip }} "        cd /home/ubuntu/files/app &&         kustomize build base |         sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply --validate=false -f -"

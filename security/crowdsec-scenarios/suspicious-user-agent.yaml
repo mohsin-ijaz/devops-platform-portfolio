@@ -1,0 +1,55 @@
+# Suspicious User Agent Detection
+# Detects requests with known malicious or bot-like user agents
+
+type: leaky
+name: custom/suspicious-user-agent
+description: "Detects suspicious or malicious user agents"
+filter: |
+  evt.Meta.log_type == 'http_access-log'
+  and (
+    evt.Parsed.http_user_agent == "-"
+    or evt.Parsed.http_user_agent == ""
+    or evt.Parsed.http_user_agent contains "python-requests"
+    or evt.Parsed.http_user_agent contains "python-urllib"
+    or evt.Parsed.http_user_agent contains "curl/"
+    or evt.Parsed.http_user_agent contains "wget/"
+    or evt.Parsed.http_user_agent contains "libwww-perl"
+    or evt.Parsed.http_user_agent contains "Go-http-client"
+    or evt.Parsed.http_user_agent contains "Java/"
+    or evt.Parsed.http_user_agent contains "HttpClient"
+    or evt.Parsed.http_user_agent contains "okhttp"
+    or evt.Parsed.http_user_agent contains "axios/"
+    or evt.Parsed.http_user_agent contains "node-fetch"
+    or evt.Parsed.http_user_agent contains "Scrapy"
+    or evt.Parsed.http_user_agent contains "sqlmap"
+    or evt.Parsed.http_user_agent contains "nikto"
+    or evt.Parsed.http_user_agent contains "nmap"
+    or evt.Parsed.http_user_agent contains "masscan"
+    or evt.Parsed.http_user_agent contains "ZmEu"
+    or evt.Parsed.http_user_agent contains "Morfeus"
+    or evt.Parsed.http_user_agent contains "DirBuster"
+    or evt.Parsed.http_user_agent contains "Gobuster"
+    or evt.Parsed.http_user_agent contains "wfuzz"
+    or evt.Parsed.http_user_agent contains "ffuf"
+    or evt.Parsed.http_user_agent contains "Nuclei"
+    or evt.Parsed.http_user_agent contains "Acunetix"
+    or evt.Parsed.http_user_agent contains "Nessus"
+    or evt.Parsed.http_user_agent contains "OpenVAS"
+    or evt.Parsed.http_user_agent contains "masscan"
+    or evt.Parsed.http_user_agent contains "zgrab"
+  )
+groupby: evt.Meta.source_ip
+
+capacity: 5                        # Alert after 5 requests
+leakspeed: 5m
+blackhole: 10m
+
+labels:
+  service: http
+  type: bot
+  confidence: high
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip

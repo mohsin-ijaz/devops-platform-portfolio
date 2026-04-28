@@ -1,0 +1,157 @@
+# Alert rules for kubernetes audit logs streamed to Loki.
+# Add these to Mimir ruler or import into Grafana alerting.
+
+groups:
+  - name: kubernetes-audit-critical
+    interval: 1m
+    rules:
+
+      # exec into a container — always worth investigating
+      - alert: KubernetesAuditContainerExec
+        expr: |
+          sum by (cluster, user_username, objectRef_namespace, objectRef_name) (
+            count_over_time(
+              {job="kubernetes-audit"}
+                | json
+                | verb="create"
+                | objectRef_subresource="exec"
+                | user_username!~"system:.*"
+            [5m])
+          ) > 0
+        for: 0m
+        labels:
+          severity: critical
+          iso_control: "A.12.4.3"
+          alert_type: container_exec
+        annotations:
+          summary: "{{ $labels.user_username }} exec'd into a pod"
+          description: "{{ $labels.user_username }} ran kubectl exec on {{ $labels.objectRef_name }} ({{ $labels.objectRef_namespace }}). Check if this was expected."
+
+      # portforward
+      - alert: KubernetesAuditPortForward
+        expr: |
+          count_over_time(
+            {job="kubernetes-audit"}
+              | json
+              | verb="create"
+              | objectRef_subresource="portforward"
+              | user_username!~"system:.*"
+          [5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          iso_control: "A.12.4.3"
+          alert_type: port_forward
+        annotations:
+          summary: "Port forwarding initiated by {{ $labels.user_username }}"
+          description: "Port forward opened to {{ $labels.objectRef_name }}. Could be someone debugging or something worse."
+
+      # RBAC changes
+      - alert: KubernetesAuditPrivilegeEscalation
+        expr: |
+          count_over_time(
+            {job="kubernetes-audit"}
+              | json
+              | verb=~"create|update|patch|delete|bind|escalate"
+              | objectRef_resource=~"clusterrolebindings|rolebindings|clusterroles|roles"
+              | user_username!~"system:.*"
+          [5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          iso_control: "A.9.2.3,A.12.4.3"
+          alert_type: privilege_escalation
+        annotations:
+          summary: "RBAC modified by {{ $labels.user_username }}"
+          description: "{{ $labels.user_username }} modified {{ $labels.objectRef_resource }}/{{ $labels.objectRef_name }}. Verify this was intentional."
+
+      # high volume of secret reads by a human
+      - alert: KubernetesAuditSecretAccess
+        expr: |
+          sum by (cluster, user_username, objectRef_namespace) (
+            count_over_time(
+              {job="kubernetes-audit"}
+                | json
+                | objectRef_resource="secrets"
+                | user_username!~"system:.*|.*controller.*"
+            [5m])
+          ) > 5
+        for: 0m
+        labels:
+          severity: high
+          iso_control: "A.9.4.2,A.12.4.1"
+          alert_type: secret_access
+        annotations:
+          summary: "High rate of secret access by {{ $labels.user_username }}"
+          description: "{{ $labels.user_username }} read {{ $value }} secrets in 5 minutes in {{ $labels.objectRef_namespace }}. Might be normal tooling, might not be."
+
+      # anonymous request that actually succeeded (not just a 401)
+      - alert: KubernetesAuditAnonymousRequest
+        expr: |
+          count_over_time(
+            {job="kubernetes-audit"}
+              | json
+              | user_username="system:anonymous"
+              | responseStatus_code!="401"
+          [5m]) > 0
+        for: 0m
+        labels:
+          severity: high
+          iso_control: "A.9.4.2"
+        annotations:
+          summary: "Anonymous request succeeded on cluster {{ $labels.cluster }}"
+          description: "Unauthenticated request got through on {{ $labels.cluster }}. Check system:unauthenticated RBAC bindings."
+
+      # manual token creation
+      - alert: KubernetesAuditTokenCreation
+        expr: |
+          count_over_time(
+            {job="kubernetes-audit"}
+              | json
+              | objectRef_subresource="token"
+              | objectRef_resource="serviceaccounts"
+              | user_username!~"system:.*"
+          [5m]) > 0
+        for: 0m
+        labels:
+          severity: high
+          iso_control: "A.9.2.3"
+        annotations:
+          summary: "Service account token manually created by {{ $labels.user_username }}"
+          description: "{{ $labels.user_username }} created a token for {{ $labels.objectRef_name }}. Manual tokens don't expire — check if this is intentional."
+
+      # webhook config changed
+      - alert: KubernetesAuditWebhookModified
+        expr: |
+          count_over_time(
+            {job="kubernetes-audit"}
+              | json
+              | verb=~"create|update|patch|delete"
+              | objectRef_resource=~".*webhookconfigurations"
+          [10m]) > 0
+        for: 0m
+        labels:
+          severity: medium
+          iso_control: "A.12.4.3"
+        annotations:
+          summary: "Admission webhook modified by {{ $labels.user_username }}"
+          description: "{{ $labels.objectRef_resource }} was modified. This affects every resource creation in the cluster."
+
+      # lots of 403s from the same user
+      - alert: KubernetesAuditAuthzDenied
+        expr: |
+          sum by (cluster, user_username) (
+            count_over_time(
+              {job="kubernetes-audit"}
+                | json
+                | responseStatus_code="403"
+                | user_username!~"system:.*"
+            [5m])
+          ) > 10
+        for: 0m
+        labels:
+          severity: medium
+          iso_control: "A.9.4.2"
+        annotations:
+          summary: "{{ $value }} authorization failures for {{ $labels.user_username }}"
+          description: "{{ $value }} 403s for {{ $labels.user_username }} in 5 min. Could be a misconfigured service or someone probing permissions."

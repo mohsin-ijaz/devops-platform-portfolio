@@ -1,0 +1,148 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "acme-app.fullname" . }}-deployment
+  labels:
+    app: {{ include "acme-app.name" . }}
+    {{- include "acme-app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "acme-app.selectorLabels" . | nindent 6 }}
+      {{- include "acme-app.appLabels" . | nindent 6 }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "acme-app.selectorLabels" . | nindent 8 }}
+        {{- include "acme-app.appLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}  
+      
+      topologySpreadConstraints:
+        {{- toYaml .Values.topologySpreadConstraints | nindent 8 }}  
+  
+      volumes:
+        {{- with .Values.volumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}   
+
+      serviceAccountName: {{ .Values.serviceAccountName }}
+
+      containers:
+        - name: {{ include "acme-app.name" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          terminationMessagePolicy: "FallbackToLogsOnError"
+
+          {{- with .Values.ports }}
+          ports:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .Values.startupProbe }} 
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .Values.readinessProbe }} 
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .Values.livenessProbe }} 
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          
+          volumeMounts:
+            {{- with .Values.volumeMounts }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+          {{- $extraAppEnv := .Values.extraAppEnv -}}
+          {{- with .Values.appEnv }} 
+          env:
+            {{- toYaml . | nindent 12 }}
+            {{- with $extraAppEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }} 
+          {{- end }}
+            {{- if .Values.defaultCommonSecret }}
+            - name: NPM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: common-secret
+                  key: npmToken
+            {{- end }}
+        
+        {{- if .Values.extraContainer.enabled }}
+        - name: {{ .Values.extraContainer.name }}
+          image: {{ .Values.extraContainer.image }}
+          {{- with .Values.extraContainer.args }}
+          args:
+          {{- range . }}
+          - {{ . }}
+          {{- end }}
+          {{- end }}
+          volumeMounts:
+            {{- with .Values.extraContainer.volumeMounts }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+        {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        {{ if .Values.affinity.defaultPodAntiAffinity -}}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ include "acme-app.fullname" . }}
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ include "acme-app.fullname" . }}
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+        {{- end -}}
+        {{- $_ := unset .Values.affinity "defaultPodAntiAffinity" -}}
+        {{- with .Values.affinity }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+

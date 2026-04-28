@@ -1,0 +1,287 @@
+# CrowdSec Production Values for acme-platform GKE Cluster
+# Install with:
+#   helm install crowdsec crowdsec/crowdsec -n crowdsec --create-namespace -f crowdsec-production-values.yaml
+
+# Container runtime for GKE (Container-Optimized OS uses containerd)
+container_runtime: containerd
+
+image:
+  repository: crowdsecurity/crowdsec
+  pullPolicy: IfNotPresent
+  tag: ""  # Uses chart default (v1.7.6)
+
+#############################################
+# LAPI (Local API) Configuration
+#############################################
+lapi:
+  enabled: true
+  replicas: 1
+
+  env:
+    # Collections to install on LAPI
+    - name: COLLECTIONS
+      value: "crowdsecurity/nginx crowdsecurity/linux crowdsecurity/sshd crowdsecurity/http-cve crowdsecurity/whitelist-good-actors"
+    # Uncomment and add your console enrollment key for cloud dashboard
+    # - name: ENROLL_KEY
+    #   value: "YOUR_ENROLLMENT_KEY"
+    # - name: ENROLL_INSTANCE_NAME
+    #   value: "acme-platform-gke"
+
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 100m
+
+  # Persistence for decisions database
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: "premium-rwo"
+    size: 5Gi
+
+  # Metrics for Prometheus (integrates with existing monitoring namespace)
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: false  # Set to true if using Prometheus Operator
+
+  # Node selector - run on misc pool for stability
+  nodeSelector:
+    cloud.google.com/gke-nodepool: misc-pool-2024-07-17
+
+  tolerations: []
+
+#############################################
+# AGENT Configuration (DaemonSet)
+#############################################
+agent:
+  enabled: true
+  isDeployment: false  # Run as DaemonSet (one per node)
+
+  env:
+    - name: COLLECTIONS
+      value: "crowdsecurity/nginx crowdsecurity/linux crowdsecurity/sshd crowdsecurity/http-cve crowdsecurity/whitelist-good-actors"
+
+  # Log acquisition from ingress-nginx controller
+  acquisition:
+    - namespace: ingress-nginx
+      podName: nginx-ingress-ingress-nginx-controller-*
+      program: nginx
+
+  resources:
+    limits:
+      memory: 256Mi
+      cpu: 300m
+    requests:
+      memory: 128Mi
+      cpu: 50m
+
+  # Wait for logs to be available
+  wait_for_lapi:
+    timeout: 120
+
+  tolerations:
+    - operator: "Exists"
+      effect: "NoSchedule"
+
+#############################################
+# Custom Scenarios Configuration
+#############################################
+config:
+  scenarios:
+    # API Abuse Detection
+    api-abuse.yaml: |
+      type: leaky
+      name: custom/api-abuse
+      description: "Detects excessive API requests indicating abuse or scraping"
+      filter: |
+        evt.Meta.log_type == 'http_access-log'
+        and (
+          evt.Parsed.request startsWith "/api/"
+          or evt.Parsed.request startsWith "/v1/"
+          or evt.Parsed.request startsWith "/v2/"
+          or evt.Parsed.request startsWith "/v3/"
+          or evt.Parsed.request startsWith "/graphql"
+          or evt.Parsed.request startsWith "/rest/"
+        )
+      groupby: evt.Meta.source_ip
+      capacity: 200
+      leakspeed: 1m
+      blackhole: 5m
+      labels:
+        service: http
+        type: api-abuse
+        confidence: medium
+        remediation: true
+      scope:
+        type: ip
+        expression: evt.Meta.source_ip
+
+    # Sensitive Endpoint Scanning
+    sensitive-endpoint-scan.yaml: |
+      type: leaky
+      name: custom/sensitive-endpoint-scan
+      description: "Detects attempts to access sensitive files like .env, .git, config files"
+      filter: |
+        evt.Meta.log_type == 'http_access-log'
+        and (
+          evt.Parsed.request contains ".env"
+          or evt.Parsed.request contains ".git"
+          or evt.Parsed.request contains ".svn"
+          or evt.Parsed.request contains ".htaccess"
+          or evt.Parsed.request contains ".htpasswd"
+          or evt.Parsed.request contains "wp-config"
+          or evt.Parsed.request contains "config.php"
+          or evt.Parsed.request contains "/admin"
+          or evt.Parsed.request contains "/phpmyadmin"
+          or evt.Parsed.request contains "/actuator"
+          or evt.Parsed.request contains "/debug"
+        )
+      groupby: evt.Meta.source_ip
+      capacity: 5
+      leakspeed: 2m
+      blackhole: 10m
+      labels:
+        service: http
+        type: sensitive-scan
+        confidence: high
+        remediation: true
+      scope:
+        type: ip
+        expression: evt.Meta.source_ip
+
+    # High Error Rate Detection
+    high-error-rate.yaml: |
+      type: leaky
+      name: custom/high-error-rate
+      description: "Detects IPs generating many 4xx/5xx errors (path enumeration)"
+      filter: |
+        evt.Meta.log_type == 'http_access-log'
+        and (
+          evt.Meta.http_status startsWith "4"
+          or evt.Meta.http_status startsWith "5"
+        )
+      groupby: evt.Meta.source_ip
+      capacity: 30
+      leakspeed: 1m
+      blackhole: 5m
+      labels:
+        service: http
+        type: error-flood
+        confidence: medium
+        remediation: true
+      scope:
+        type: ip
+        expression: evt.Meta.source_ip
+
+    # Aggressive Crawler Detection
+    aggressive-crawler.yaml: |
+      type: leaky
+      name: custom/aggressive-crawler
+      description: "Detects aggressive crawling behavior"
+      filter: |
+        evt.Meta.log_type == 'http_access-log'
+      groupby: evt.Meta.source_ip
+      distinct: evt.Parsed.request
+      capacity: 100
+      leakspeed: 1m
+      blackhole: 5m
+      labels:
+        service: http
+        type: aggressive-crawl
+        confidence: medium
+        remediation: true
+      scope:
+        type: ip
+        expression: evt.Meta.source_ip
+
+    # Rapid Fire Requests (DDoS-like)
+    rapid-fire-requests.yaml: |
+      type: leaky
+      name: custom/rapid-fire-requests
+      description: "Detects DDoS-like rapid request patterns"
+      filter: |
+        evt.Meta.log_type == 'http_access-log'
+      groupby: evt.Meta.source_ip
+      capacity: 500
+      leakspeed: 30s
+      blackhole: 15m
+      labels:
+        service: http
+        type: ddos
+        confidence: high
+        remediation: true
+      scope:
+        type: ip
+        expression: evt.Meta.source_ip
+
+    # Login Enumeration / Brute Force
+    login-enumeration.yaml: |
+      type: leaky
+      name: custom/login-enumeration
+      description: "Detects brute force login attempts"
+      filter: |
+        evt.Meta.log_type == 'http_access-log'
+        and evt.Parsed.verb == "POST"
+        and (
+          evt.Parsed.request contains "/login"
+          or evt.Parsed.request contains "/signin"
+          or evt.Parsed.request contains "/auth"
+          or evt.Parsed.request contains "/authenticate"
+          or evt.Parsed.request contains "/session"
+          or evt.Parsed.request contains "/oauth"
+          or evt.Parsed.request contains "/token"
+        )
+      groupby: evt.Meta.source_ip
+      capacity: 15
+      leakspeed: 1m
+      blackhole: 15m
+      labels:
+        service: http
+        type: brute-force
+        confidence: high
+        remediation: true
+      scope:
+        type: ip
+        expression: evt.Meta.source_ip
+
+    # Suspicious User Agent Detection
+    suspicious-user-agent.yaml: |
+      type: trigger
+      name: custom/suspicious-user-agent
+      description: "Detects requests from known scanner/attack tools"
+      filter: |
+        evt.Meta.log_type == 'http_access-log'
+        and (
+          evt.Parsed.http_user_agent contains "sqlmap"
+          or evt.Parsed.http_user_agent contains "nikto"
+          or evt.Parsed.http_user_agent contains "nmap"
+          or evt.Parsed.http_user_agent contains "masscan"
+          or evt.Parsed.http_user_agent contains "zgrab"
+          or evt.Parsed.http_user_agent contains "nuclei"
+          or evt.Parsed.http_user_agent contains "acunetix"
+          or evt.Parsed.http_user_agent contains "nessus"
+          or evt.Parsed.http_user_agent contains "dirbuster"
+          or evt.Parsed.http_user_agent contains "gobuster"
+          or evt.Parsed.http_user_agent contains "wfuzz"
+          or evt.Parsed.http_user_agent contains "ffuf"
+        )
+      labels:
+        service: http
+        type: scanner
+        confidence: high
+        remediation: true
+      scope:
+        type: ip
+        expression: evt.Meta.source_ip
+
+#############################################
+# Pod Annotations for Prometheus
+#############################################
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "6060"

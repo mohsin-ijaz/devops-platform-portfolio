@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-replica
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+      role: replica
+  template:
+    metadata:
+      labels:
+        app: mysql
+        role: replica
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-root-password
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-persistent-storage
+          emptyDir: {}
+        - name: init-script
+          configMap:
+            name: mysql-init-replication

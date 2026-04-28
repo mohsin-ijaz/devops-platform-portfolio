@@ -1,0 +1,1528 @@
+[
+  {
+    "id": 11,
+    "uid": "dfcp7xxreul1ca",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Critical Alerts",
+    "title": "Kafka Offline Partitions",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum(kafka_controller_KafkaController_Value{namespace=\"kafka\", name=\"OfflinePartitionsCount\"})",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:05:50Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "4",
+      "description": "Kafka cluster has offline partitions which means data is unavailable. This is a critical issue requiring immediate attention - producers cannot write and consumers cannot read from affected partitions, causing data loss and application failures.",
+      "summary": "Kafka has offline partitions"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 12,
+    "uid": "bfcp7zj4pw9a8b",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Critical Alerts",
+    "title": "Kafka No Active Controller",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum(kafka_controller_KafkaController_Value{namespace=\"kafka\", name=\"ActiveControllerCount\"})",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  1
+                ],
+                "type": "ne"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:05:50Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "3",
+      "description": "Kafka cluster does not have exactly 1 active controller. This indicates a serious cluster issue - without a controller, partition leadership cannot be reassigned and topic management operations will fail, leading to cluster unavailability.",
+      "summary": "Kafka cluster has no active controller or multiple controllers"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 13,
+    "uid": "ffcp806um6olcc",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Critical Alerts",
+    "title": "Kafka Under-Replicated Partitions",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum(kafka_server_ReplicaManager_Value{namespace=\"kafka\", name=\"UnderReplicatedPartitions\"})",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:05:54Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "16",
+      "description": "Kafka has under-replicated partitions. Data redundancy is compromised - if the leader broker fails, data loss will occur. This typically indicates broker performance issues, network problems, or insufficient disk I/O.",
+      "summary": "Kafka has under-replicated partitions"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 14,
+    "uid": "bfcp8195tmdq8b",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Critical Alerts",
+    "title": "Kafka Offline Replicas",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum(kafka_server_ReplicaManager_Value{namespace=\"kafka\", name=\"OfflineReplicaCount\"})",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:05:57Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "31",
+      "description": "Kafka has offline replicas which indicates broker issues. Offline replicas reduce fault tolerance and increase risk of data loss if more brokers fail. Check broker health, network connectivity, and disk space.",
+      "summary": "Kafka has offline replicas"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 111,
+    "uid": "ffeamhruhx81sb",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Critical Alerts",
+    "title": "Kafka Broker Down",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "range",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "up{job=~\".*kafka.*\", pod=~\"kafka-.*\"} == 0",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:38:25Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "1",
+      "description": "Kafka broker {{ index .Labels \"pod\" }} in namespace {{ index .Labels \"namespace\" }} is down. This affects message processing capacity.",
+      "summary": "Kafka Broker Down: {{ index .Labels \"pod\" }}"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 119,
+    "uid": "efeh0nrdtiygwa",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Critical Alerts",
+    "title": "Debezium Connector Disconnected",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "debezium_connector_metrics_connected == 0",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-27T04:31:32Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "401",
+      "description": "Debezium connector {{ $labels.pod }} in cluster {{ $labels.cluster }} is disconnected. CDC data replication has stopped. Check connector logs for error details.",
+      "summary": "Debezium Connector Disconnected: {{ $labels.pod }}"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 15,
+    "uid": "bfcp829muqx34c",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Warning Alerts",
+    "title": "Kafka Under Min ISR Partitions",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum(kafka_cluster_Partition_Value{namespace=\"kafka\", name=\"UnderMinIsr\"})",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:45:39Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "15",
+      "description": "Kafka has partitions below minimum ISR which risks data loss. Producers with acks=all will be blocked, and any additional broker failure could cause data loss. Investigate lagging replicas immediately.",
+      "summary": "Kafka partitions under minimum ISR"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 16,
+    "uid": "efcp847da77k0a",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Warning Alerts",
+    "title": "Kafka High Consumer Lag",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "max(kafka_consumergroup_lag{namespace=\"kafka\"})",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  100000
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:04Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "33",
+      "description": "Consumer group lag exceeds 100,000 messages. Consumers may not be keeping up.",
+      "summary": "Kafka consumer lag is high"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 17,
+    "uid": "bfcp85mqxih34a",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Warning Alerts",
+    "title": "Kafka Broker Disk Usage High",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "max((1 - node_filesystem_avail_bytes{namespace=\"kafka\", mountpoint=\"/var/lib/kafka\"} / node_filesystem_size_bytes{namespace=\"kafka\", mountpoint=\"/var/lib/kafka\"}) * 100)",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  80
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:45:42Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "23",
+      "description": "Kafka broker disk usage exceeds 80%. Consider adding storage or cleaning up old data.",
+      "summary": "Kafka broker disk usage is high"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 18,
+    "uid": "efcp876pgmgaoa",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Warning Alerts",
+    "title": "Kafka Network Processor Busy",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "min(kafka_network_SocketServer_Value{namespace=\"kafka\", name=\"NetworkProcessorAvgIdlePercent\"}) * 100",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  30
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:04Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "17",
+      "description": "Kafka network processor idle percentage is below 30%. Network layer is becoming saturated.",
+      "summary": "Kafka network processor is busy"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 19,
+    "uid": "afcp87xoq54hsf",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Warning Alerts",
+    "title": "Kafka Connect Failed Tasks",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum(kafka_connect_connector_status{namespace=\"kafka\", status=\"failed\"})",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:46:48Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "39",
+      "description": "Kafka Connect has failed tasks. Failed connectors stop data integration, causing data pipeline breaks and potential data loss or stale data in downstream systems. Check connector logs for error details.",
+      "summary": "Kafka Connect has failed tasks"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 20,
+    "uid": "bfcp89d0s0q2of",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Warning Alerts",
+    "title": "Kafka Unclean Leader Elections",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum(rate(kafka_controller_ControllerStats_OneMinuteRate{namespace=\"kafka\", name=\"UncleanLeaderElectionsPerSec\"}[5m]))",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:40:15Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "30",
+      "description": "Unclean leader elections are occurring. This may result in data loss.",
+      "summary": "Kafka unclean leader elections detected"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 21,
+    "uid": "cfcp8bp014k5cd",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Warning Alerts",
+    "title": "Kafka ISR Shrinks Rate High",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum(rate(kafka_server_ReplicaManager_OneMinuteRate{namespace=\"kafka\", name=\"IsrShrinksPerSec\"}[5m]))",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:45:40Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "18",
+      "description": "ISR shrink rate is elevated indicating replicas are falling out of sync.",
+      "summary": "Kafka ISR shrink rate is high"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 112,
+    "uid": "afeamijgb0wlcf",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Warning Alerts",
+    "title": "Kafka Preferred Replica Imbalance",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "range",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum(kafka_controller_KafkaController_Value{name=\"PreferredReplicaImbalanceCount\"}) > 0",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  5
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:38:26Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "2003",
+      "description": "Kafka cluster has {{ printf \"%.0f\" .Values.B.Value }} partitions with preferred replica imbalance. This can cause uneven load distribution across brokers.",
+      "summary": "Kafka Replica Imbalance"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 120,
+    "uid": "afeh0oof8odtse",
+    "orgID": 1,
+    "folderUID": "bf3sata2plrlsd",
+    "ruleGroup": "Kafka Warning Alerts",
+    "title": "Debezium Connector High Error Rate",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "increase(debezium_connector_metrics_numberoferroneousevents[5m]) > 0",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-27T04:31:49Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "kafka-monitoring",
+      "__panelId__": "401",
+      "description": "Debezium connector {{ $labels.pod }} is experiencing erroneous events. This may indicate data corruption or connector issues. Check connector logs.",
+      "summary": "Debezium Connector Errors: {{ $labels.pod }} - {{ $values.B.Value }} errors in last 5m"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  }
+]

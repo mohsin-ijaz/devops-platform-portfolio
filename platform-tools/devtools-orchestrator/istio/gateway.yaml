@@ -1,0 +1,110 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: app-gateway
+  namespace: istio-system
+spec:
+  selector:
+    app: istio-ingressgateway
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http-internal
+        protocol: HTTP
+      hosts:
+        - "consumer-api-gateway.uat-consumer.acme.internal"
+
+    - port:
+        number: 443
+        name: https-argocd
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: cert-wild-acme-dev-tls 
+      hosts:  
+        - argocd-uat.acme.dev
+
+    - port:
+        number: 443
+        name: https-internal
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: cert-wild-env-country-acme-com-tls
+      hosts:
+        - kibana.uat.acme.com
+        - elastic.uat.acme.com
+        - consumer-cms-base.uat-th.acme.com
+        - consumer-mcms.uat-th.acme.com
+        - consumer-mirc.uat-th.acme.com
+        - consumer-landing-page.uat-th.acme.com
+        - consumer-mpms.uat-th.acme.com
+        - consumer-mtms.uat-th.acme.com
+        - consumer-mwfc.uat-th.acme.com
+        - consumer-mwms.uat-th.acme.com
+        - consumer-casc.uat-th.acme.com
+        - consumer-cms.uat-th.acme.com
+        - consumer-cms-gateway.uat-th.acme.com
+        - consumer-consumer-app-page.uat-th.acme.com
+        - consumer-cps.uat-th.acme.com
+        - consumer-file-api.uat-th.acme.com
+        - consumer-headless-cms.uat-th.acme.com
+        - consumer-bfo.uat-th.acme.com
+        - consumer-ccl-h5.uat-th.acme.com
+        - consumer-consumer-h5.uat-th.acme.com
+        - consumer-driver-h5.uat-th.acme.com
+        - stability.uat-th.acme.com
+        - www.uat-th.acme.com
+        - consumer-listing-gateway.uat-th.acme.com
+        - consumer-payment.uat-th.acme.com
+        - voucherify-app.uat-th.acme.com
+        - consumer-cms-base.uat-my.acme.com
+        - consumer-mcms.uat-my.acme.com
+        - consumer-mirc.uat-my.acme.com
+        - consumer-landing-page.uat-my.acme.com
+        - consumer-mpms.uat-my.acme.com
+        - consumer-mtms.uat-my.acme.com
+        - consumer-mwfc.uat-my.acme.com
+        - consumer-mwms.uat-my.acme.com
+        - consumer-casc.uat-my.acme.com
+        - consumer-cms.uat-my.acme.com
+        - consumer-cms-gateway.uat-my.acme.com
+        - consumer-consumer-app-page.uat-my.acme.com
+        - consumer-cps.uat-my.acme.com
+        - consumer-file-api.uat-my.acme.com
+        - consumer-headless-cms.uat-my.acme.com
+        - consumer-bfo.uat-my.acme.com
+        - consumer-ccl-h5.uat-my.acme.com
+        - consumer-consumer-h5.uat-my.acme.com
+        - consumer-driver-h5.uat-my.acme.com
+        - stability.uat-my.acme.com
+        - www.uat-my.acme.com
+        - consumer-listing-gateway.uat-my.acme.com
+        - consumer-payment.uat-my.acme.com
+        - voucherify-app.uat-my.acme.com
+        - consumer-cms-base.uat-id.acme.com
+        - consumer-mcms.uat-id.acme.com
+        - consumer-mirc.uat-id.acme.com
+        - consumer-landing-page.uat-id.acme.com
+        - consumer-mpms.uat-id.acme.com
+        - consumer-mtms.uat-id.acme.com
+        - consumer-mwfc.uat-id.acme.com
+        - consumer-mwms.uat-id.acme.com
+        - consumer-casc.uat-id.acme.com
+        - consumer-cms.uat-id.acme.com
+        - consumer-cms-gateway.uat-id.acme.com
+        - consumer-consumer-app-page.uat-id.acme.com
+        - consumer-cps.uat-id.acme.com
+        - consumer-file-api.uat-id.acme.com
+        - consumer-headless-cms.uat-id.acme.com
+        - consumer-bfo.uat-id.acme.com
+        - consumer-ccl-h5.uat-id.acme.com
+        - consumer-consumer-h5.uat-id.acme.com
+        - consumer-driver-h5.uat-id.acme.com
+        - stability.uat-id.acme.com
+        - www.uat-id.acme.com
+        - consumer-listing-gateway.uat-id.acme.com
+        - consumer-payment.uat-id.acme.com
+        - voucherify-app.uat-id.acme.com
+        - consumer-prometheus.uat.acme.co

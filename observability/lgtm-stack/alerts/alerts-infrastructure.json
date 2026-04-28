@@ -1,0 +1,1748 @@
+[
+  {
+    "id": 1,
+    "uid": "efcezwltug54wc",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Alerts",
+    "title": "High Pod CPU Usage",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum by (namespace, pod, cluster) (rate(container_cpu_usage_seconds_total{container!=\"\", container!=\"POD\"}[5m])) / sum by (namespace, pod, cluster) (kube_pod_container_resource_limits{resource=\"cpu\"}) * 100",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  80
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:05:40Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "20",
+      "description": "Pod CPU usage is above 80% of its limit. Sustained high CPU causes application slowdown, increased latency, and potential throttling. Scale up or optimize resource-intensive operations.",
+      "summary": "Pod {{ $labels.namespace }}/{{ $labels.pod }} has high CPU usage"
+    },
+    "labels": {
+      "category": "infrastructure",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 2,
+    "uid": "bfcezyqr7vi0wa",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Alerts",
+    "title": "High Pod Memory Usage",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum by (namespace, pod, cluster) (container_memory_working_set_bytes{container!=\"\", container!=\"POD\"}) / sum by (namespace, pod, cluster) (kube_pod_container_resource_limits{resource=\"memory\"}) * 100",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  80
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:05:42Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "21",
+      "description": "Pod memory usage is above 80% of its limit. High memory usage increases OOMKill risk which causes unexpected pod restarts and potential data loss. Increase memory limits or investigate memory leaks.",
+      "summary": "Pod {{ $labels.namespace }}/{{ $labels.pod }} has high memory usage"
+    },
+    "labels": {
+      "category": "infrastructure",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 4,
+    "uid": "efcezyxiezlz4e",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Alerts",
+    "title": "High PVC Usage",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "(kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) * 100",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  70
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:46:16Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "40",
+      "description": "PVC usage is above 70% of capacity. Disk space exhaustion can cause application failures, data corruption, and service outages. Expand storage or clean up unused data before reaching capacity.",
+      "summary": "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is running low on space"
+    },
+    "labels": {
+      "category": "infrastructure",
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 5,
+    "uid": "bfcezz1immkn4a",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Alerts",
+    "title": "High Node CPU Usage",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "100 - (avg by (instance, cluster) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  85
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:05:45Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "10",
+      "description": "Node CPU usage is above 85%. High node CPU affects all pods on the node, causing cluster-wide performance degradation. Consider adding nodes or rebalancing workloads.",
+      "summary": "Node {{ $labels.instance }} has high CPU usage"
+    },
+    "labels": {
+      "category": "infrastructure",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 6,
+    "uid": "efcezzv3tbsw0e",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Alerts",
+    "title": "High Node Memory Usage",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  90
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:05:45Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "11",
+      "description": "Node memory usage is above 90%. Critical memory pressure triggers OOMKiller which terminates processes unpredictably. Reduce workload or add cluster capacity immediately.",
+      "summary": "Node {{ $labels.instance }} has high memory usage"
+    },
+    "labels": {
+      "category": "infrastructure",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 115,
+    "uid": "bfee2fz22e2v4d",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Alerts",
+    "title": "High Node CPU Usage Critical",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "100 - (avg by (instance, cluster) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  95
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:40:50Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "10",
+      "description": "Node CPU usage is above 85%. High node CPU affects all pods on the node, causing cluster-wide performance degradation. Consider adding nodes or rebalancing workloads.",
+      "summary": "Node {{ $labels.node }} CPU usage is critically high at {{ printf \"%.0f\" $values.B.Value }}%"
+    },
+    "labels": {
+      "category": "infrastructure",
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 116,
+    "uid": "afee2g251vny8c",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Alerts",
+    "title": "High Node Memory Usage Critical",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  95
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:40:52Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "11",
+      "description": "Node memory usage is above 90%. Critical memory pressure triggers OOMKiller which terminates processes unpredictably. Reduce workload or add cluster capacity immediately.",
+      "summary": "Node {{ $labels.node }} memory usage is critically high at {{ printf \"%.0f\" $values.B.Value }}%"
+    },
+    "labels": {
+      "category": "infrastructure",
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 117,
+    "uid": "cfee2g50oo0e8a",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Alerts",
+    "title": "High Pod CPU Usage Critical",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum by (namespace, pod, cluster) (rate(container_cpu_usage_seconds_total{container!=\"\", container!=\"POD\"}[5m])) / sum by (namespace, pod, cluster) (kube_pod_container_resource_limits{resource=\"cpu\"}) * 100",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  95
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:40:53Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "20",
+      "description": "Pod CPU usage is above 80% of its limit. Sustained high CPU causes application slowdown, increased latency, and potential throttling. Scale up or optimize resource-intensive operations.",
+      "summary": "Pod {{ $labels.namespace }}/{{ $labels.pod }} CPU usage is critically high at {{ printf \"%.0f\" $values.B.Value }}%"
+    },
+    "labels": {
+      "category": "infrastructure",
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 118,
+    "uid": "dfee2g795e9dsc",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Alerts",
+    "title": "High Pod Memory Usage Critical",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum by (namespace, pod, cluster) (container_memory_working_set_bytes{container!=\"\", container!=\"POD\"}) / sum by (namespace, pod, cluster) (kube_pod_container_resource_limits{resource=\"memory\"}) * 100",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  95
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:40:55Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "21",
+      "description": "Pod memory usage is above 80% of its limit. High memory usage increases OOMKill risk which causes unexpected pod restarts and potential data loss. Increase memory limits or investigate memory leaks.",
+      "summary": "Pod {{ $labels.namespace }}/{{ $labels.pod }} memory usage is critically high at {{ printf \"%.0f\" $values.B.Value }}%"
+    },
+    "labels": {
+      "category": "infrastructure",
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 3,
+    "uid": "bfcezyu3hzhfkd",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Monitoring Alerts",
+    "title": "High Pod Restart Rate",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 3600,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum by (namespace, pod, cluster) (increase(kube_pod_container_status_restarts_total[1h])) > 3",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:46:46Z",
+    "noDataState": "OK",
+    "execErrState": "OK",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "52",
+      "description": "Pod {{ index .Labels \"pod\" }} in {{ index .Labels \"namespace\" }} has high restart rate",
+      "summary": "High Restart Rate: {{ index .Labels \"pod\" }}"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 7,
+    "uid": "ffcosb3i27o5cd",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Monitoring Alerts",
+    "title": "Pods in CrashLoopBackOff",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "kube_pod_container_status_waiting_reason{reason=\"CrashLoopBackOff\"} == 1",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T12:48:40Z",
+    "noDataState": "OK",
+    "execErrState": "OK",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "54",
+      "description": "Pod {{ index .Labels \"pod\" }} in namespace {{ index .Labels \"namespace\" }} is in CrashLoopBackOff state",
+      "summary": "CrashLoopBackOff: {{ index .Labels \"pod\" }}"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 8,
+    "uid": "bfcoscmwr4ohsd",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Monitoring Alerts",
+    "title": "Container OOMKilled",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "sum by (namespace, pod, container, cluster) (kube_pod_container_status_last_terminated_reason{reason=\"OOMKilled\"} == 1)",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:40:12Z",
+    "noDataState": "OK",
+    "execErrState": "OK",
+    "for": "0s",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "55",
+      "description": "Container {{ index .Labels \"container\" }} in pod {{ index .Labels \"pod\" }} ({{ index .Labels \"namespace\" }}) was OOMKilled",
+      "summary": "OOMKilled: {{ index .Labels \"pod\" }}"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 9,
+    "uid": "dfcosdanrdhc0f",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Monitoring Alerts",
+    "title": "Deployment Has Unavailable Replicas",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "kube_deployment_status_replicas_unavailable > 0",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:54:09Z",
+    "noDataState": "OK",
+    "execErrState": "OK",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "56",
+      "description": "Deployment {{ index .Labels \"deployment\" }} in {{ index .Labels \"namespace\" }} has unavailable replicas",
+      "summary": "Unavailable Replicas: {{ index .Labels \"deployment\" }}"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 10,
+    "uid": "bfcoslftod3pcd",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Monitoring Alerts",
+    "title": "High PVC Inode Usage",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "((kubelet_volume_stats_inodes_used / kubelet_volume_stats_inodes) * 100) > 85",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:46:22Z",
+    "noDataState": "OK",
+    "execErrState": "OK",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "57",
+      "description": "PVC {{ index .Labels \"persistentvolumeclaim\" }} in {{ index .Labels \"namespace\" }} has high inode usage",
+      "summary": "High PVC Inode: {{ index .Labels \"persistentvolumeclaim\" }}"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 109,
+    "uid": "dfeamc6wuyry8f",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Monitoring Alerts",
+    "title": "Pods in Failed State",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "range",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "kube_pod_status_phase{phase=\"Failed\"} == 1",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T12:34:16Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "4",
+      "description": "Pod {{ index .Labels \"pod\" }} in namespace {{ index .Labels \"namespace\" }} is in Failed state. Check pod events and logs.",
+      "summary": "Failed Pod: {{ index .Labels \"pod\" }}"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 110,
+    "uid": "bfeame94rur5se",
+    "orgID": 1,
+    "folderUID": "af40dt7juakg0c",
+    "ruleGroup": "Infrastructure Monitoring Alerts",
+    "title": "Pods Stuck in Pending State",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "range",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "PAE45454D0EDB9216",
+        "model": {
+          "expr": "kube_pod_status_phase{phase=\"Pending\"} == 1",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:46:11Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "infra-monitoring-v1",
+      "__panelId__": "5",
+      "description": "Pod {{ index .Labels \"pod\" }} in namespace {{ index .Labels \"namespace\" }} has been stuck in Pending state for >10 minutes. Check node resources, taints, and scheduling constraints.",
+      "summary": "Pending Pod: {{ index .Labels \"pod\" }}"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  }
+]

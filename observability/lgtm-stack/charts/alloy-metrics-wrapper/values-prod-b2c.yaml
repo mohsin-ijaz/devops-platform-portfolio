@@ -1,0 +1,401 @@
+alloy:
+  replicas: 1
+
+  controller:
+    type: deployment
+    priorityClassName: alloy-high-priority
+    tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      - operator: Exists
+        effect: NoExecute
+
+  alloy:
+    clustering:
+      enabled: false
+
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+
+    # Metrics only - no OTLP ports needed
+    extraPorts: []
+
+    configMap:
+      content: |
+        prometheus.remote_write "mimir" {
+          endpoint {
+            url = "http://<MIMIR_ILB_IP>:8080/api/v1/push"
+
+            headers = {
+              "X-Scope-OrgID" = "<YOUR_TENANT_ID>",
+            }
+
+            queue_config {
+              capacity             = 10000
+              max_shards           = 50
+              max_samples_per_send = 2000
+              batch_send_deadline  = "5s"
+              min_shards           = 5
+              max_backoff          = "5s"
+              min_backoff          = "30ms"
+            }
+
+            metadata_config {
+              send          = true
+              send_interval = "1m"
+            }
+          }
+
+          external_labels = {
+            cluster = "<GKE_CLUSTER_NAME>",
+            env     = "production",
+            region  = "<GCP_REGION>",
+            project = "<GCP_PROJECT_ID>",
+          }
+        }
+
+        // ----------------------------------------------------------------------------
+        // Kubernetes Service Discovery
+        // ----------------------------------------------------------------------------
+        discovery.kubernetes "pods" {
+          role = "pod"
+        }
+
+        discovery.kubernetes "nodes" {
+          role = "node"
+        }
+
+        discovery.kubernetes "services" {
+          role = "service"
+        }
+
+        discovery.kubernetes "endpoints" {
+          role = "endpoints"
+        }
+
+        // ----------------------------------------------------------------------------
+        // Pod Metrics Collection
+        // ----------------------------------------------------------------------------
+        discovery.relabel "pods" {
+          targets = discovery.kubernetes.pods.targets
+
+          // Keep only target namespaces for production metrics
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            action        = "keep"
+            regex         = "(<YOUR_NS_1>|<YOUR_NS_2>|<YOUR_NS_N>)"  # TODO: list your consumer namespaces
+          }
+
+          // Keep only pods with prometheus scrape annotation
+          rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+            action        = "keep"
+            regex         = "true"
+          }
+
+          // Extract scrape port from annotation or default to container port
+          rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_port", "__meta_kubernetes_pod_container_port_number"]
+            action        = "replace"
+            target_label  = "__address__"
+            regex         = "([^:]+)(?::\\d+)?;(\\d+)"
+            replacement   = "$1:$2"
+          }
+
+          // Extract metrics path from annotation or default to /metrics
+          rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_path"]
+            action        = "replace"
+            target_label  = "__metrics_path__"
+            regex         = "(.+)"
+          }
+
+          // Add namespace label
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            target_label  = "namespace"
+          }
+
+          // Add pod name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_name"]
+            target_label  = "pod"
+          }
+
+          // Add container name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_container_name"]
+            target_label  = "container"
+          }
+
+          // Add node name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_node_name"]
+            target_label  = "node"
+          }
+
+          // Add app label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app"]
+            target_label  = "app"
+          }
+
+          // Add app.kubernetes.io/name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+            target_label  = "app_name"
+          }
+
+          // Add service label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_component"]
+            target_label  = "component"
+          }
+        }
+
+        prometheus.scrape "pods" {
+          targets    = discovery.relabel.pods.output
+          forward_to = [prometheus.remote_write.mimir.receiver]
+
+          scrape_interval = "30s"
+          scrape_timeout  = "10s"
+        }
+
+
+        discovery.relabel "svc_ksm" {
+          targets = discovery.kubernetes.endpoints.targets
+
+          // Keep only kube-state-metrics services
+          rule {
+            source_labels = ["__meta_kubernetes_service_label_app_kubernetes_io_name", "__meta_kubernetes_service_name"]
+            separator     = ","
+            regex         = ".*kube-state-metrics.*"
+            action        = "keep"
+          }
+
+          // Add namespace and service labels
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            target_label  = "namespace"
+          }
+          rule {
+            source_labels = ["__meta_kubernetes_service_name"]
+            target_label  = "service"
+          }
+
+          // Respect service annotations for path and scheme
+          rule {
+            source_labels = ["__meta_kubernetes_service_annotation_prometheus_io_path"]
+            action        = "replace"
+            target_label  = "__metrics_path__"
+            regex         = "(.+)"
+          }
+          rule {
+            source_labels = ["__meta_kubernetes_service_annotation_prometheus_io_scheme"]
+            action        = "replace"
+            target_label  = "__scheme__"
+            regex         = "(https?)"
+          }
+
+          // If service annotation sets port, override target address port
+          rule {
+            source_labels = ["__address__", "__meta_kubernetes_service_annotation_prometheus_io_port"]
+            action        = "replace"
+            target_label  = "__address__"
+            regex         = "([^:]+)(?:\\d+)?;(\\d+)"
+            replacement   = "$1:$2"
+          }
+        }
+
+        prometheus.scrape "svc_ksm" {
+          targets    = discovery.relabel.svc_ksm.output
+          forward_to = [prometheus.relabel.svc_ksm_relabel.receiver]
+
+          scrape_interval = "30s"
+          scrape_timeout  = "10s"
+
+          honor_labels = true
+        }
+
+        prometheus.relabel "svc_ksm_relabel" {
+          forward_to = [prometheus.remote_write.mimir.receiver]
+
+          // Create exported_* labels for dashboard compatibility
+          rule {
+            source_labels = ["namespace"]
+            target_label  = "exported_namespace"
+          }
+          rule {
+            source_labels = ["pod"]
+            target_label  = "exported_pod"
+          }
+          rule {
+            source_labels = ["container"]
+            target_label  = "exported_container"
+          }
+        }
+
+  
+        discovery.relabel "cadvisor" {
+          targets = discovery.kubernetes.nodes.targets
+
+          rule {
+            source_labels = ["__address__"]
+            regex         = "([^:]+)(?::\\d+)?"
+            replacement   = "$1:10250"
+            target_label  = "__address__"
+          }
+
+          rule {
+            replacement  = "/metrics/cadvisor"
+            target_label = "__metrics_path__"
+          }
+
+          rule {
+            source_labels = ["__meta_kubernetes_node_name"]
+            target_label  = "node"
+          }
+        }
+
+        prometheus.scrape "cadvisor" {
+          targets         = discovery.relabel.cadvisor.output
+          forward_to      = [prometheus.relabel.cadvisor_filter.receiver]
+          scrape_interval = "30s"
+          scrape_timeout  = "10s"
+          scheme          = "https"
+
+          bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+          tls_config {
+            ca_file              = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+            insecure_skip_verify = true
+          }
+        }
+
+        // Metric relabeling for cAdvisor - filter to target namespaces only
+        prometheus.relabel "cadvisor_filter" {
+          forward_to = [prometheus.remote_write.mimir.receiver]
+
+          rule {
+            source_labels = ["namespace"]
+            regex = "<YOUR_NS_1>|<YOUR_NS_2>|<YOUR_NS_N>"  # TODO: list your consumer namespaces
+            action = "keep"
+          }
+        }
+
+        discovery.relabel "kubelet" {
+          targets = discovery.kubernetes.nodes.targets
+
+          rule {
+            source_labels = ["__address__"]
+            regex         = "([^:]+)(?::\\d+)?"
+            replacement   = "$1:10250"
+            target_label  = "__address__"
+          }
+
+          rule {
+            replacement  = "/metrics"
+            target_label = "__metrics_path__"
+          }
+
+          rule {
+            source_labels = ["__meta_kubernetes_node_name"]
+            target_label  = "node"
+          }
+        }
+
+        prometheus.scrape "kubelet" {
+          targets         = discovery.relabel.kubelet.output
+          forward_to      = [prometheus.remote_write.mimir.receiver]
+          scrape_interval = "30s"
+          scrape_timeout  = "10s"
+          scheme          = "https"
+
+          bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+          tls_config {
+            ca_file              = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+            insecure_skip_verify = true
+          }
+        }
+
+        prometheus.scrape "opencost" {
+          targets = [
+            {"__address__" = "opencost.opencost.svc.cluster.local:9003"},
+          ]
+          forward_to = [prometheus.remote_write.mimir.receiver]
+
+          job_name        = "opencost"
+          scrape_interval = "1m"
+          scrape_timeout  = "30s"
+          metrics_path    = "/metrics"
+        }
+
+        // ----------------------------------------------------------------------------
+        // Alloy Self-Monitoring
+        // ----------------------------------------------------------------------------
+        prometheus.exporter.self "alloy" {}
+
+        prometheus.scrape "alloy" {
+          targets    = prometheus.exporter.self.alloy.targets
+          forward_to = [prometheus.remote_write.mimir.receiver]
+
+          job_name = "alloy-metrics"
+        }
+
+  # RBAC for Kubernetes service discovery
+  rbac:
+    create: true
+
+  serviceAccount:
+    create: true
+    name: alloy-metrics
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      - name: http
+        port: 12345
+        targetPort: 12345
+        protocol: TCP
+
+  # Pod security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    fsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+
+  # Container security context
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  # Liveness and readiness probes
+  livenessProbe:
+    httpGet:
+      path: /-/healthy
+      port: 12345
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /-/ready
+      port: 12345
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3

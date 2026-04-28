@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kafka
+
+labels:
+  - includeSelectors: false
+    pairs:
+      env: dev
+
+resources:
+  - ../../base
+  - certs.yaml
+
+patches:
+- path: kafka-external-0-patch.yaml
+  target:
+    kind: Service
+    name: kafka-0-external
+    version: v1
+- path: kafka-external-1-patch.yaml
+  target:
+    kind: Service
+    name: kafka-1-external
+    version: v1
+- path: kafka-external-2-patch.yaml
+  target:
+    kind: Service
+    name: kafka-2-external
+    version: v1
+- path: kafka-ui-patch.yaml
+  target:
+    kind: Service
+    name: kafka-ui
+    version: v1

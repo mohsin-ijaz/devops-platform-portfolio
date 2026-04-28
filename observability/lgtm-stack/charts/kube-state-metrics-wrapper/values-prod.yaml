@@ -1,0 +1,218 @@
+kube-state-metrics:
+  replicas: 2
+
+  autosharding:
+    enabled: true
+
+  # Resource limits - increased for production scale
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 350m
+      memory: 0.5Gi
+
+  # Prometheus scrape annotations
+  prometheus:
+    monitor:
+      enabled: false  # We'll use service annotations for Alloy instead
+
+  # Service configuration with annotations for Alloy scraping
+  service:
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8080"
+      prometheus.io/path: "/metrics"
+
+  # Pod annotations
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+
+  # RBAC configuration
+  rbac:
+    create: true
+    # Extra RBAC rules for VPA metrics - Added 2026-01-18
+    extraRules:
+      - apiGroups: ["autoscaling.k8s.io"]
+        resources: ["verticalpodautoscalers"]
+        verbs: ["list", "watch"]
+
+  serviceAccount:
+    create: true
+    name: kube-state-metrics
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    fsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  # Node selector and tolerations
+  nodeSelector: {}
+
+  tolerations:
+    - operator: Exists
+      effect: NoSchedule
+    - operator: Exists
+      effect: NoExecute
+
+  # Metric collection configuration
+  collectors:
+    - certificatesigningrequests
+    - configmaps
+    - cronjobs
+    - daemonsets
+    - deployments
+    - endpoints
+    - horizontalpodautoscalers
+    - ingresses
+    - jobs
+    - leases
+    - limitranges
+    - mutatingwebhookconfigurations
+    - namespaces
+    - networkpolicies
+    - nodes
+    - persistentvolumeclaims
+    - persistentvolumes
+    - poddisruptionbudgets
+    - pods
+    - replicasets
+    - replicationcontrollers
+    - resourcequotas
+    - secrets
+    - services
+    - statefulsets
+    - storageclasses
+    - validatingwebhookconfigurations
+    - volumeattachments
+
+  # Namespace filtering - production namespaces
+  namespaces: "<YOUR_NS_1>,<YOUR_NS_2>,<YOUR_NS_N>,kafka,istio-system"  # TODO: list your production namespaces
+
+  # Extra args
+  extraArgs:
+    - --metric-labels-allowlist=pods=[*]
+    - --metric-labels-allowlist=deployments=[*]
+    - --metric-labels-allowlist=nodes=[*]
+    - --use-apiserver-cache
+
+
+  customResourceState:
+    enabled: true
+    config:
+      kind: CustomResourceStateMetrics
+      spec:
+        resources:
+          - groupVersionKind:
+              group: autoscaling.k8s.io
+              version: v1
+              kind: VerticalPodAutoscaler
+            metricNamePrefix: kube_vpa
+            labelsFromPath:
+              verticalpodautoscaler: [metadata, name]
+              namespace: [metadata, namespace]
+              target_api_version: [spec, targetRef, apiVersion]
+              target_kind: [spec, targetRef, kind]
+              target_name: [spec, targetRef, name]
+            metrics:
+              # VPA update mode
+              - name: "update_mode"
+                help: "The update mode of the VPA"
+                each:
+                  type: Info
+                  info:
+                    labelsFromPath:
+                      update_mode: [spec, updatePolicy, updateMode]
+              # Target CPU recommendation
+              - name: "container_recommendation_target_cpu"
+                help: "Target CPU recommendation for container in millicores"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, recommendation, containerRecommendations]
+                    valueFrom: [target, cpu]
+                    labelsFromPath:
+                      container: [containerName]
+              # Target Memory recommendation
+              - name: "container_recommendation_target_memory"
+                help: "Target memory recommendation for container in bytes"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, recommendation, containerRecommendations]
+                    valueFrom: [target, memory]
+                    labelsFromPath:
+                      container: [containerName]
+              # Lower bound CPU
+              - name: "container_recommendation_lowerbound_cpu"
+                help: "Lower bound CPU recommendation for container in millicores"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, recommendation, containerRecommendations]
+                    valueFrom: [lowerBound, cpu]
+                    labelsFromPath:
+                      container: [containerName]
+              # Lower bound Memory
+              - name: "container_recommendation_lowerbound_memory"
+                help: "Lower bound memory recommendation for container in bytes"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, recommendation, containerRecommendations]
+                    valueFrom: [lowerBound, memory]
+                    labelsFromPath:
+                      container: [containerName]
+              # Upper bound CPU
+              - name: "container_recommendation_upperbound_cpu"
+                help: "Upper bound CPU recommendation for container in millicores"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, recommendation, containerRecommendations]
+                    valueFrom: [upperBound, cpu]
+                    labelsFromPath:
+                      container: [containerName]
+              # Upper bound Memory
+              - name: "container_recommendation_upperbound_memory"
+                help: "Upper bound memory recommendation for container in bytes"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, recommendation, containerRecommendations]
+                    valueFrom: [upperBound, memory]
+                    labelsFromPath:
+                      container: [containerName]
+              # Uncapped target CPU
+              - name: "container_recommendation_uncappedtarget_cpu"
+                help: "Uncapped target CPU recommendation for container in millicores"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, recommendation, containerRecommendations]
+                    valueFrom: [uncappedTarget, cpu]
+                    labelsFromPath:
+                      container: [containerName]
+              # Uncapped target Memory
+              - name: "container_recommendation_uncappedtarget_memory"
+                help: "Uncapped target memory recommendation for container in bytes"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, recommendation, containerRecommendations]
+                    valueFrom: [uncappedTarget, memory]
+                    labelsFromPath:
+                      container: [containerName]

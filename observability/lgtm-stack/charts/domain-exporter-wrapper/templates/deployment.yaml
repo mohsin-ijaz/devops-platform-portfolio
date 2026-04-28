@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "domain-exporter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "domain-exporter.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "domain-exporter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "domain-exporter.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9222"
+        prometheus.io/path: "/metrics"
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+      containers:
+      - name: domain-exporter
+        image: "caarlos0/domain_exporter:{{ .Values.image.tag | default "v1.24.1" }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+        {{- if .Values.domains }}
+        args:
+          - "--config=/config/domains.yaml"
+        {{- end }}
+        ports:
+        - containerPort: 9222
+          name: http-metrics
+          protocol: TCP
+        env:
+        - name: DOMAIN_EXPORTER_BIND
+          value: "0.0.0.0:9222"
+        {{- if .Values.domains }}
+        volumeMounts:
+        - name: config
+          mountPath: /config
+          readOnly: true
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: http-metrics
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: http-metrics
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+          capabilities:
+            drop: ["ALL"]
+      {{- if .Values.domains }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "domain-exporter.fullname" . }}
+      {{- end }}

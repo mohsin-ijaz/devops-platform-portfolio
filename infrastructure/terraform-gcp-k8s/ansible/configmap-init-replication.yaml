@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-replication
+data:
+  init-replica.sh: |
+    #!/bin/bash
+    set -e
+    echo "Setting up replication..."
+    mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "CHANGE MASTER TO \
+      MASTER_HOST='mysql-primary', \
+      MASTER_USER='replicator', \
+      MASTER_PASSWORD='<REPLICATION_PASSWORD>', \
+      MASTER_LOG_FILE='mysql-bin.000001', \
+      MASTER_LOG_POS=4; START SLAVE;"

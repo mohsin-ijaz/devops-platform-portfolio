@@ -1,0 +1,9 @@
+apiVersion: v2
+name: alloy-metrics-wrapper
+description: Grafana Alloy metrics collector (single replica) for QA
+version: 1.0.0
+appVersion: "1.5.1"
+dependencies:
+  - name: alloy
+    version: "0.11.0"
+    repository: https://grafana.github.io/helm-charts

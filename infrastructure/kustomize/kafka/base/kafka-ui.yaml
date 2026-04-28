@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kafka-ui
+  annotations:
+    cloud.google.com/load-balancer-type: "External"
+  name: kafka-ui
+spec:
+  type: ClusterIP
+  # loadBalancerIP: <GCP_IP>
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: kafka-ui
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kafka-ui
+spec:
+  selector:
+    matchLabels:
+      app: kafka-ui
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kafka-ui
+    spec:
+      containers:
+        - name: kafka-ui
+          image: provectuslabs/kafka-ui
+          resources:
+            limits:
+              memory: 5Gi
+              cpu: "1"
+            requests:
+              memory: 512Mi
+              cpu: "0.2"
+          env:
+            - name: KAFKA_CLUSTERS_0_NAME
+              value: kafka
+            - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+              value: kafka:9092
+            - name: KAFKA_CLUSTERS_0_ZOOKEEPER
+              value: zookeeper:2181
+            - name: KAFKA_CLUSTERS_0_SCHEMAREGISTRY
+              value: http://schema-registry:8081
+            - name: AUTH_TYPE
+              value: LOGIN_FORM
+            - name: SPRING_SECURITY_USER_NAME
+              value: acme
+            - name: SPRING_SECURITY_USER_PASSWORD
+              value: <KAFKA_UI_PASSWORD>
+            - name: KAFKA_CLUSTERS_0_SCHEMAREGISTRYAUTH_USERNAME
+              value: kafka-ui
+            - name: KAFKA_CLUSTERS_0_SCHEMAREGISTRYAUTH_PASSWORD
+              value: <KAFKA_UI_PASSWORD>
+            - name: KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME
+              value: kafka-connect
+            - name: KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS
+              value: http://kafka-connect:8083

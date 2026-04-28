@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: kafka
+    release: prometheus-stack
+  name: kafka
+spec:
+  endpoints:
+  - port: kafka-exporter
+  - port: node-exporter
+  - port: jmx-metrics
+  selector:
+    matchLabels:
+      app: kafka

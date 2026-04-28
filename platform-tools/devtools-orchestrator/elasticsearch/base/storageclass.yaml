@@ -1,0 +1,10 @@
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ssd-expand
+parameters:
+  type: pd-ssd
+provisioner: kubernetes.io/gce-pd
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

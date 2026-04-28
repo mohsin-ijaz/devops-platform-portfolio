@@ -1,0 +1,58 @@
+# Sensitive Endpoint Scanning Detection
+# Detects IPs probing for sensitive files and directories
+
+type: leaky
+name: custom/sensitive-endpoint-scan
+description: "Detects scanning for sensitive endpoints like .env, config files, backups"
+filter: |
+  evt.Meta.log_type == 'http_access-log' 
+  and (
+    evt.Parsed.request contains "/.env"
+    or evt.Parsed.request contains "/config"
+    or evt.Parsed.request contains "/backup"
+    or evt.Parsed.request contains "/.git"
+    or evt.Parsed.request contains "/.svn"
+    or evt.Parsed.request contains "/wp-config"
+    or evt.Parsed.request contains "/phpinfo"
+    or evt.Parsed.request contains "/admin"
+    or evt.Parsed.request contains "/phpmyadmin"
+    or evt.Parsed.request contains "/mysql"
+    or evt.Parsed.request contains "/database"
+    or evt.Parsed.request contains "/.htaccess"
+    or evt.Parsed.request contains "/.htpasswd"
+    or evt.Parsed.request contains "/web.config"
+    or evt.Parsed.request contains "/server-status"
+    or evt.Parsed.request contains "/debug"
+    or evt.Parsed.request contains "/trace"
+    or evt.Parsed.request contains "/actuator"
+    or evt.Parsed.request contains "/console"
+    or evt.Parsed.request contains "/manager"
+    or evt.Parsed.request contains "/jenkins"
+    or evt.Parsed.request contains "/solr"
+    or evt.Parsed.request contains "/api/swagger"
+    or evt.Parsed.request contains "/.aws"
+    or evt.Parsed.request contains "/.docker"
+    or evt.Parsed.request contains "/id_rsa"
+    or evt.Parsed.request contains "/id_dsa"
+    or evt.Parsed.request contains "/.ssh"
+    or evt.Parsed.request contains "/etc/passwd"
+    or evt.Parsed.request contains "/etc/shadow"
+    or evt.Parsed.request contains "/proc/self"
+    or evt.Parsed.request contains "/.well-known"
+    or evt.Parsed.request contains "/cgi-bin"
+  )
+groupby: evt.Meta.source_ip
+
+capacity: 3                        # Alert after just 3 attempts
+leakspeed: 5m                     # Bucket leaks over 5 minutes
+blackhole: 10m                    # Don't alert again for 10 minutes
+
+labels:
+  service: http
+  type: scan
+  confidence: high
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip

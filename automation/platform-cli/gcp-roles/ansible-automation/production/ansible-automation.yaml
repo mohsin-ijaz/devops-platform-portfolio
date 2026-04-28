@@ -1,0 +1,22 @@
+title: "Ansible Automation"
+description: "This role will be used only for Ansible automation tasks. Created on: 2021-07-14"
+stage: "GA"
+includedPermissions:
+- compute.addresses.create
+- compute.addresses.get
+- compute.addresses.use
+- compute.disks.create
+- compute.disks.createSnapshot
+- compute.disks.get
+- compute.disks.use
+- compute.images.useReadOnly
+- compute.instances.create
+- compute.instances.get
+- compute.instances.setTags
+- compute.regionOperations.get
+- compute.snapshots.create
+- compute.snapshots.get
+- compute.snapshots.useReadOnly
+- compute.subnetworks.use
+- compute.subnetworks.useExternalIp
+- compute.zoneOperations.get

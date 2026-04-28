@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: schema-registry-cm
+data:
+  schema_registry_jaas.conf: |-    
+    SchemaRegistry-Props {
+      org.eclipse.jetty.jaas.spi.PropertyFileLoginModule required
+      file="/etc/kafka/secrets/schema-registry-password"
+      debug="false";
+    };
+  schema-registry-password: |-
+    kafka-ui: <KAFKA_UI_PASSWORD>,system
+    debezium: <KAFKA_UI_PASSWORD>,system
+    eng-ancillary: <KAFKA_UI_PASSWORD>,developer
+    eng-transactions: <KAFKA_UI_PASSWORD>,developer
+    eng-inspection: <KAFKA_UI_PASSWORD>,developer

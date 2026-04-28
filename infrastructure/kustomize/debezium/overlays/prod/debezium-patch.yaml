@@ -1,0 +1,27 @@
+- op: replace
+  path: /spec/template/spec/nodeSelector
+  value:
+    cloud.google.com/gke-nodepool: np-cs-prod-enterprise-db-kafka-asse1-01
+    workload: kafka
+- op: add
+  path: /spec/template/spec/tolerations
+  value:
+  - effect: NoSchedule
+    key: dedicated
+    operator: Equal
+    value: kafka
+- op: add
+  path: /spec/template/spec/affinity
+  value:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - kafka
+        topologyKey: kubernetes.io/hostname
+- op: add
+  path: /spec/template/spec/containers/0/image
+  value: <GCP_REGION>-docker.pkg.dev/<GCP_PROJECT_ID>/docker/debezium:v2.4-mongodb1.11.1

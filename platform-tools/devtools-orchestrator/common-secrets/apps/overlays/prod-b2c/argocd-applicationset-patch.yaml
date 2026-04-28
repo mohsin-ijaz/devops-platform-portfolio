@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: common-secrets
+spec:
+  generators:
+    - list:
+        elements:
+          - branch: "{{CI_COMMIT_REF_NAME}}"
+            name: "argocd-consumer-common-secrets"
+            namespace: "argocd"
+            country: "argocd"
+          # - branch: "{{CI_COMMIT_REF_NAME}}"
+          #   name: "id-enterprise-common-secrets"
+          #   namespace: "enterprise-cms-id"
+          #   country: "id"
+          # - branch: "{{CI_COMMIT_REF_NAME}}"
+          #   name: "my-enterprise-common-secrets"
+          #   namespace: "enterprise-cms-my"
+          #   country: "my"
+          # - branch: "{{CI_COMMIT_REF_NAME}}"
+          #   name: "th-enterprise-common-secrets"
+          #   namespace: "enterprise-cms-th"
+          #   country: "th"
+  template:
+    metadata:
+      name: '{{.name}}'
+    spec:
+      project: consumer
+      source:
+        repoURL: https://gitlab.com/<YOUR_GITLAB_GROUP>/<REPO_NAME>.git
+        targetRevision: '{{.branch}}'
+        path: k8s/common-secrets/deploy/overlays/prod-consumer/{{.country}}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

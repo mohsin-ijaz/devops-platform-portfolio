@@ -1,0 +1,81 @@
+groups:
+  - name: goldilocks.cpu.delta
+    interval: 5m
+    rules:
+      - record: goldilocks:cpu:request_delta_percent
+        expr: |
+          (
+            finops:workload:current_cpu_request
+            - on(cluster, namespace, target_name, container)
+            kube_vpa_container_recommendation_target_cpu
+          )
+          /
+          finops:workload:current_cpu_request
+          * 100
+      - record: goldilocks:cpu:underprovisioned_amount
+        expr: |
+          (
+            kube_vpa_container_recommendation_lowerbound_cpu
+            - on(cluster, namespace, target_name, container)
+            finops:workload:current_cpu_request
+          ) > 0
+
+  - name: goldilocks.memory.delta
+    interval: 5m
+    rules:
+      - record: goldilocks:memory:request_delta_percent
+        expr: |
+          (
+            finops:workload:current_memory_request
+            - on(cluster, namespace, target_name, container)
+            kube_vpa_container_recommendation_target_memory
+          )
+          /
+          finops:workload:current_memory_request
+          * 100
+      - record: goldilocks:memory:underprovisioned_amount
+        expr: |
+          (
+            kube_vpa_container_recommendation_lowerbound_memory
+            - on(cluster, namespace, target_name, container)
+            finops:workload:current_memory_request
+          ) > 0
+
+  - name: goldilocks.summary
+    interval: 5m
+    rules:
+      - record: goldilocks:summary:total_vpas
+        expr: count(kube_vpa_update_mode)
+      - record: goldilocks:summary:containers_analyzed
+        expr: count(kube_vpa_container_recommendation_target_cpu)
+      - record: goldilocks:summary:namespaces_count
+        expr: count(count by (namespace) (kube_vpa_update_mode))
+      - record: goldilocks:summary:overprovisioned_count
+        expr: count(goldilocks:cpu:request_delta_percent > 10) or vector(0)
+      - record: goldilocks:summary:underprovisioned_count
+        expr: count(goldilocks:cpu:underprovisioned_amount > 0.01) or vector(0)
+      - record: goldilocks:summary:vpas_off_mode
+        expr: count(kube_vpa_update_mode{update_mode="Off"}) or vector(0)
+
+  - name: goldilocks.totals
+    interval: 5m
+    rules:
+      - record: goldilocks:totals:current_cpu_requests
+        expr: |
+          sum(
+            finops:workload:current_cpu_request
+            * on(cluster, namespace, container, target_name) group_left()
+            (kube_vpa_container_recommendation_target_cpu * 0 + 1)
+          ) or vector(0)
+      - record: goldilocks:totals:recommended_cpu
+        expr: sum(kube_vpa_container_recommendation_target_cpu) or vector(0)
+      - record: goldilocks:totals:recommended_memory
+        expr: sum(kube_vpa_container_recommendation_target_memory) or vector(0)
+
+  - name: goldilocks.by_namespace
+    interval: 5m
+    rules:
+      - record: goldilocks:namespace:recommended_cpu
+        expr: sum by (cluster, namespace) (kube_vpa_container_recommendation_target_cpu)
+      - record: goldilocks:namespace:recommended_memory
+        expr: sum by (cluster, namespace) (kube_vpa_container_recommendation_target_memory)

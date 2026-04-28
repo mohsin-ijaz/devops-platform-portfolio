@@ -1,0 +1,11 @@
+---
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: ambient-tracing
+  namespace: enterprise-cms-qa-th
+spec:
+  tracing:
+  - providers:
+    - name: zipkin
+    randomSamplingPercentage: 100

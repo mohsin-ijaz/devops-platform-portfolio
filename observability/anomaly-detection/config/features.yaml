@@ -1,0 +1,173 @@
+# Feature config for the anomaly detection models.
+# 6-month window catches weekly patterns and monthly cycles without the dataset getting unmanageable.
+# Adjust namespaces and metric queries to match your cluster.
+
+extraction:
+  lookback_days: 180          # 6 months
+  step: 5m                    # 5-minute resolution — balances granularity vs volume
+  prometheus_url: "${MIMIR_URL}/prometheus"
+  timeout_seconds: 120
+
+# PromQL queries evaluated at each 5-minute step.
+# Results get pivoted into columns by (namespace, pod/service) before feature engineering.
+
+metrics:
+  # Compute
+  - name: cpu_usage
+    query: |
+      sum by (namespace, pod) (
+        rate(container_cpu_usage_seconds_total{container!="",container!="POD"}[5m])
+      )
+    unit: cores
+
+  - name: cpu_throttle_ratio
+    query: |
+      sum by (namespace, pod) (
+        rate(container_cpu_cfs_throttled_periods_total[5m])
+      ) /
+      sum by (namespace, pod) (
+        rate(container_cpu_cfs_periods_total[5m])
+      )
+    unit: ratio
+
+  - name: memory_usage_bytes
+    query: |
+      sum by (namespace, pod) (
+        container_memory_working_set_bytes{container!="",container!="POD"}
+      )
+    unit: bytes
+
+  - name: memory_oom_kills
+    query: |
+      sum by (namespace, pod) (
+        increase(container_oom_events_total[5m])
+      )
+    unit: count
+
+  # Reliability
+  - name: pod_restarts
+    query: |
+      sum by (namespace, pod) (
+        increase(kube_pod_container_status_restarts_total[5m])
+      )
+    unit: count
+
+  - name: pod_ready_ratio
+    query: |
+      sum by (namespace) (kube_pod_status_ready{condition="true"})
+      /
+      sum by (namespace) (kube_pod_status_ready)
+    unit: ratio
+
+  # Traffic & Errors (Istio / service mesh metrics)
+  - name: request_rate
+    query: |
+      sum by (namespace, destination_service_name) (
+        rate(istio_requests_total{reporter="destination"}[5m])
+      )
+    unit: rps
+
+  - name: error_rate
+    query: |
+      sum by (namespace, destination_service_name) (
+        rate(istio_requests_total{reporter="destination",response_code=~"5.."}[5m])
+      ) /
+      sum by (namespace, destination_service_name) (
+        rate(istio_requests_total{reporter="destination"}[5m])
+      )
+    unit: ratio
+
+  - name: p50_latency_ms
+    query: |
+      histogram_quantile(0.50, sum by (namespace, destination_service_name, le) (
+        rate(istio_request_duration_milliseconds_bucket{reporter="destination"}[5m])
+      ))
+    unit: ms
+
+  - name: p99_latency_ms
+    query: |
+      histogram_quantile(0.99, sum by (namespace, destination_service_name, le) (
+        rate(istio_request_duration_milliseconds_bucket{reporter="destination"}[5m])
+      ))
+    unit: ms
+
+  # Storage
+  - name: pvc_usage_ratio
+    query: |
+      (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes)
+    unit: ratio
+
+  # Log volume (from Loki metrics)
+  - name: log_error_rate
+    query: |
+      sum by (namespace) (
+        rate({namespace=~".+"} |= "ERROR" | __error__="" [5m])
+      )
+    unit: lines_per_second
+
+# Rolling window aggregations applied per entity.
+
+engineering:
+  rolling_windows: [5, 15, 60, 360]   # minutes: 5min, 15min, 1hr, 6hr
+
+  per_window:
+    - mean
+    - std
+    - max
+    - min
+
+  # derived features after rolling windows are done
+  derived:
+    - name: cpu_to_memory_ratio
+      formula: "cpu_usage / (memory_usage_bytes / 1e9)"
+    - name: error_spike
+      formula: "error_rate / error_rate_rolling_60m_mean"    # z-score style ratio
+    - name: latency_degradation
+      formula: "p99_latency_ms / p50_latency_ms"            # p99/p50 ratio: high = skewed
+    - name: restart_acceleration
+      formula: "pod_restarts - pod_restarts_rolling_60m_mean"
+
+  # time features — captures business hours vs night vs weekend differences
+  temporal:
+    - hour_of_day          # 0-23 (encodes business hours vs night)
+    - day_of_week          # 0-6 (Mon=0, weekends show different patterns)
+    - is_business_hours    # bool: 09:00-18:00 Mon-Fri
+    - is_weekend           # bool
+
+models:
+  isolation_forest:
+    n_estimators: 200
+    contamination: 0.02   # Expect ~2% of samples to be anomalous
+    max_features: 0.8
+    random_state: 42
+    n_jobs: -1
+
+  lstm_autoencoder:
+    sequence_length: 36       # 36 × 5min = 3-hour window
+    encoding_dim: 32
+    lstm_units: [128, 64]
+    dropout: 0.2
+    epochs: 50
+    batch_size: 128
+    learning_rate: 0.001
+    patience: 10              # early stopping
+
+  ensemble:
+
+    weights:
+      isolation_forest: 0.4
+      lstm_autoencoder: 0.6   # LSTM gets higher weight — better at temporal patterns
+    alert_threshold: 0.75     # Score > 0.75 triggers alert
+
+# namespaces to monitor — fill in your production namespaces
+target_namespaces:
+  - "<YOUR_NAMESPACE_1>"
+  - "<YOUR_NAMESPACE_2>"
+  - "<YOUR_NAMESPACE_N>"
+  # Add all production namespaces here
+
+exclude_namespaces:
+  - kube-system
+  - cert-manager
+  - monitoring
+  - lgtm-stack

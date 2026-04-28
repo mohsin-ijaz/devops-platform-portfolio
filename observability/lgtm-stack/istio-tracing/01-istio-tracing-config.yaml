@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.26.0
+    helm.sh/chart: istiod-1.26.0
+    install.operator.istio.io/owning-resource: unknown
+    install.operator.istio.io/owning-resource-namespace: istio-system
+    istio.io/rev: default
+    operator.istio.io/component: Pilot
+    operator.istio.io/managed: Reconcile
+    operator.istio.io/version: 1.26.0
+    release: istio
+    config.istio.io/tracing-enabled: "true"
+data:
+  mesh: |-
+    enableTracing: true
+    defaultConfig:
+      discoveryAddress: istiod.istio-system.svc:15012
+      image:
+        imageType: distroless
+      proxyMetadata:
+        ISTIO_META_ENABLE_HBONE: "true"
+      tracing:
+        zipkin:
+          address: <TEMPO_ILB_IP>:9411
+        sampling: 100.0
+        max_path_tag_length: 256
+    extensionProviders:
+    - name: zipkin
+      zipkin:
+        service: tempo-zipkin.lgtm.acme.internal
+        port: 9411
+    defaultProviders:
+      metrics:
+      - prometheus
+      tracing:
+      - zipkin
+    enablePrometheusMerge: true
+    rootNamespace: istio-system
+    trustDomain: cluster.local
+  meshNetworks: 'networks: {}'

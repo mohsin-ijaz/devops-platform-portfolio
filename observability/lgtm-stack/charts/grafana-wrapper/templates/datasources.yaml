@@ -1,0 +1,74 @@
+{{- if .Values.datasources.enabled }}
+# Preconfigured datasources for LGTM stack
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-datasources
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grafana-wrapper.labels" . | nindent 4 }}
+    grafana_datasource: "1"
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    
+    datasources:
+      # Mimir - Prometheus-compatible metrics storage
+      - name: Mimir
+        type: prometheus
+        access: proxy
+        url: http://mimir-nginx.{{ .Release.Namespace }}.svc.cluster.local/prometheus
+        isDefault: true
+        editable: false
+        jsonData:
+          httpMethod: POST
+          prometheusType: Mimir
+          timeInterval: 30s
+          incrementalQuerying: true
+          incrementalQueryOverlapWindow: 10m
+          httpHeaderName1: 'X-Scope-OrgID'
+        secureJsonData:
+          httpHeaderValue1: '<GCP_QA_PROJECT>'
+      
+      # Loki - Log aggregation system
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki-gateway.{{ .Release.Namespace }}.svc.cluster.local
+        editable: false
+        jsonData:
+          maxLines: 1000
+          derivedFields:
+            - datasourceUid: tempo
+              matcherRegex: "trace_id=(\\w+)"
+              name: TraceID
+              url: "$${__value.raw}"
+      
+      # Tempo - Distributed tracing backend
+      - name: Tempo
+        type: tempo
+        access: proxy
+        url: http://tempo-query-frontend.{{ .Release.Namespace }}.svc.cluster.local:3200
+        uid: tempo
+        editable: false
+        jsonData:
+          httpMethod: GET
+          tracesToLogs:
+            datasourceUid: loki
+            filterByTraceID: true
+            filterBySpanID: false
+            tags:
+              - key: service.name
+                value: job
+          tracesToMetrics:
+            datasourceUid: mimir
+            tags:
+              - key: service.name
+                value: job
+          serviceMap:
+            datasourceUid: tempo
+          nodeGraph:
+            enabled: true
+          lokiSearch:
+            datasourceUid: loki
+{{- end }}

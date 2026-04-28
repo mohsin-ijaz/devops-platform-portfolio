@@ -1,0 +1,1997 @@
+[
+  {
+    "id": 41,
+    "uid": "afcvw3nn76txca",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Critical Alerts",
+    "title": "Loki Components Down",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(up{namespace=\"lgtm-stack-prod\",job=~\"lgtm-stack-prod/loki.*\"} == 0)",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:25Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "2",
+      "description": "Loki has components that are down. Service unavailability can lead to potential data loss and query failures. Immediate investigation required.",
+      "summary": "Loki components are down"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 42,
+    "uid": "cfcvw3qq6of0ga",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Critical Alerts",
+    "title": "Loki Ingester Flush Failures",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(rate(loki_ingester_chunks_flush_failures_total{namespace=\"lgtm-stack-prod\"}[5m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:25Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "12",
+      "description": "Loki ingesters are failing to flush chunks to storage. This means log data is not being persisted and will be lost if ingesters restart. Immediate action required to prevent data loss.",
+      "summary": "Loki ingester flush failures detected"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 43,
+    "uid": "efcvw3v2ebthcb",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Critical Alerts",
+    "title": "Loki WAL Disk Full",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(rate(loki_ingester_wal_disk_full_failures_total{namespace=\"lgtm-stack-prod\"}[5m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:25Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "12",
+      "description": "Loki Write-Ahead Log (WAL) disk is full. This causes immediate data loss as new logs cannot be written. Urgent action required - add disk space or clean up old WAL segments.",
+      "summary": "Loki WAL disk is full"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 44,
+    "uid": "afcvw3xmnkt8gf",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Critical Alerts",
+    "title": "Loki Data Corruption",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(rate(loki_cache_corrupt_chunks_total{namespace=\"lgtm-stack-prod\"}[5m])) + sum(rate(loki_querier_index_cache_corruptions_total{namespace=\"lgtm-stack-prod\"}[5m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:25Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "13",
+      "description": "Loki is detecting corrupt chunks or index cache corruptions. Data integrity is compromised. Investigate storage backend health and consider rebuilding affected indexes.",
+      "summary": "Loki data corruption detected"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 45,
+    "uid": "efcvw3zpkj6kgb",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Critical Alerts",
+    "title": "Loki Ingester Ring Unhealthy",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(loki_ring_members{namespace=\"lgtm-stack-prod\",name=\"ingester\",state=\"UNHEALTHY\"})",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:25Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "19",
+      "description": "Loki ingester ring has unhealthy members. Ring instability affects data replication and query routing. Unhealthy ingesters may cause data loss and degraded query performance.",
+      "summary": "Loki ingester ring has unhealthy members"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 46,
+    "uid": "ffcvwf8lej7r4b",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki High Push Latency",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{namespace=\"lgtm-stack-prod\",route=\"loki_api_v1_push\"}[5m])) by (le))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  2
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:26Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "103",
+      "description": "Loki push latency P99 exceeds 2 seconds. High push latency affects log ingestion and can cause backpressure on log shippers. Check ingester capacity and storage backend performance.",
+      "summary": "Loki push latency is high"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 47,
+    "uid": "dfcvwfarncpogf",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki High Discarded Samples",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(rate(loki_discarded_samples_total{namespace=\"lgtm-stack-prod\"}[5m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  100
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:26Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "102",
+      "description": "Loki is discarding more than 100 log samples per second. This means logs are being dropped and data is missing. Check rate limits, ingester capacity, and label cardinality.",
+      "summary": "Loki is discarding log samples"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 48,
+    "uid": "cfcvwfcoj1wxsd",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki High Out-of-Order Rate",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(rate(loki_discarded_samples_total{namespace=\"lgtm-stack-prod\",reason=\"too_far_behind\"}[5m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  50
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:26Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "104",
+      "description": "Loki is rejecting more than 50 out-of-order log entries per second. This indicates timestamp issues in log sources - logs arriving with timestamps too far in the past. Check log shipper configurations and system clocks.",
+      "summary": "Loki out-of-order rate is high"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 49,
+    "uid": "bfcvwfeeoiyo0d",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki Low Cache Hit Rate",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(rate(loki_cache_hits{namespace=\"lgtm-stack-prod\"}[5m])) / sum(rate(loki_cache_fetched_keys{namespace=\"lgtm-stack-prod\"}[5m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0.5
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:26Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "11",
+      "description": "Loki cache hit rate is below 50%. Low cache hit rate degrades query performance and increases load on storage backend. Consider increasing cache size or investigating query patterns.",
+      "summary": "Loki cache hit rate is low"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 50,
+    "uid": "ffcvwfg4f0mbka",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki High Index Gateway Latency",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum(rate(loki_index_gateway_request_duration_seconds_bucket{namespace=\"lgtm-stack-prod\"}[5m])) by (le))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  1
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:26Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "10",
+      "description": "Loki index gateway latency P99 exceeds 1 second. Slow index queries affect all log searches and can cause query timeouts. Check index gateway resources and storage performance.",
+      "summary": "Loki index gateway latency is high"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 51,
+    "uid": "bfcvwii0fpgqof",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki High Object Storage Latency",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum(rate(loki_gcs_request_duration_seconds_bucket{namespace=\"lgtm-stack-prod\",operation=\"GET\"}[5m])) by (le))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  2
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:27Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "16",
+      "description": "Loki object storage latency P99 exceeds 2 seconds. Slow chunk retrieval from storage affects query performance and can cause timeouts. Check storage backend health and network connectivity.",
+      "summary": "Loki object storage latency is high"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 52,
+    "uid": "afcvwil7v0jy8c",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki High Chunk Age",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum(rate(loki_ingester_chunk_age_seconds_bucket{namespace=\"lgtm-stack-prod\"}[5m])) by (le))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  7200
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:27Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "8",
+      "description": "Loki chunk age P99 exceeds 2 hours (7200 seconds). Old chunks indicate flush delays and memory pressure on ingesters. This can lead to high memory usage and potential OOM kills.",
+      "summary": "Loki chunk age is high"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 53,
+    "uid": "bfcvwin6h57uoe",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki Ingester Ring Leaving",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(loki_ring_members{namespace=\"lgtm-stack-prod\",name=\"ingester\",state=\"LEAVING\"})",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:45:43Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "18",
+      "description": "Loki ingester ring has members in LEAVING state. This may indicate intentional scale-down or unintended pod termination. Monitor for potential data redistribution issues.",
+      "summary": "Loki ingester ring has leaving members"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 54,
+    "uid": "dfcvwioyi1iwwe",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki Checkpoint Creation Failures",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "sum(rate(loki_ingester_checkpoint_creations_failed_total{namespace=\"lgtm-stack-prod\"}[5m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:46:49Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "12",
+      "description": "Loki ingester checkpoint creation is failing. Checkpoints are essential for recovery on restart - without them, ingesters may lose data or take longer to recover after a restart.",
+      "summary": "Loki checkpoint creation failures detected"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 55,
+    "uid": "ffcvwiqosidc0a",
+    "orgID": 1,
+    "folderUID": "ff1bj4qqgix34b",
+    "ruleGroup": "Loki Warning Alerts",
+    "title": "Loki High Stream Cardinality",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "editorMode": "code",
+          "expr": "max(loki_ingester_memory_streams{namespace=\"lgtm-stack-prod\"})",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  100000
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:28Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "loki-sre-v4-fixed",
+      "__panelId__": "14",
+      "description": "Loki ingester has more than 100,000 active streams. High stream cardinality causes memory pressure and performance issues. Review label usage and consider reducing cardinality.",
+      "summary": "Loki stream cardinality is high"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  }
+]

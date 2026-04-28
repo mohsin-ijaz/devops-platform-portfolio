@@ -1,0 +1,65 @@
+# LibreChat Configuration with MCP and Azure AI
+version: 1.2.1
+cache: true
+
+# Interface settings
+interface:
+  endpointsMenu: true
+  modelSelect: true
+  parameters: true
+  sidePanel: true
+  presets: true
+
+# MCP Servers Configuration
+mcpServers:
+  grafana:
+    type: streamable-http
+    url: http://grafana-mcp.lgtm-stack.svc.cluster.local:8000/mcp
+    timeout: 60000
+    initTimeout: 30000
+
+# MCP Settings
+mcpSettings:
+  serverInstructions: true
+  debug: false
+  allowedDomains:
+    - "grafana-mcp.lgtm-stack.svc.cluster.local"
+    - "*.lgtm-stack.svc.cluster.local"
+
+# Endpoints Configuration
+endpoints:
+  # Azure OpenAI (GPT-5.2)
+  azureOpenAI:
+    titleModel: gpt-5.2
+    plugins: true
+    groups:
+      - group: "Azure AI Foundry"
+        apiKey: "<AZURE_AI_API_KEY>"
+        instanceName: "<YOUR_AZURE_RESOURCE_NAME>"
+        deploymentName: gpt-5.2
+        version: "2024-12-01-preview"
+        baseURL: "https://<YOUR_AZURE_ENDPOINT>.cognitiveservices.azure.com/openai/deployments/gpt-5.2"
+        models:
+          gpt-5.2:
+            deploymentName: gpt-5.2
+            version: "2024-12-01-preview"
+
+  # Anthropic via Azure AI Foundry
+  custom:
+    - name: "Anthropic (Azure)"
+      apiKey: "<AZURE_AI_API_KEY>"
+      baseURL: "https://<YOUR_AZURE_ENDPOINT>.ai.azure.com/anthropic/v1"
+      defaultParamsEndpoint: "anthropic"
+      models:
+        default:
+          - claude-sonnet-4-6
+        fetch: false
+      titleConvo: true
+      titleModel: "claude-sonnet-4-6"
+      summarize: false
+      summaryModel: "claude-sonnet-4-6"
+      forcePrompt: false
+      modelDisplayLabel: "Anthropic (Azure)"
+      headers:
+        anthropic-version: "2023-06-01"
+        x-api-key: "<AZURE_AI_API_KEY>"

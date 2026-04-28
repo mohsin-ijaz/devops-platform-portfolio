@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: elasticsearch
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  # Generators and template.spec.source will be added in overlays.
+  template:
+    spec:
+      syncPolicy:
+        automated:
+          selfHeal: true    
+        syncOptions:
+        - CreateNamespace=true        
+
+
+

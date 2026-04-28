@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+spec:
+  podManagementPolicy: Parallel
+  template:
+    spec:
+      containers:
+        - name: k8skafka-kafka
+          ports:
+            - containerPort: 9093
+              name: controller
+          # Environment variables are handled by kafka-env-json-patch.yaml
+          # Remove ZK connect if inherited and set node ID/advertised listeners
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - |
+              NODE_ID=${HOSTNAME##*-}
+              EXTERNAL_SERVICE="kafka-internal-${NODE_ID}.kafka-qa.svc.cluster.local"
+              export KAFKA_NODE_ID=${NODE_ID}
+              export KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka-${NODE_ID}.kafka.kafka-qa.svc.cluster.local:9092,EXTERNAL://${EXTERNAL_SERVICE}:9094,CONTROLLER://kafka-${NODE_ID}.kafka.kafka-qa.svc.cluster.local:9093
+              export KAFKA_BROKER_ID=${NODE_ID}
+              # Remove any ZK config inherited
+              unset KAFKA_ZOOKEEPER_CONNECT
+              /etc/confluent/docker/run

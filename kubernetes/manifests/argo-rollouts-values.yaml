@@ -1,0 +1,137 @@
+# Production-grade Helm values for Argo Rollouts
+# This configuration includes observability, security, and scalability best practices
+
+# Controller configuration
+controller:
+  # Number of controller replicas for high availability
+  replicas: 2
+
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Pod Disruption Budget for high availability
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+  # Affinity rules to spread replicas across nodes
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - argo-rollouts
+          topologyKey: kubernetes.io/hostname
+
+  # Metrics configuration for Prometheus scraping
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus  # Adjust based on your Prometheus operator setup
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+      - ALL
+
+# Dashboard configuration (optional)
+dashboard:
+  enabled: true
+  replicas: 1
+
+  # Resource configuration for dashboard
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 3100
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+      - ALL
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations: {}
+
+# RBAC configuration
+clusterRoleAggregation:
+  enabled: true
+
+# Installation CRDs
+installCRDs: true
+
+# Global labels to apply to all resources
+commonLabels:
+  app.kubernetes.io/part-of: argo
+  managed-by: helm
+
+# Pod labels
+podLabels: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Priority class for pod scheduling
+priorityClassName: ""
+
+# Extra volumes and volume mounts
+extraContainers: []
+volumes: []
+volumeMounts: []
+
+# Notification configuration (optional)
+notifications:
+  secret:
+    create: false
+
+  configMap:
+    create: false

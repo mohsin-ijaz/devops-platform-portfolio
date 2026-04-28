@@ -1,0 +1,64 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: elasticsearch
+spec:
+  version: 8.6.0
+  nodeSets:
+  - name: node
+    count: 3
+    config:
+      node.store.allow_mmap: false
+      xpack.security.authc:
+        anonymous:
+          username: anon
+          roles: monitoring_user
+    podTemplate:
+      spec:
+        initContainers:
+        - name: install-plugin
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin install --batch repository-gcs
+        - name: add-gcs-key
+          command:
+          - sh
+          - -c
+          - |
+            echo y | bin/elasticsearch-keystore add-file gcs.client.default.credentials_file ./key/gcs_backup_key.json
+          volumeMounts:
+          - name: gcs-backup-key
+            mountPath: "/usr/share/elasticsearch/key/gcs_backup_key.json"
+            subPath: gcs_backup_key.json
+            readOnly: true
+        containers:
+          - name: elasticsearch
+            readinessProbe:
+              httpGet:
+                scheme: HTTPS
+                path: /
+                port: 9200
+        volumes:
+          - name: gcs-backup-key
+            secret:
+              secretName: gcs-backup-key
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data # Do not change this name unless you set up a volume mount for the data path.
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: es-expand-pvc
+  http:
+    service:
+      spec:
+        type: NodePort
+      metadata:
+        annotations:
+          cloud.google.com/app-protocols: '{"https":"HTTPS"}'
+          service.alpha.kubernetes.io/app-protocols: '{"https":"HTTPS"}' 

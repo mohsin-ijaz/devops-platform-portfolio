@@ -1,0 +1,13 @@
+# This annotation tells Istio to route traffic through the waypoint proxy
+# Apply this to services in enterprise-cms-qa-th namespace to enable L7 tracing
+
+# Option 1: Annotate the entire namespace (recommended for testing)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: enterprise-cms-qa-th
+  labels:
+    istio.io/dataplane-mode: ambient
+  annotations:
+    # This tells all services in the namespace to use the waypoint
+    istio.io/use-waypoint: waypoint

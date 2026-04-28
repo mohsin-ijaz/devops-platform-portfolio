@@ -1,0 +1,43 @@
+# Rapid Fire Request Detection
+# Detects abnormally high request rates from single IP
+
+type: leaky
+name: custom/rapid-fire-requests
+description: "Detects IPs making requests at abnormally high rates"
+filter: evt.Meta.log_type == 'http_access-log'
+groupby: evt.Meta.source_ip
+
+capacity: 100                      # Alert after 100 requests
+leakspeed: 10s                    # Bucket leaks over 10 seconds (600 req/min threshold)
+blackhole: 5m
+
+labels:
+  service: http
+  type: flood
+  confidence: high
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip
+---
+# Even more aggressive rate detection
+type: leaky
+name: custom/ddos-like-behavior
+description: "Detects potential DDoS-like request patterns"
+filter: evt.Meta.log_type == 'http_access-log'
+groupby: evt.Meta.source_ip
+
+capacity: 500                      # Alert after 500 requests
+leakspeed: 30s                    # Very high threshold (1000 req/min)
+blackhole: 15m
+
+labels:
+  service: http
+  type: ddos
+  confidence: high
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip

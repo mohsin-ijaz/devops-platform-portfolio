@@ -1,0 +1,71 @@
+- op: remove
+  path: /spec/template/spec/containers/0/env
+- op: add
+  path: /spec/template/spec/containers/0/env
+  value:
+  - name: KAFKA_PROCESS_ROLES
+    value: "broker,controller"
+  - name: KAFKA_CONTROLLER_LISTENER_NAMES
+    value: CONTROLLER
+  - name: KAFKA_LISTENERS
+    value: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094,LOCALHOST://:9095
+  - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+    value: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT,LOCALHOST:PLAINTEXT
+  - name: KAFKA_INTER_BROKER_LISTENER_NAME
+    value: PLAINTEXT
+  - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+    value: "0@kafka-0.kafka.kafka-qa.svc.cluster.local:9093,1@kafka-1.kafka.kafka-qa.svc.cluster.local:9093,2@kafka-2.kafka.kafka-qa.svc.cluster.local:9093"
+  - name: CLUSTER_ID
+    valueFrom:
+      secretKeyRef:
+        name: kafka-cluster-id
+        key: CLUSTER_ID
+  - name: KAFKA_HEAP_OPTS
+    value: "-Xmx6G -Xms1G"
+  - name: KAFKA_OPTS
+    value: "-Dlogging.level=INFO -Djava.security.auth.login.config=/etc/kafka/secrets/kafka_jaas.conf"
+  # KAFKA_ADVERTISED_LISTENERS is set dynamically in kafka-patch-kraft.yaml
+  - name: KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL
+    value: PLAIN
+  - name: KAFKA_SASL_ENABLED_MECHANISMS
+    value: PLAIN
+  - name: KAFKA_LISTENER_NAME_SASL_PLAINTEXT_SASL_ENABLED_MECHANISMS
+    value: PLAIN
+  - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+    value: "3"
+  - name: KAFKA_DELETE_TOPIC_ENABLE
+    value: "true"
+  - name: KAFKA_CLEANUP_POLICY
+    value: "compact"
+  - name: KAFKA_CONTROLLED_SHUTDOWN_ENABLE
+    value: "true"
+  - name: KAFKA_AUTO_LEADER_REBALANCE_ENABLE
+    value: "true"
+  - name: KAFKA_PRODUCER_MAX_REQUEST_SIZE
+    value: "10485760"
+  - name: KAFKA_REPLICA_FETCH_MAX_BYTES
+    value: "10485760"
+  - name: KAFKA_MESSAGE_MAX_BYTES
+    value: "10485760"
+  - name: KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES
+    value: "10485760"
+  - name: KAFKA_LOG_RETENTION_HOURS
+    value: "-1"
+  - name: KAFKA_LOG_RETENTION_BYTES
+    value: "-1"
+  - name: KAFKA_LOG_DIRS
+    value: "/var/lib/kafka/kdata"
+  - name: KAFKA_LOG_RETENTION_MS
+    value: "-1"
+  - name: KAFKA_LOG4J_ROOT_LOGLEVEL
+    value: "WARN"
+  - name: KAFKA_TOOLS_LOG4J_LOGLEVEL
+    value: "ERROR"
+  - name: KAFKA_LOG4J_LOGGERS
+    value: "kafka=WARN,kafka.log.LogCleaner=WARN,kafka.controller=WARN,state.change.logger=WARN"
+  - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+    value: "true"
+  - name: KAFKA_JMX_PORT
+    value: "5555"
+  - name: KAFKA_JMX_HOSTNAME
+    value: "localhost"

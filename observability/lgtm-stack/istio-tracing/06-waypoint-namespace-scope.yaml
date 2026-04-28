@@ -1,0 +1,18 @@
+---
+# Corrected Waypoint Proxy Gateway for enterprise-cms-qa-th namespace
+# Changed from "waypoint-for: service" to "waypoint-for: namespace"
+# This should process all traffic in the namespace, not just service-specific
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: waypoint
+  namespace: enterprise-cms-qa-th
+  labels:
+    # CHANGED: namespace instead of service
+    istio.io/waypoint-for: namespace
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+  - name: mesh
+    port: 15008
+    protocol: HBONE

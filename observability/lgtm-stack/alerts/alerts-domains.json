@@ -1,0 +1,611 @@
+[
+  {
+    "id": 56,
+    "uid": "cfddloehrnsowf",
+    "orgID": 1,
+    "folderUID": "df3sarwary1oge",
+    "ruleGroup": "Domain Critical Alerts",
+    "title": "Domain Expired",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "expr": "last_over_time(domain_expiry_days[2h]) < 0",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:36:03Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "domain-expiry",
+      "__panelId__": "6",
+      "description": "Domain {{ $labels.domain }} has expired. SSL certificate or domain registration has lapsed. Immediate action required to restore service.",
+      "summary": "Domain {{ $labels.domain }} has expired"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 57,
+    "uid": "afddlug3q87wgc",
+    "orgID": 1,
+    "folderUID": "df3sarwary1oge",
+    "ruleGroup": "Domain Critical Alerts",
+    "title": "Domain Expiring Within 14 Days",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "expr": "last_over_time(domain_expiry_days[2h]) >= 0 and last_over_time(domain_expiry_days[2h]) <= 14",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0,
+                  14
+                ],
+                "type": "within_range"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:36:05Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "domain-expiry",
+      "__panelId__": "6",
+      "description": "Domain {{ $labels.domain }} expires in {{ $values.B.Value }} days. Renew immediately to prevent service disruption and SSL errors.",
+      "summary": "Domain {{ $labels.domain }} expiring within 14 days"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 58,
+    "uid": "efddlw3ffwv0gb",
+    "orgID": 1,
+    "folderUID": "df3sarwary1oge",
+    "ruleGroup": "Domain Critical Alerts",
+    "title": "Domain Probe Failed",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "expr": "last_over_time(domain_probe_success[2h]) == 0",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  1
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:36:07Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "domain-expiry",
+      "__panelId__": "7",
+      "description": "Domain {{ $labels.domain }} probe is failing. The domain is unreachable which could indicate DNS issues, server down, or SSL configuration problems.",
+      "summary": "Domain {{ $labels.domain }} is unreachable"
+    },
+    "labels": {
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 59,
+    "uid": "cfddlxit4pla8d",
+    "orgID": 1,
+    "folderUID": "df3sarwary1oge",
+    "ruleGroup": "Domain Warning Alerts",
+    "title": "Domain Expiring Within 30 Days",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "expr": "last_over_time(domain_expiry_days[2h]) > 14 and last_over_time(domain_expiry_days[2h]) <= 30",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  14,
+                  30
+                ],
+                "type": "within_range"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:36:10Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "10m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "domain-expiry",
+      "__panelId__": "6",
+      "description": "Domain {{ $labels.domain }} expires in {{ $values.B.Value }} days. Schedule renewal soon to avoid service disruption.",
+      "summary": "Domain {{ $labels.domain }} expiring within 30 days"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 60,
+    "uid": "efddlxowlsf0ga",
+    "orgID": 1,
+    "folderUID": "df3sarwary1oge",
+    "ruleGroup": "Domain Warning Alerts",
+    "title": "Domain Expiring Within 60 Days",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "expr": "last_over_time(domain_expiry_days[2h]) > 30 and last_over_time(domain_expiry_days[2h]) <= 60",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  30,
+                  60
+                ],
+                "type": "within_range"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:36:12Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "30m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "domain-expiry",
+      "__panelId__": "6",
+      "description": "Domain {{ $labels.domain }} expires in {{ $values.B.Value }} days. Plan for renewal.",
+      "summary": "Domain {{ $labels.domain }} expiring within 60 days"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 61,
+    "uid": "ffddlxspu82dcc",
+    "orgID": 1,
+    "folderUID": "df3sarwary1oge",
+    "ruleGroup": "Domain Warning Alerts",
+    "title": "Multiple Domains Expiring Soon",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "prometheus",
+        "model": {
+          "expr": "count(last_over_time(domain_expiry_days[2h]) <= 30)",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  3
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "B"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:36:13Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "domain-expiry",
+      "__panelId__": "3",
+      "description": "{{ $values.B.Value }} domains are expiring within 30 days. Bulk renewal may be needed to prevent widespread service disruption.",
+      "summary": "Multiple domains expiring within 30 days"
+    },
+    "labels": {
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  }
+]

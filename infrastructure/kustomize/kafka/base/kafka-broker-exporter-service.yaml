@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-broker-exporter
+  labels:
+    app: kafka
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9308"
+    prometheus.io/path: "/metrics"
+spec:
+  ports:
+    - name: kafka-exporter
+      port: 9308
+      targetPort: 9308
+  selector:
+    app: kafka
+

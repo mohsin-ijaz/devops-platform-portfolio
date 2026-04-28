@@ -1,0 +1,15 @@
+# Istio Helm values for canary control plane (ambient mode)
+revision: helm-1-27
+profile: ambient
+meshConfig:
+  trustDomain: cluster.local
+  enableTracing: true
+  defaultConfig:
+    proxyMetadata:
+      ISTIO_META_ENABLE_HBONE: "true"
+# To enable Zipkin provider later (QA):
+#  extensionProviders:
+#  - name: zipkin
+#    zipkin:
+#      service: tempo-zipkin.lgtm.acme.internal
+#      port: 9411

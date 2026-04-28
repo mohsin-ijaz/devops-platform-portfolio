@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-jaas
+  namespace: kafka
+data:
+  kafka_jaas.conf: |-
+    KafkaServer {
+      org.apache.kafka.common.security.plain.PlainLoginModule required
+      user_kminion="kminion-exporter"
+      user_schema-registry="schema-registry"
+      user_eng-service-a="<KAFKA_PASSWORD>"
+      user_eng-service-b="<KAFKA_PASSWORD>"
+      user_eng-service-c="<KAFKA_PASSWORD>"
+      user_platform-service-a="<KAFKA_PASSWORD>"
+      user_platform-service-b="<KAFKA_PASSWORD>"
+      user_platform-service-c="<KAFKA_PASSWORD>";
+    };
+

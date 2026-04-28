@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-cm
+data:
+  advertised.listeners: PLAINTEXT://kafka-0.kafka.kafka-qa.svc.cluster.local:9092,SASL_PLAINTEXT://kafka-0.kafka.kafka-qa.svc.cluster.local:9094

@@ -1,0 +1,26 @@
+{{- if and .Values.serviceMonitor.enabled .Values.targets }}
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: {{ include "ssl-exporter.fullname" . }}-ssl-probe
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ssl-exporter.labels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  jobName: ssl-certificate-expiry
+  interval: {{ .Values.serviceMonitor.interval | default "1h" }}
+  scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "30s" }}
+  module: https
+  prober:
+    url: {{ include "ssl-exporter.fullname" . }}.{{ .Release.Namespace }}.svc:9219
+    path: /probe
+  targets:
+    staticConfig:
+      static:
+        {{- range .Values.targets }}
+        - {{ . }}
+        {{- end }}
+{{- end }}

@@ -1,0 +1,43 @@
+.build:
+  image:
+    name: docker:latest
+  interruptible: true
+  services:
+    - docker:stable-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+  before_script:
+    - echo ${GCP_ACCOUNT_KEY} > gcp-account-key.json
+    - cat $netrc > ~/.netrc
+    - cat $netrc > $HOME/.netrc
+    - ls ~/.netrc
+    - ls $HOME
+    - docker login -u _json_key --password-stdin https://${GCP_REGISTRY} < gcp-account-key.json
+  script:
+    - |
+      docker build \
+      --file k8s/build/docker/Dockerfile \
+      --tag ${IMAGE_URL} \
+      $BUILD_IMAGE_EXTRA_ARGS .
+    - docker push ${IMAGE_URL}
+
+.deploy:
+  image: debian:stable-slim
+  before_script:
+    - apt-get update && apt-get install -y curl git
+    - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+    - mv kustomize /usr/local/bin/
+    - git remote set-url origin git@gitlab.com:acme/china-team/acme-service.git
+    - git config --global user.email "<CICD_EMAIL>"
+    - git config --global user.name "Acme GitLab CI/CD"
+    - git config pull.rebase false
+    - mkdir -p ~/.ssh
+    - ssh-keyscan -t rsa gitlab.com > ~/.ssh/known_hosts
+  script:
+    - git checkout -B ${CI_COMMIT_REF_NAME}
+    - ssh-agent bash -c "ssh-add <(echo \"$SSH_PRIVATE_KEY\"); git pull origin ${CI_COMMIT_REF_NAME}"
+    - cd k8s/deploy/overlays/${ENV}/${COUNTRY}
+    - kustomize edit set image original_image=${IMAGE_URL}
+    - echo "# Last deployment hash ${CI_COMMIT_SHA} and time ${CI_JOB_STARTED_AT}" >> kustomization.yaml
+    - git commit -am "[${CI_COMMIT_REF_NAME}] ${CI_COMMIT_TITLE}"
+    - ssh-agent bash -c "ssh-add <(echo \"$SSH_PRIVATE_KEY\"); git push origin ${CI_COMMIT_REF_NAME}"

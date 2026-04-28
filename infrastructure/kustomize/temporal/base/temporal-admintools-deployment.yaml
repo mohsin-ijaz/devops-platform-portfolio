@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temporal-admintools
+  namespace: temporal
+  labels:
+    app.kubernetes.io/name: temporal
+    app.kubernetes.io/instance: temporal
+    app.kubernetes.io/component: admintools
+    app.kubernetes.io/part-of: temporal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: temporal
+      app.kubernetes.io/instance: temporal
+      app.kubernetes.io/component: admintools
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: temporal
+        app.kubernetes.io/instance: temporal
+        app.kubernetes.io/component: admintools
+        app.kubernetes.io/part-of: temporal
+    spec:
+      containers:
+        - name: admin-tools
+          image: "temporalio/admin-tools:1.21.4"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 22
+              protocol: TCP
+          env:
+            - name: TEMPORAL_ADDRESS
+              value: temporal-frontend:7233
+          livenessProbe:
+              exec:
+                command:
+                - ls
+                - /
+              initialDelaySeconds: 5
+              periodSeconds: 5

@@ -1,0 +1,315 @@
+affinity:
+  defaultPodAntiAffinity: true
+
+appEnv:
+  - name: BIMYSQL_DBNAME
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: biMysqlDbName
+  - name: BIMYSQL_PATH
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: mysqlPath
+  - name: MYSQL_DBNAME
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: mysqlDbName
+  - name: MYSQL_PATH
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: mysqlPath
+  - name: NOTICE_DINGDING_CARMAINTENANCE
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: noticeDingdingCarMaintenance
+  - name: NOTICE_DINGDING_REFUND
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: noticeDingdingRefund
+  - name: POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  - name: REDIS_DB
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: redisDb
+  - name: SERVER_ENV
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: serverEnv
+  - name: SYSTEM_LOCAL
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: systemLocal
+  - name: SYSTEM_REGISTER
+    valueFrom:
+       configMapKeyRef:
+         name: consumer-cms-gateway-config
+         key: systemRegister
+  - name: SYSTEM_TIMEZONE
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: systemTimeZone
+  - name: UPLOAD_S3BUCKET
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: uploadS3Bucket
+  - name: UPLOAD_S3REGION
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: uploadS3Region
+  - name: UPLOAD_URL
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: uploadUrl
+  - name: WEBSITE_URL
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: websiteUrl
+  - name: DINGTALK_PROCESSNAME
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: dingTalkProcessName
+  - name: DINGTALK_AGENTID
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: dingTalkAgentId
+  - name: S3BUCKET_URL
+    valueFrom:
+      configMapKeyRef:
+        name: consumer-cms-gateway-config
+        key: s3BucketUrl
+  - name: ALGOLIA_ADMINAPPKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: algoliaAdminAppKey
+  - name: ALGOLIA_SEARCHAPPKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: algoliaSearchAppKey
+  - name: API_SECRETKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: apiSecretKey
+  - name: BASEPOINT_AMPLITUDEAPPKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: basePointAmplitudeAppKey
+  - name: BIMYSQL_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: biMysqlPassword
+  - name: BIMYSQL_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: biMysqlUsername
+  - name: CAPTCHA_KEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: captchaKey
+  - name: JWT_SIGNINGKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: jwtSigningKey
+  - name: MYSQL_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: mysqlPassword
+  - name: MYSQL_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: mysqlUsername
+  - name: REDIS_ADDR
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: redisAddr
+  - name: REDIS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: redisPassword
+  - name: SPINCAR_APIKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: spincarApikey
+  - name: SYSTEM_AESKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: systemAesKey
+  - name: SYSTEM_CONSULTOKEN
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: systemConsultoken
+  - name: UPLOAD_ACCESSKEYID
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: uploadAccessKeyId
+  - name: UPLOAD_SECRETACCESSKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: uploadSecretAccessKey
+  - name: S3BUCKET_KEYID
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: s3BucketKeyId
+  - name: S3BUCKET_PRIVATEKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: private_key
+  - name: DINGTALK_APPKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: dingTalkAppKey
+  - name: DINGTALK_APPSECRET
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: dingTalkAppSecret
+  - name: DINGTALK_AESKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: dingTalkAesKey
+  - name: DINGTALK_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: dingTalkToken
+  - name: BASEPOINT_SEGMENTWRITEKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: basePointSegmentWriteKey
+  - name: IRC_SIGNKEY
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: ircSignKey
+  - name: INVENTORY_INTERNALAPISECRET
+    valueFrom:
+      secretKeyRef:
+        name: consumer-cms-gateway-secret
+        key: inventoryInternalapisecret
+
+country: my
+
+defaultCommonSecret: false
+
+extraContainer:
+  enabled: false
+
+extraService:
+  enabled: true
+  type: ClusterIP
+  port: 8080
+
+fullnameOverride: cms-gateway
+
+hpa:
+  averageCpuUtilization: 60
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 3
+
+image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/acme-service
+  tag: master
+
+ingress:
+  enabled: false
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:<AWS_REGION>:<AWS_ACCOUNT_ID>:certificate/8a7de458-8b8d-4aa6-9ec5-c5b8401b47b0
+    alb.ingress.kubernetes.io/group.name: consumer-cms-my
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-2017-01
+    alb.ingress.kubernetes.io/subnets: <SUBNET_ID>,<SUBNET_ID>,<SUBNET_ID>
+#    alb.ingress.kubernetes.io/tags: country=my,domain=consumer,environment=prod,lob=consumer,owner=china-team
+    kubernetes.io/ingress.class: alb
+  hosts:
+    - host: cms-gateway.acme.my
+      paths:
+        - path: /
+
+nameOverride: cms-gateway
+
+ports:
+- containerPort: 8080
+  protocol: TCP
+- containerPort: 8888
+  protocol: TCP
+
+readinessProbe:
+  httpGet:
+    path: /bi/transactionAnalysis
+    port: 8888
+  initialDelaySeconds: 60
+  periodSeconds: 5
+
+replicaCount: 2
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+service:
+  enabled: true
+  type: NodePort
+  port: 8001
+  ports:
+  - port: 8001
+    protocol: TCP
+    targetPort: 8888
+
+serviceAccountName: micro-services
+
+startupProbe:
+  httpGet:
+    path: /bi/transactionAnalysis/
+    port: 8888
+  failureThreshold: 180
+  periodSeconds: 10
+
+tier: backend
+

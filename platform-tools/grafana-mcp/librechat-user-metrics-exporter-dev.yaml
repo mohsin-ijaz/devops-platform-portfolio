@@ -1,0 +1,586 @@
+# LibreChat Per-User Metrics Exporter
+# Exposes per-user token usage metrics for Prometheus/Grafana
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: librechat-user-metrics-exporter
+  namespace: lgtm-stack
+data:
+  exporter.py: |
+    #!/usr/bin/env python3
+    """
+    LibreChat Per-User Metrics Exporter
+    Exposes per-user token usage metrics from MongoDB for Prometheus scraping.
+    """
+    import os
+    import time
+    import logging
+    from datetime import datetime, timedelta
+    from prometheus_client import start_http_server, Gauge, Counter, Info
+    from pymongo import MongoClient
+    from bson import ObjectId
+
+    # Configuration
+    MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
+    MONGODB_DATABASE = os.getenv("MONGODB_DATABASE", "librechat")
+    PORT = int(os.getenv("PORT", "8001"))
+    SCRAPE_INTERVAL = int(os.getenv("SCRAPE_INTERVAL", "60"))
+
+    # Logging
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
+
+    # Prometheus metrics
+    user_input_tokens = Gauge(
+        'librechat_user_input_tokens_total',
+        'Total input tokens per user',
+        ['user_id', 'email', 'name']
+    )
+    user_output_tokens = Gauge(
+        'librechat_user_output_tokens_total',
+        'Total output tokens per user',
+        ['user_id', 'email', 'name']
+    )
+    user_messages = Gauge(
+        'librechat_user_messages_total',
+        'Total messages per user',
+        ['user_id', 'email', 'name']
+    )
+    user_conversations = Gauge(
+        'librechat_user_conversations_total',
+        'Total conversations per user',
+        ['user_id', 'email', 'name']
+    )
+    user_cost_estimate = Gauge(
+        'librechat_user_cost_estimate_usd',
+        'Estimated cost in USD per user (based on Claude pricing)',
+        ['user_id', 'email', 'name']
+    )
+    user_last_active = Gauge(
+        'librechat_user_last_active_timestamp',
+        'Last activity timestamp per user',
+        ['user_id', 'email', 'name']
+    )
+
+    # Daily metrics
+    user_input_tokens_daily = Gauge(
+        'librechat_user_input_tokens_daily',
+        'Input tokens per user in last 24 hours',
+        ['user_id', 'email', 'name']
+    )
+    user_output_tokens_daily = Gauge(
+        'librechat_user_output_tokens_daily',
+        'Output tokens per user in last 24 hours',
+        ['user_id', 'email', 'name']
+    )
+    user_messages_daily = Gauge(
+        'librechat_user_messages_daily',
+        'Messages per user in last 24 hours',
+        ['user_id', 'email', 'name']
+    )
+
+    # Model usage per user
+    user_model_messages = Gauge(
+        'librechat_user_model_messages_total',
+        'Messages per user per model',
+        ['user_id', 'email', 'name', 'model']
+    )
+    user_model_tokens = Gauge(
+        'librechat_user_model_tokens_total',
+        'Output tokens per user per model',
+        ['user_id', 'email', 'name', 'model']
+    )
+
+    # Model-level cost metrics
+    model_input_tokens = Gauge(
+        'librechat_model_input_tokens_total',
+        'Total input tokens per model',
+        ['model']
+    )
+    model_output_tokens = Gauge(
+        'librechat_model_output_tokens_total',
+        'Total output tokens per model',
+        ['model']
+    )
+    model_messages = Gauge(
+        'librechat_model_messages_total',
+        'Total messages per model',
+        ['model']
+    )
+    model_cost_estimate = Gauge(
+        'librechat_model_cost_estimate_usd',
+        'Estimated cost in USD per model',
+        ['model']
+    )
+    model_cost_input = Gauge(
+        'librechat_model_input_cost_usd',
+        'Estimated input cost in USD per model',
+        ['model']
+    )
+    model_cost_output = Gauge(
+        'librechat_model_output_cost_usd',
+        'Estimated output cost in USD per model',
+        ['model']
+    )
+    total_cost_estimate = Gauge(
+        'librechat_total_cost_estimate_usd',
+        'Total estimated cost across all models'
+    )
+
+    # Model pricing (per 1M tokens) - Azure AI Foundry pricing
+    MODEL_PRICING = {
+        'claude-sonnet-4-6': {'input': 3.00, 'output': 15.00},
+        'claude-haiku-4-5': {'input': 1.00, 'output': 5.00},
+        'gpt-5.2': {'input': 2.50, 'output': 10.00},
+        'DeepSeek-V3.2-Speciale': {'input': 0.50, 'output': 2.00},
+        # Default pricing for unknown models
+        'default': {'input': 3.00, 'output': 15.00}
+    }
+
+    class LibreChatUserMetrics:
+        def __init__(self):
+            self.client = MongoClient(MONGODB_URI)
+            self.db = self.client[MONGODB_DATABASE]
+            self.users_collection = self.db['users']
+            self.messages_collection = self.db['messages']
+            self.conversations_collection = self.db['conversations']
+            self.transactions_collection = self.db['transactions']
+
+            # Cache user info
+            self.user_cache = {}
+
+        def get_user_info(self, user_id):
+            """Get user email and name from cache or database"""
+            if user_id in self.user_cache:
+                return self.user_cache[user_id]
+
+            try:
+                if isinstance(user_id, str):
+                    # Try as ObjectId first
+                    try:
+                        user = self.users_collection.find_one({"_id": ObjectId(user_id)})
+                    except:
+                        user = self.users_collection.find_one({"_id": user_id})
+                else:
+                    user = self.users_collection.find_one({"_id": user_id})
+
+                if user:
+                    info = {
+                        'email': user.get('email', 'unknown'),
+                        'name': user.get('name', user.get('username', 'unknown'))
+                    }
+                    self.user_cache[user_id] = info
+                    return info
+            except Exception as e:
+                logger.error(f"Error fetching user {user_id}: {e}")
+
+            return {'email': 'unknown', 'name': 'unknown'}
+
+        def collect_metrics(self):
+            """Collect all per-user metrics"""
+            logger.info("Collecting per-user metrics...")
+            start_time = time.time()
+
+            try:
+                # Get all users with activity
+                self._collect_user_totals()
+                self._collect_daily_metrics()
+                self._collect_model_usage()
+                self._collect_model_costs()
+
+                elapsed = time.time() - start_time
+                logger.info(f"Metrics collection completed in {elapsed:.2f}s")
+
+            except Exception as e:
+                logger.error(f"Error collecting metrics: {e}")
+
+        def _collect_user_totals(self):
+            """Collect total metrics per user"""
+            # Aggregate messages per user
+            pipeline = [
+                {
+                    "$group": {
+                        "_id": "$user",
+                        "total_messages": {"$sum": 1},
+                        "total_input_tokens": {"$sum": {"$ifNull": ["$tokenCount", 0]}},
+                        "last_active": {"$max": "$createdAt"}
+                    }
+                }
+            ]
+
+            results = list(self.messages_collection.aggregate(pipeline))
+
+            for result in results:
+                user_id = str(result['_id'])
+                user_info = self.get_user_info(result['_id'])
+                email = user_info['email']
+                name = user_info['name']
+
+                # Set metrics
+                user_messages.labels(user_id=user_id, email=email, name=name).set(
+                    result['total_messages']
+                )
+                user_input_tokens.labels(user_id=user_id, email=email, name=name).set(
+                    result['total_input_tokens']
+                )
+
+                if result.get('last_active'):
+                    user_last_active.labels(user_id=user_id, email=email, name=name).set(
+                        result['last_active'].timestamp()
+                    )
+
+            # Get output tokens from transactions
+            tx_pipeline = [
+                {
+                    "$group": {
+                        "_id": "$user",
+                        "total_output_tokens": {"$sum": {"$ifNull": ["$rawAmount", 0]}}
+                    }
+                }
+            ]
+
+            tx_results = list(self.transactions_collection.aggregate(tx_pipeline))
+
+            for result in tx_results:
+                user_id = str(result['_id'])
+                user_info = self.get_user_info(result['_id'])
+                email = user_info['email']
+                name = user_info['name']
+
+                output_tokens = result['total_output_tokens']
+                user_output_tokens.labels(user_id=user_id, email=email, name=name).set(output_tokens)
+
+                # Estimate cost (Claude Sonnet pricing: $3/MTok input, $15/MTok output)
+                # Using average estimate
+                input_tokens = 0
+                try:
+                    msg_result = next((r for r in results if str(r['_id']) == user_id), None)
+                    if msg_result:
+                        input_tokens = msg_result.get('total_input_tokens', 0)
+                except:
+                    pass
+
+                cost = (input_tokens * 0.000003) + (output_tokens * 0.000015)
+                user_cost_estimate.labels(user_id=user_id, email=email, name=name).set(cost)
+
+            # Get conversation counts
+            conv_pipeline = [
+                {
+                    "$group": {
+                        "_id": "$user",
+                        "total_conversations": {"$sum": 1}
+                    }
+                }
+            ]
+
+            conv_results = list(self.conversations_collection.aggregate(conv_pipeline))
+
+            for result in conv_results:
+                user_id = str(result['_id'])
+                user_info = self.get_user_info(result['_id'])
+                email = user_info['email']
+                name = user_info['name']
+
+                user_conversations.labels(user_id=user_id, email=email, name=name).set(
+                    result['total_conversations']
+                )
+
+        def _collect_daily_metrics(self):
+            """Collect last 24 hour metrics per user"""
+            yesterday = datetime.utcnow() - timedelta(hours=24)
+
+            pipeline = [
+                {
+                    "$match": {
+                        "createdAt": {"$gte": yesterday}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$user",
+                        "messages": {"$sum": 1},
+                        "input_tokens": {"$sum": {"$ifNull": ["$tokenCount", 0]}}
+                    }
+                }
+            ]
+
+            results = list(self.messages_collection.aggregate(pipeline))
+
+            for result in results:
+                user_id = str(result['_id'])
+                user_info = self.get_user_info(result['_id'])
+                email = user_info['email']
+                name = user_info['name']
+
+                user_messages_daily.labels(user_id=user_id, email=email, name=name).set(
+                    result['messages']
+                )
+                user_input_tokens_daily.labels(user_id=user_id, email=email, name=name).set(
+                    result['input_tokens']
+                )
+
+            # Daily output tokens from transactions
+            tx_pipeline = [
+                {
+                    "$match": {
+                        "createdAt": {"$gte": yesterday}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$user",
+                        "output_tokens": {"$sum": {"$ifNull": ["$rawAmount", 0]}}
+                    }
+                }
+            ]
+
+            tx_results = list(self.transactions_collection.aggregate(tx_pipeline))
+
+            for result in tx_results:
+                user_id = str(result['_id'])
+                user_info = self.get_user_info(result['_id'])
+                email = user_info['email']
+                name = user_info['name']
+
+                user_output_tokens_daily.labels(user_id=user_id, email=email, name=name).set(
+                    result['output_tokens']
+                )
+
+        def _collect_model_usage(self):
+            """Collect per-user per-model usage"""
+            pipeline = [
+                {
+                    "$match": {
+                        "model": {"$ne": None}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": {"user": "$user", "model": "$model"},
+                        "messages": {"$sum": 1},
+                        "tokens": {"$sum": {"$ifNull": ["$tokenCount", 0]}}
+                    }
+                }
+            ]
+
+            results = list(self.messages_collection.aggregate(pipeline))
+
+            for result in results:
+                user_id = str(result['_id']['user'])
+                model = result['_id']['model'] or 'unknown'
+                user_info = self.get_user_info(result['_id']['user'])
+                email = user_info['email']
+                name = user_info['name']
+
+                user_model_messages.labels(
+                    user_id=user_id, email=email, name=name, model=model
+                ).set(result['messages'])
+
+                user_model_tokens.labels(
+                    user_id=user_id, email=email, name=name, model=model
+                ).set(result['tokens'])
+
+        def _collect_model_costs(self):
+            """Collect per-model cost metrics"""
+            # Aggregate tokens per model from messages
+            pipeline = [
+                {
+                    "$match": {
+                        "model": {"$ne": None}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$model",
+                        "messages": {"$sum": 1},
+                        "input_tokens": {"$sum": {"$ifNull": ["$tokenCount", 0]}}
+                    }
+                }
+            ]
+
+            results = list(self.messages_collection.aggregate(pipeline))
+            total_cost = 0.0
+
+            for result in results:
+                model_name = result['_id'] or 'unknown'
+                messages = result['messages']
+                input_tokens = result['input_tokens']
+
+                # Get pricing for this model
+                pricing = MODEL_PRICING.get(model_name, MODEL_PRICING['default'])
+
+                # Get output tokens from transactions for this model
+                # For now, estimate output tokens as 20% of input tokens
+                # (since transactions don't have model info directly)
+                output_tokens = int(input_tokens * 0.2)
+
+                # Calculate costs (pricing is per 1M tokens)
+                input_cost = (input_tokens / 1_000_000) * pricing['input']
+                output_cost = (output_tokens / 1_000_000) * pricing['output']
+                model_total_cost = input_cost + output_cost
+
+                # Set metrics
+                model_messages.labels(model=model_name).set(messages)
+                model_input_tokens.labels(model=model_name).set(input_tokens)
+                model_output_tokens.labels(model=model_name).set(output_tokens)
+                model_cost_input.labels(model=model_name).set(input_cost)
+                model_cost_output.labels(model=model_name).set(output_cost)
+                model_cost_estimate.labels(model=model_name).set(model_total_cost)
+
+                total_cost += model_total_cost
+                logger.debug(f"Model {model_name}: {messages} msgs, {input_tokens} in, {output_tokens} out, ${model_total_cost:.4f}")
+
+            # Set total cost
+            total_cost_estimate.set(total_cost)
+            logger.info(f"Total estimated cost across all models: ${total_cost:.4f}")
+
+    def main():
+        logger.info(f"Starting LibreChat Per-User Metrics Exporter on port {PORT}")
+        logger.info(f"MongoDB: {MONGODB_URI}")
+        logger.info(f"Database: {MONGODB_DATABASE}")
+        logger.info(f"Scrape interval: {SCRAPE_INTERVAL}s")
+
+        # Start Prometheus HTTP server
+        start_http_server(PORT)
+        logger.info(f"Prometheus metrics available at http://0.0.0.0:{PORT}/metrics")
+
+        # Initialize collector
+        collector = LibreChatUserMetrics()
+
+        # Collection loop
+        while True:
+            collector.collect_metrics()
+            time.sleep(SCRAPE_INTERVAL)
+
+    if __name__ == "__main__":
+        main()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: librechat-user-metrics
+  namespace: lgtm-stack
+  labels:
+    app.kubernetes.io/name: librechat-user-metrics
+    app.kubernetes.io/component: metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: librechat-user-metrics
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: librechat-user-metrics
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8001"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: exporter
+          image: python:3.11-slim
+          command: ["python", "/app/exporter.py"]
+          ports:
+            - containerPort: 8001
+              name: metrics
+          env:
+            - name: MONGODB_URI
+              value: "mongodb://librechat:<MONGO_PASSWORD>@mongodb.lgtm-stack.svc.cluster.local:27017/librechat"
+            - name: MONGODB_DATABASE
+              value: "librechat"
+            - name: PORT
+              value: "8001"
+            - name: SCRAPE_INTERVAL
+              value: "60"
+            - name: PYTHONPATH
+              value: "/deps"
+          volumeMounts:
+            - name: app
+              mountPath: /app
+            - name: deps
+              mountPath: /deps
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8001
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      initContainers:
+        - name: install-deps
+          image: python:3.11-slim
+          command:
+            - /bin/sh
+            - -c
+            - |
+              pip install --target=/deps prometheus_client pymongo
+              cp /script/exporter.py /app/exporter.py
+          volumeMounts:
+            - name: deps
+              mountPath: /deps
+            - name: app
+              mountPath: /app
+            - name: exporter-script
+              mountPath: /script
+          env:
+            - name: PYTHONPATH
+              value: "/deps"
+      volumes:
+        - name: deps
+          emptyDir: {}
+        - name: app
+          emptyDir: {}
+        - name: exporter-script
+          configMap:
+            name: librechat-user-metrics-exporter
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: librechat-user-metrics
+  namespace: lgtm-stack
+  labels:
+    app.kubernetes.io/name: librechat-user-metrics
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8001
+      targetPort: 8001
+      name: metrics
+  selector:
+    app.kubernetes.io/name: librechat-user-metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: librechat-user-metrics
+  namespace: lgtm-stack
+  labels:
+    app.kubernetes.io/name: librechat-user-metrics
+    app.kubernetes.io/part-of: lgtm-stack
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: librechat-user-metrics
+  endpoints:
+    - port: metrics
+      interval: 60s
+      scrapeTimeout: 30s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - lgtm-stack

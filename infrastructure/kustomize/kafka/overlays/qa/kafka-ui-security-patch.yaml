@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui
+spec:
+  template:
+    spec:
+      containers:
+      - name: kafka-ui
+        env:
+        - name: AUTH_TYPE
+          value: LOGIN_FORM
+        - name: JAVA_OPTS
+          value: -Dspring.security.user.name=admin -Dspring.security.user.password=<KAFKA_UI_PASSWORD>

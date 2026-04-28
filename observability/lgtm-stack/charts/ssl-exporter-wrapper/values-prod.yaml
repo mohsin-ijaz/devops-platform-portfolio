@@ -1,0 +1,156 @@
+# Production environment values for ssl-exporter-wrapper
+# SSL Certificate expiry monitoring using ribbybibby/ssl_exporter
+
+# Part-of label for ServiceMonitor discovery
+partOf: lgtm-stack
+
+# Docker image configuration
+image:
+  repository: ribbybibby/ssl-exporter
+  tag: "2.4.3"
+  pullPolicy: IfNotPresent
+
+# Node selector - use system pool
+nodeSelector:
+  workload: system
+
+# Tolerations for system pool
+tolerations:
+  - key: workload
+    operator: Equal
+    value: system
+    effect: NoSchedule
+
+# Resource configuration for prod
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# ServiceMonitor/Probe for Prometheus discovery
+serviceMonitor:
+  enabled: true
+  interval: "1h"  # Check SSL certs every hour
+  scrapeTimeout: "30s"
+  labels:
+    app.kubernetes.io/name: ssl-exporter
+    monitoring.grafana.com/scrape: "true"
+    release: prometheus-prod
+
+# Pod annotations
+podAnnotations:
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+# Pod labels
+podLabels:
+  app.kubernetes.io/part-of: lgtm-stack
+  sre.io/service: ssl-exporter
+  sre.io/tier: monitoring
+
+# SSL targets to monitor for certificate expiry
+# All domains including those not supported by domain-exporter whois
+targets:
+  # Acme core domains
+  - acme-group.com:443
+  - acme.ae:443
+  - acme.asia:443
+  - acme.com:443
+  - acme.com.my:443
+  - acme.com.ph:443
+  - acme.com.sg:443
+  - acme.com.vn:443
+  - acme.co.id:443
+  - acme.co.th:443
+  - acme.dev:443
+  - acme.id:443
+  - acme.it:443
+  - acme.kr:443
+  - acme.la:443
+  - acme.mx:443
+  - acme.my:443
+  - acme.ph:443
+  - acme.sg:443
+  - acme.tech:443
+  - acme.tw:443
+  - acmeacademy.co.th:443
+  - acmeacademy.com:443
+  - acmeacademy.id:443
+  - acmeacademy.my:443
+  - acmeacademy.ph:443
+  - acmeacademy.sg:443
+  - acmeacademy.vn:443
+  - acmeapi.com:443
+  - acmeapi.dev:443
+  - acmeapis.com:443
+  - acmeapis.dev:443
+  - acmecapital.com:443
+  - acmegroup.com:443
+  - acmeracing.com:443
+  - acmesg.com:443
+  # Other brand domains
+  - boardac.com:443
+  - carso.me:443
+  - cartimes.com.sg:443
+  - platform-a.com.my:443
+  - platform-a.my:443
+  - carlists.my:443
+  - carlistbid.my:443
+  - carsentro.com:443
+  - platform-d.com:443
+  - platform-d.my:443
+  - platform-d.ph:443
+  - platform-d.sg:443
+  - one2carbid.com:443
+  - sgcarmart.asia:443
+  - sgcarmart.com.my:443
+  - sgcarmart.my:443
+  - sgcarmart.ph:443
+  - platform-g.asia:443
+  - platform-g.co.id:443
+  - platform-g.com:443
+  - platform-g.com.my:443
+  - platform-g.my:443
+  - platform-g.ph:443
+  - platform-g.sg:443
+  - bikelist.my:443
+  - bikelist.ph:443
+  - bikelist.sg:443
+  - platform-c.co.id:443
+  - platform-c.com:443
+  - platform-c.id:443
+  - mobil123bid.com:443
+  - acme.com:443
+  - acme.info:443
+  - acme.mobi:443
+  - icarcdn.com:443
+  - icarsuite.com:443
+  - carl.st:443
+  - platform-b.co.id:443
+  - platform-b.com:443
+  - platform-b.id:443
+  - others.my:443
+  - caroftheyear.asia:443
+  - ityre.my:443
+  - testdrive.co.id:443
+  - testdrive.my:443
+  - test-drive.my:443
+  - livelifedrive.com:443
+  - ibroker.my:443
+  - platform-i.com:443
+  - mylist.my:443
+  - platform-e.com:443
+  - autobroker.asia:443
+  - autodata.asia:443
+  - platform-h.co.id:443
+  - platform-h.co.th:443
+  - platform-h.com:443
+  - platform-h.com.ph:443
+  - platform-h.id:443
+  - platform-h.ph:443
+  - platform-h.vn:443
+  - platform-f.com:443
+  - platform-f.com.my:443
+  - platform-f.my:443

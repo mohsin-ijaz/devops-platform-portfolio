@@ -1,0 +1,2094 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 760,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Transaction Dashboard",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Transaction-Service health",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "availability"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.99
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_used_cores"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "cores"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem_used_bytes"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500000000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000000000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  count(\n    count by (pod) (\n      container_cpu_usage_seconds_total{\n        cluster=~\"$cluster\",\n        namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n        pod=~\"transaction-service-.*\",\n        container!=\"\",\n        container!=\"POD\"\n      }\n    )\n  ),\n  1\n)",
+          "legendFormat": "availability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"transaction-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n}[5m]))",
+          "legendFormat": "cpu_used_cores",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_working_set_bytes{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"transaction-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n})",
+          "legendFormat": "mem_used_bytes",
+          "refId": "C"
+        }
+      ],
+      "title": "Transaction-Service",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 11,
+      "panels": [],
+      "title": "Transaction Dependencies",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "ERP Service (MY/ID only; TH will be 0)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "availability"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.99
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_used_cores"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "cores"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem_used_bytes"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500000000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000000000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 6
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  count(\n    count by (pod) (\n      container_cpu_usage_seconds_total{\n        cluster=~\"$cluster\",\n        namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n        pod=~\"erp-service-deployment-.*\",\n        container!=\"\",\n        container!=\"POD\"\n      }\n    )\n  ),\n  1\n)",
+          "legendFormat": "availability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"erp-service-deployment-.*\",\n  container!=\"\",\n  container!=\"POD\"\n}[5m]))",
+          "legendFormat": "cpu_used_cores",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_working_set_bytes{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"erp-service-deployment-.*\",\n  container!=\"\",\n  container!=\"POD\"\n})",
+          "legendFormat": "mem_used_bytes",
+          "refId": "C"
+        }
+      ],
+      "title": "ERP Service",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "ERP GraphQL",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "availability"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.99
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_used_cores"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "cores"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem_used_bytes"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500000000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000000000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 6
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  count(\n    count by (pod) (\n      container_cpu_usage_seconds_total{\n        cluster=~\"$cluster\",\n        namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n        pod=~\"erp-graphql-deployment-.*\",\n        container!=\"\",\n        container!=\"POD\"\n      }\n    )\n  ),\n  1\n)",
+          "legendFormat": "availability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"erp-graphql-deployment-.*\",\n  container!=\"\",\n  container!=\"POD\"\n}[5m]))",
+          "legendFormat": "cpu_used_cores",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_working_set_bytes{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"erp-graphql-deployment-.*\",\n  container!=\"\",\n  container!=\"POD\"\n})",
+          "legendFormat": "mem_used_bytes",
+          "refId": "C"
+        }
+      ],
+      "title": "ERP GraphQL",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Location GraphQL",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "availability"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.99
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_used_cores"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "cores"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem_used_bytes"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500000000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000000000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 6
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  count(\n    count by (pod) (\n      container_cpu_usage_seconds_total{\n        cluster=~\"$cluster\",\n        namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n        pod=~\"location-graphql-deployment-.*\",\n        container!=\"\",\n        container!=\"POD\"\n      }\n    )\n  ),\n  1\n)",
+          "legendFormat": "availability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"location-graphql-deployment-.*\",\n  container!=\"\",\n  container!=\"POD\"\n}[5m]))",
+          "legendFormat": "cpu_used_cores",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_working_set_bytes{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"location-graphql-deployment-.*\",\n  container!=\"\",\n  container!=\"POD\"\n})",
+          "legendFormat": "mem_used_bytes",
+          "refId": "C"
+        }
+      ],
+      "title": "Location GraphQL",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Location Service",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "availability"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.99
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_used_cores"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "cores"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem_used_bytes"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500000000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000000000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 6
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  count(\n    count by (pod) (\n      container_cpu_usage_seconds_total{\n        cluster=~\"$cluster\",\n        namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n        pod=~\"location-service-.*\",\n        container!=\"\",\n        container!=\"POD\"\n      }\n    )\n  ),\n  1\n)",
+          "legendFormat": "availability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"location-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n}[5m]))",
+          "legendFormat": "cpu_used_cores",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_working_set_bytes{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"location-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n})",
+          "legendFormat": "mem_used_bytes",
+          "refId": "C"
+        }
+      ],
+      "title": "Location Service",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Inspection Service",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "availability"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.99
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_used_cores"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "cores"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem_used_bytes"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500000000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000000000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 11
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  count(\n    count by (pod) (\n      container_cpu_usage_seconds_total{\n        cluster=~\"$cluster\",\n        namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n        pod=~\"inspection-service-.*\",\n        container!=\"\",\n        container!=\"POD\"\n      }\n    )\n  ),\n  1\n)",
+          "legendFormat": "availability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"inspection-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n}[5m]))",
+          "legendFormat": "cpu_used_cores",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_working_set_bytes{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"inspection-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n})",
+          "legendFormat": "mem_used_bytes",
+          "refId": "C"
+        }
+      ],
+      "title": "Inspection Service",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Transaction GraphQL",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "availability"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.99
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_used_cores"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "cores"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem_used_bytes"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500000000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000000000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 11
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  count(\n    count by (pod) (\n      container_cpu_usage_seconds_total{\n        cluster=~\"$cluster\",\n        namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n        pod=~\"transaction-graphql-deployment-.*\",\n        container!=\"\",\n        container!=\"POD\"\n      }\n    )\n  ),\n  1\n)",
+          "legendFormat": "availability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"transaction-graphql-deployment-.*\",\n  container!=\"\",\n  container!=\"POD\"\n}[5m]))",
+          "legendFormat": "cpu_used_cores",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_working_set_bytes{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"transaction-graphql-deployment-.*\",\n  container!=\"\",\n  container!=\"POD\"\n})",
+          "legendFormat": "mem_used_bytes",
+          "refId": "C"
+        }
+      ],
+      "title": "Transaction GraphQL",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Report Service",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "availability"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.99
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_used_cores"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "cores"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem_used_bytes"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500000000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000000000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 11
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  count(\n    count by (pod) (\n      container_cpu_usage_seconds_total{\n        cluster=~\"$cluster\",\n        namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n        pod=~\"report-service-.*\",\n        container!=\"\",\n        container!=\"POD\"\n      }\n    )\n  ),\n  1\n)",
+          "legendFormat": "availability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"report-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n}[5m]))",
+          "legendFormat": "cpu_used_cores",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_working_set_bytes{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"report-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n})",
+          "legendFormat": "mem_used_bytes",
+          "refId": "C"
+        }
+      ],
+      "title": "Report Service",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Logging Service",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "availability"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.99
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu_used_cores"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "cores"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem_used_bytes"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500000000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000000000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 11
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  count(\n    count by (pod) (\n      container_cpu_usage_seconds_total{\n        cluster=~\"$cluster\",\n        namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n        pod=~\"logging-service-.*\",\n        container!=\"\",\n        container!=\"POD\"\n      }\n    )\n  ),\n  1\n)",
+          "legendFormat": "availability",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"logging-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n}[5m]))",
+          "legendFormat": "cpu_used_cores",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_working_set_bytes{\n  cluster=~\"$cluster\",\n  namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  pod=~\"logging-service-.*\",\n  container!=\"\",\n  container!=\"POD\"\n})",
+          "legendFormat": "mem_used_bytes",
+          "refId": "C"
+        }
+      ],
+      "title": "Logging Service",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 12,
+      "panels": [],
+      "title": "Network Traffic (Istio)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Requests per second to each service",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total{\n  cluster=~\"$cluster\",\n  destination_workload_namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n  destination_service_name=~\"transaction-service|erp-service|erp-graphql-service|location-service|location-graphql-service|inspection-service|logging-service|transaction-graphql-service|report-service\",\n  reporter=\"source\"\n}[5m])) by (destination_service_name)",
+          "legendFormat": "{{destination_service_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Request Rate (RPS)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Error rate (5xx) percentage",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "(\n  sum(rate(istio_requests_total{\n    cluster=~\"$cluster\",\n    destination_workload_namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n    destination_service_name=~\"transaction-service|erp-service|erp-graphql-service|location-service|location-graphql-service|inspection-service|logging-service|transaction-graphql-service|report-service\",\n    response_code=~\"5..\",\n    reporter=\"source\"\n  }[5m])) by (destination_service_name)\n  /\n  sum(rate(istio_requests_total{\n    cluster=~\"$cluster\",\n    destination_workload_namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n    destination_service_name=~\"transaction-service|erp-service|erp-graphql-service|location-service|location-graphql-service|inspection-service|logging-service|transaction-graphql-service|report-service\",\n    reporter=\"source\"\n  }[5m])) by (destination_service_name)\n) * 100",
+          "legendFormat": "{{destination_service_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Error Rate (5xx %)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "P95 request latency",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 500
+              },
+              {
+                "color": "red",
+                "value": 1000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 25
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95,\n  sum(rate(istio_request_duration_milliseconds_bucket{\n    cluster=~\"$cluster\",\n    destination_workload_namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n    destination_service_name=~\"transaction-service|erp-service|erp-graphql-service|location-service|location-graphql-service|inspection-service|logging-service|transaction-graphql-service|report-service\",\n    reporter=\"source\"\n  }[5m])) by (destination_service_name, le)\n)",
+          "legendFormat": "{{destination_service_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "P95 Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Pod restart counts",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 25
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (exported_pod, exported_namespace) (\n  kube_pod_container_status_restarts_total{\n    cluster=~\"$cluster\",\n    exported_namespace=~\"enterprise-cms(-(qa|uat))?-$country\",\n    exported_pod=~\"(transaction-service|erp-service-deployment|erp-graphql-deployment|location-service|location-graphql-deployment|inspection-service|logging-service|transaction-graphql-deployment|report-service)-.*\"\n  }\n)",
+          "legendFormat": "{{pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pod Restarts",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "transaction-service",
+    "health",
+    "dependencies",
+    "istio"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "<GKE_CLUSTER_NAME>",
+          "value": "<GKE_CLUSTER_NAME>"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PAE45454D0EDB9216"
+        },
+        "definition": "label_values(kube_deployment_status_replicas_available, cluster)",
+        "includeAll": false,
+        "label": "Cluster",
+        "name": "cluster",
+        "options": [],
+        "query": "label_values(kube_deployment_status_replicas_available, cluster)",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "my",
+          "value": "my"
+        },
+        "includeAll": false,
+        "label": "Country",
+        "name": "country",
+        "options": [
+          {
+            "selected": true,
+            "text": "my",
+            "value": "my"
+          },
+          {
+            "selected": false,
+            "text": "id",
+            "value": "id"
+          },
+          {
+            "selected": false,
+            "text": "th",
+            "value": "th"
+          }
+        ],
+        "query": "my,id,th",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Transaction-Service",
+  "uid": "txn-svc-complete",
+  "version": 2
+}

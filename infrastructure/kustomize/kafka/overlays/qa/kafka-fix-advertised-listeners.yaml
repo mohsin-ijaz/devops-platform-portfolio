@@ -1,0 +1,4 @@
+- op: remove
+  path: /spec/template/spec/containers/0/env/9
+  name: KAFKA_ADVERTISED_LISTENERS
+  value: "PLAINTEXT://kafka-internal-2.qa.svc.cluster.local:9092"

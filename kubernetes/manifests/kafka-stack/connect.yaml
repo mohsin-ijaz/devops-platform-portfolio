@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: debezium-connect-kafka
+  name: debezium-connect-kafka
+spec:
+  ports:
+    - port: 8083
+      targetPort: 8083
+      protocol: TCP
+  selector:
+    app: debezium-connect-kafka
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: debezium-connect-kafka
+spec:
+  selector:
+    matchLabels:
+      app: debezium-connect-kafka
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: debezium-connect-kafka
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: debezium-connect-kafka
+          image: asia-docker.pkg.dev/<GCP_PROJECT_PROD>/<GCP_PROJECT>/debezium-connect:v1.0-cassandra_plugin
+          env:
+            - name: BOOTSTRAP_SERVERS
+              value: kafka-svc:9093
+            - name: GROUP_ID
+              value: "1"
+            - name: CONFIG_STORAGE_TOPIC
+              value: my_connect_configs
+            - name: OFFSET_STORAGE_TOPIC
+              value: my_connect_offsets
+            - name: STATUS_STORAGE_TOPIC
+              value: my_connect_statuses
+            - name: KEY_CONVERTER
+              value: io.confluent.connect.avro.AvroConverter
+            - name: VALUE_CONVERTER
+              value: io.confluent.connect.avro.AvroConverter
+            - name: INTERNAL_KEY_CONVERTER
+              value: org.apache.kafka.connect.json.JsonConverter
+            - name: INTERNAL_VALUE_CONVERTER
+              value: org.apache.kafka.connect.json.JsonConverter
+            - name: CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL
+              value: http://kafka-schema-registry:8082
+            - name: CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL
+              value: http://kafka-schema-registry:8082
+            - name: CONNECT_PRODUCER_MAX_REQUEST_SIZE
+              value: "5048576"
+            - name: CONNECT_MAX_REQUEST_SIZE
+              value: "5048576"
+            - name: CONNECT_CONSUMER_MAX_PARTITION_FETCH_BYTES
+              value: "5048576"
+          ports:
+            - containerPort: 8083
+      nodeSelector: {{ node_selector }}
+      tolerations: {{ tolerations }}

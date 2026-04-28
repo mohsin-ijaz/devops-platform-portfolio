@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: temporal-web-config
+  namespace: temporal
+  labels:
+    app.kubernetes.io/name: temporal
+    app.kubernetes.io/instance: temporal
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: temporal
+data:
+  config.yml: |
+    auth:
+      enabled: false
+    routing:
+      default_to_namespace: null
+      issue_report_link: https://github.com/temporalio/ui/issues/new/choose

@@ -1,0 +1,134 @@
+# LibreChat Helm Values for Kubernetes Deployment
+replicaCount: 1
+
+# Use Recreate strategy to avoid volume mount conflicts with ReadWriteOnce PVC
+updateStrategy:
+  type: Recreate
+
+image:
+  repository: danny-avila/librechat
+  registry: ghcr.io
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+global:
+  librechat:
+    existingSecretName: "librechat-credentials-env"
+    existingSecretApiKey: AZURE_API_KEY
+
+# Disable built-in MongoDB and Meilisearch (using external MongoDB)
+mongodb:
+  enabled: false
+
+meilisearch:
+  enabled: false
+
+librechat:
+  existingSecretName: "librechat-credentials-env"
+
+  # Inline librechat.yaml configuration (as YAML object, not string)
+  # NOTE: Anthropic uses ANTHROPIC_REVERSE_PROXY env var, NOT custom endpoint (Agents don't support custom endpoints)
+  configYamlContent:
+    version: 1.2.1
+    cache: true
+    registration:
+      socialLogins:
+        - google
+      allowedDomains:
+        - "acme.com"
+        - "acme.com"
+    interface:
+      endpointsMenu: true
+      modelSelect: true
+      parameters: true
+      sidePanel: true
+      presets: true
+      bookmarks: true
+    mcpServers:
+      grafana:
+        type: streamable-http
+        url: http://grafana-mcp.lgtm-stack.svc.cluster.local:8000/mcp
+        timeout: 60000
+        serverInstructions: "DATASOURCE RULES: ALWAYS use 'mimir' datasource first. Only use 'prometheus' datasource for lgtm-dev cluster queries or LGTM stack self-monitoring (Mimir, Loki, Tempo, Grafana internal metrics). There are two workload clusters: c2b-qa and b2c-qa - always use 'mimir' for these. Never try prometheus first unless explicitly asking about lgtm-dev."
+      tempo:
+        type: streamable-http
+        url: http://tempo-gateway.lgtm-stack.svc.cluster.local/api/mcp
+        timeout: 60000
+        serverInstructions: "Use this server for distributed tracing queries via TraceQL. You can search traces, get trace details by ID, and run TraceQL metrics queries. Available for all services instrumented with OpenTelemetry."
+    mcpSettings:
+      serverInstructions: true
+      allowedDomains:
+        - "grafana-mcp.lgtm-stack.svc.cluster.local"
+        - "tempo-gateway.lgtm-stack.svc.cluster.local"
+        - "*.lgtm-stack.svc.cluster.local"
+    endpoints:
+      azureOpenAI:
+        titleModel: gpt-5.2
+        plugins: true
+        groups:
+          - group: "Azure AI Foundry"
+            apiKey: "${AZURE_API_KEY}"
+            instanceName: "<YOUR_AZURE_RESOURCE_NAME>"
+            version: "2024-12-01-preview"
+            models:
+              gpt-5.2:
+                deploymentName: gpt-5.2
+                version: "2024-12-01-preview"
+      custom:
+        - name: "DeepSeek"
+          apiKey: "<AZURE_AI_API_KEY>"
+          baseURL: "https://<YOUR_AZURE_ENDPOINT>.ai.azure.com/models/chat/completions?api-version=2024-05-01-preview"
+          models:
+            default:
+              - DeepSeek-V3.2-Speciale
+            fetch: false
+          titleConvo: true
+          titleModel: "DeepSeek-V3.2-Speciale"
+          summarize: false
+          forcePrompt: false
+          modelDisplayLabel: "DeepSeek V3"
+          directEndpoint: true
+          headers:
+            api-key: "<AZURE_AI_API_KEY>"
+
+  configEnv:
+    MONGO_URI: "mongodb://librechat:<MONGO_PASSWORD>@mongodb.lgtm-stack.svc.cluster.local:27017/librechat"
+    HOST: "0.0.0.0"
+    PORT: "3080"
+    DEBUG_LOGGING: "true"
+    ALLOW_REGISTRATION: "true"
+    ANTHROPIC_REVERSE_PROXY: "https://<YOUR_AZURE_ENDPOINT>.ai.azure.com/anthropic/"
+    ANTHROPIC_API_KEY: "<AZURE_AI_API_KEY>"
+    ANTHROPIC_MODELS: "claude-sonnet-4-6,claude-haiku-4-5"
+    ANTHROPIC_PROMPT_CACHE: "true"
+    ANTHROPIC_FOUNDRY_API_KEY: "<AZURE_AI_API_KEY>"
+    ANTHROPIC_FOUNDRY_RESOURCE: "<YOUR_AZURE_RESOURCE_NAME>"
+    # Google OAuth Configuration
+    DOMAIN_CLIENT: "https://chatops-dev.acme.com"
+    DOMAIN_SERVER: "https://chatops-dev.acme.com"
+    GOOGLE_CLIENT_ID: "768342250881-81auun9lerijj2davh22o8kja8qhrnll.apps.googleusercontent.com"
+    GOOGLE_CLIENT_SECRET: "<GOOGLE_OAUTH_CLIENT_SECRET>"
+    GOOGLE_CALLBACK_URL: "/oauth/google/callback"
+    ALLOW_SOCIAL_LOGIN: "true"
+    ALLOW_SOCIAL_REGISTRATION: "false"
+    ALLOW_ACCOUNT_LINKING: "true"
+
+  imageVolume:
+    enabled: true
+    size: 5Gi
+    accessModes: ReadWriteOnce
+
+service:
+  type: ClusterIP
+  port: 3080
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "2Gi"
+    cpu: "1000m"

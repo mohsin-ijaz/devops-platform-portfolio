@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: delete-failed-pods
+spec:
+  schedule: "0 */4 * * *"  # Runs 4 hour
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: delete-failed-pods
+              image: bitnami/kubectl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  kubectl get pods --all-namespaces --no-headers | awk '$4 ~ /(CrashLoopBackOff|Error|Evicted|Failed|ContainerStatusUnknown|OOMKilled)/ {print $1, $2}' | while read ns pod; do kubectl delete pod "$pod" -n "$ns"; done
+          restartPolicy: Never

@@ -1,0 +1,28 @@
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: elasticsearch
+spec:
+  version: 8.6.0
+  count: 1
+  elasticsearchRef:
+    name: elasticsearch
+  podTemplate:
+    spec:
+      containers:
+      - name: kibana
+        readinessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: "/login"
+            port: 5601
+  http:
+    service:
+      spec:
+        type: NodePort
+      metadata:
+        annotations:
+          # Enable TLS between GCLB and the application
+          cloud.google.com/app-protocols: '{"https":"HTTPS"}'
+          service.alpha.kubernetes.io/app-protocols: '{"https":"HTTPS"}'
+  

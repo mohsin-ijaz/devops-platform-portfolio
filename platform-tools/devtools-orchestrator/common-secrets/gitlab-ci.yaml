@@ -1,0 +1,17 @@
+.deploy_argocd_apps:
+  stage: deploy_argocd_apps
+  image: google/cloud-sdk:latest
+  before_script:
+    - echo "Installing kustomize..."
+    - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+    - mv kustomize /usr/local/bin/
+    - kustomize version
+    - echo "Authenticating with GKE..."
+    - gcloud container clusters get-credentials ${GKE_APPS_CLUSTER_NAME} --region ${GCP_REGION} --project ${GCP_PROJECT_ID}
+  script:
+    - cd k8s/common-secrets/apps/overlays/$ENV
+    - sed -i "s|{{CI_COMMIT_REF_NAME}}|$CI_COMMIT_REF_NAME|g" argocd-applicationset-patch.yaml
+    - echo "Updating kustomization format..."
+    - kustomize edit fix
+    - echo "Applying ApplicationSet via kubectl apply -k..."
+    - kubectl apply -k .

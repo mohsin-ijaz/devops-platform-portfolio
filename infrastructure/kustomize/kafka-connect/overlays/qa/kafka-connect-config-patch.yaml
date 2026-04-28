@@ -1,0 +1,16 @@
+# Topic cleanup policy configurations are handled by pre-creating topics
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: CONNECT_CONFIG_STORAGE_PARTITIONS
+    value: "1"
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: CONNECT_OFFSET_STORAGE_PARTITIONS
+    value: "25"
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: CONNECT_STATUS_STORAGE_PARTITIONS
+    value: "5"

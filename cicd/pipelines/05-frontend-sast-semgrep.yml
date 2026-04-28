@@ -1,0 +1,135 @@
+image: node:18
+
+cache:
+  - key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - node_modules/
+      - .pnpm-store/
+  - key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - dist/
+
+before_script:
+  - corepack enable
+  - corepack prepare pnpm@latest-8 --activate
+  - pnpm config set store-dir .pnpm-store
+  before_script:
+  - corepack enable
+  - corepack prepare pnpm@latest-8 --activate
+  - pnpm config set store-dir .pnpm-store
+  - |
+    echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/44879919/packages/npm/" >> .npmrc
+    echo "${CI_API_V4_URL#https?}/projects/44879919/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+
+stages:
+  - build
+  - test
+  - triggers
+  - reports
+
+build:
+  stage: build
+  variables:
+    NPM_TOKEN: ${NPM_TOKEN}
+  only:
+    - tags
+    - merge_requests
+  script:
+    - pnpm install
+    - pnpm run build
+    - pnpm run test
+    - pnpm run lint
+
+uat:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s-resource/uat/gitlab-ci.yml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "pipeline-fix"'
+    - if: '$CI_COMMIT_BRANCH == "release/notification"'
+
+prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s-resource/prod/prod-gitlab-ci.yml'
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v(\d+\.)?(\d+\.)?(\*|\d+)/'
+
+SAST-semgrep:
+  stage: test
+  image: returntocorp/semgrep
+  before_script:
+    - ''
+  script:
+    - semgrep ci -o SASTsemgrep.json --json
+    - ls
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: '$CI_MERGE_REQUEST_IID'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  variables:
+    SEMGREP_APP_TOKEN: '$SEMGREP_APP_TOKEN'
+    GITLAB_TOKEN: '$SEMGREP_GITLAB_PAT'
+  artifacts:
+    paths:
+      - SASTsemgrep.json
+    reports:
+      sast: SASTsemgrep.json
+
+Security_Report:
+  stage: reports
+  image: python:3
+  before_script:
+    - ''
+  script:
+    - pip install json2html
+    - python generate_html_report.py SASTsemgrep.json SASTsemgrep.html
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: '$CI_MERGE_REQUEST_IID'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  dependencies:
+    - SAST-semgrep
+  artifacts:
+    paths:
+      - SASTsemgrep.html
+    reports:
+      sast: SASTsemgrep.html
+
+code_quality:
+  stage: test
+  image: docker:stable
+  variables:
+    DOCKER_DRIVER: overlay2
+    SP_VERSION: latest
+  allow_failure: true
+  before_script:
+    - ''
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: '$CI_MERGE_REQUEST_IID'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  services:
+    - name: docker:dind
+  script:
+    - docker run --env SOURCE_CODE="$PWD" --volume "$PWD":/code --volume
+      /var/run/docker.sock:/var/run/docker.sock
+      "registry.gitlab.com/gitlab-org/ci-cd/codequality:$SP_VERSION" /code
+    - ls
+    - if grep -q "major" gl-code-quality-report.json; then echo Has Critical Error; VAR="HIGH"; else
+      echo Has No High or Critical error; fi
+  artifacts:
+    paths:
+      - gl-code-quality-report.json
+      - CodeQuality.html
+    reports:
+      codequality: gl-code-quality-report.json
+    expire_in: 6 mos

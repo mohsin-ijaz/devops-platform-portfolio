@@ -1,0 +1,16 @@
+---
+# Waypoint Proxy Gateway for enterprise-cms-qa-th namespace (TEST)
+# This is a single waypoint for initial testing
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: waypoint
+  namespace: enterprise-cms-qa-th
+  labels:
+    istio.io/waypoint-for: service
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+  - name: mesh
+    port: 15008
+    protocol: HBONE

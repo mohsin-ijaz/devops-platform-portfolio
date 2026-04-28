@@ -1,0 +1,121 @@
+{
+  "k8s-audit-pipeline": {
+    "description": "Parse, enrich, and normalise audit events before indexing. Adds GeoIP, classifies operation type, strips response bodies from low-risk events.",
+    "processors": [
+
+      {
+        "date": {
+          "field": "requestReceivedTimestamp",
+          "formats": ["ISO8601"],
+          "target_field": "@timestamp",
+          "timezone": "UTC",
+          "tag": "parse_timestamp",
+          "ignore_failure": true
+        }
+      },
+
+      {
+        "geoip": {
+          "field": "sourceIPs",
+          "first_only": true,
+          "target_field": "source_geo",
+          "ignore_missing": true,
+          "ignore_failure": true,
+          "tag": "geoip_source"
+        }
+      },
+
+      {
+        "user_agent": {
+          "field": "userAgent",
+          "target_field": "user_agent_parsed",
+          "ignore_missing": true,
+          "ignore_failure": true
+        }
+      },
+
+      {
+        "set": {
+          "field": "audit.full_resource_path",
+          "value": "{{objectRef.apiGroup}}/{{objectRef.resource}}",
+          "ignore_empty_value": true,
+          "tag": "build_resource_path"
+        }
+      },
+
+      {
+        "script": {
+          "lang": "painless",
+          "tag": "classify_operation",
+          "description": "Classify the audit event by operation type for dashboards",
+          "source": """
+            def verb = ctx.containsKey('verb') ? ctx.verb : '';
+            def resource = ctx.containsKey('objectRef') && ctx.objectRef.containsKey('resource')
+                           ? ctx.objectRef.resource : '';
+            def subresource = ctx.containsKey('objectRef') && ctx.objectRef.containsKey('subresource')
+                              ? ctx.objectRef.subresource : '';
+
+            // Operation category
+            if (verb == 'create' && subresource == 'exec') {
+                ctx['audit.operation_category'] = 'container_exec';
+            } else if (verb == 'create' && subresource == 'portforward') {
+                ctx['audit.operation_category'] = 'port_forward';
+            } else if (['create','update','patch','delete'].contains(verb) &&
+                       resource != null && resource.contains('role')) {
+                ctx['audit.operation_category'] = 'rbac_change';
+            } else if (['get','list','watch'].contains(verb) && resource == 'secrets') {
+                ctx['audit.operation_category'] = 'secret_read';
+            } else if (['create','update','patch','delete'].contains(verb) &&
+                       resource == 'secrets') {
+                ctx['audit.operation_category'] = 'secret_write';
+            } else if (['get','list','watch'].contains(verb)) {
+                ctx['audit.operation_category'] = 'read';
+            } else if (['create','update','patch'].contains(verb)) {
+                ctx['audit.operation_category'] = 'write';
+            } else if (verb == 'delete') {
+                ctx['audit.operation_category'] = 'delete';
+            } else {
+                ctx['audit.operation_category'] = 'other';
+            }
+
+            // Success / Failure
+            def code = ctx.containsKey('responseStatus') && ctx.responseStatus.containsKey('code')
+                       ? ctx.responseStatus.code : 0;
+            if (code >= 200 && code < 300) {
+                ctx['audit.outcome'] = 'success';
+            } else if (code == 401) {
+                ctx['audit.outcome'] = 'unauthorized';
+            } else if (code == 403) {
+                ctx['audit.outcome'] = 'forbidden';
+            } else if (code >= 400 && code < 500) {
+                ctx['audit.outcome'] = 'client_error';
+            } else if (code >= 500) {
+                ctx['audit.outcome'] = 'server_error';
+            } else {
+                ctx['audit.outcome'] = 'unknown';
+            }
+          """
+        }
+      },
+
+      {
+        "remove": {
+          "field": ["requestObject", "responseObject"],
+          "if": "ctx.audit?.risk_tier != 'critical' && ctx.audit?.risk_tier != 'high'",
+          "ignore_missing": true,
+          "tag": "remove_bodies_for_normal_events",
+          "description": "Reduce storage: only keep full request/response bodies for critical/high risk events"
+        }
+      }
+    ],
+
+    "on_failure": [
+      {
+        "set": {
+          "field": "pipeline_error",
+          "value": "{{_ingest.on_failure_message}}"
+        }
+      }
+    ]
+  }
+}

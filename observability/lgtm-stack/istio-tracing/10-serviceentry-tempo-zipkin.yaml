@@ -1,0 +1,17 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: tempo-zipkin
+  namespace: istio-system
+spec:
+  hosts:
+  - tempo-zipkin.lgtm.acme.internal
+  location: MESH_EXTERNAL
+  ports:
+  - number: 9411
+    name: http
+    protocol: HTTP
+  resolution: STATIC
+  endpoints:
+  - address: <TEMPO_ILB_IP>

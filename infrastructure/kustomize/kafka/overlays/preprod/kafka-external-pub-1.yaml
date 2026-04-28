@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    cloud.google.com/neg: '{"ingress":true}'
+  labels:
+    app: kafka-external-pub-1
+    app.kubernetes.io/component: kafka
+    env: preprod
+  name: kafka-external-pub-1
+  namespace: kafka
+spec:
+  loadBalancerIP: <GCP_IP>
+  ports:
+  - port: 9097
+    protocol: TCP
+    targetPort: 9097
+  selector:
+    statefulset.kubernetes.io/pod-name: kafka-1
+  sessionAffinity: None
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+  - 111.221.54.0/24 
+  - <TRUSTED_IP>/32
+  - <GCP_IP>/32
+  - <GCP_IP>/32

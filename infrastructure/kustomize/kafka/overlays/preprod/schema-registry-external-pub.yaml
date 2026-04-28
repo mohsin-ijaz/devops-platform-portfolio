@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    cloud.google.com/neg: '{"ingress":true}'
+    networking.gke.io/load-balancer-type: External
+  labels:
+    app: schema-registry-external
+    app.kubernetes.io/component: kafka
+    env: preprod
+  name: schema-registry-external
+  namespace: kafka
+spec:
+  loadBalancerIP: <GCP_IP>
+  ports:
+  - name: schema-registry
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    app: schema-registry
+  sessionAffinity: None
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+  - 111.221.54.0/24 
+  - <TRUSTED_IP>/32
+  - <GCP_IP>/32
+  - <GCP_IP>/32

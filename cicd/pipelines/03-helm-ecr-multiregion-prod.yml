@@ -1,0 +1,138 @@
+stages:
+  - build
+  - approve
+  - deploy
+
+variables:
+  ENVIRONMENT: "prod"
+  HELM_SERVICE_NAME: "cms-gateway"
+  REGION: "<AWS_REGION>"
+
+.prod_id:
+  environment: prod-id
+  variables:
+    COUNTRY: "id"
+    K8S_NAMESPACE: "consumer-cms-id"
+
+.prod_my:
+  environment: prod-my
+  variables:
+    COUNTRY: "my"
+    K8S_NAMESPACE: "consumer-cms-my"
+
+.prod_th:
+  environment: prod-th
+  variables:
+    COUNTRY: "th"
+    K8S_NAMESPACE: "consumer-cms-th"
+
+.prod_ph:
+  environment: prod-ph
+  variables:
+    COUNTRY: "ph"
+    K8S_NAMESPACE: "consumer-cms-ph"
+
+.build:
+  image:
+    name: docker:latest
+  interruptible: true
+  services:
+    - docker:19-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+  before_script:
+    - apk add --no-cache curl aws-cli
+    - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+  script:
+    - |
+      docker build \
+      --file k8s-resource/${ENVIRONMENT}/docker/Dockerfile \
+      --tag ${DOCKER_REGISTRY}/${CI_PROJECT_NAME}:$CI_COMMIT_SHORT_SHA \
+      --tag ${DOCKER_REGISTRY}/${CI_PROJECT_NAME}:$CI_COMMIT_REF_SLUG \
+      $BUILD_IMAGE_EXTRA_ARGS .
+    - docker push --all-tags ${DOCKER_REGISTRY}/$CI_PROJECT_NAME
+
+.deploy:
+  image: <AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/alpine/helm:3.3.4
+  interruptible: true
+  before_script:
+    - apk update && apk add curl aws-cli
+    - curl --location --remote-name "https://dl.k8s.io/release/$(curl --location --silent https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  script:
+    - cd k8s-resource/$ENVIRONMENT
+    - sh helm/update_chart.sh
+    - |
+      helm upgrade \
+      --atomic \
+      --history-max 2 \
+      --install \
+      --namespace $K8S_NAMESPACE \
+      --set appVersion=$CI_COMMIT_SHORT_SHA \
+      --set image.tag=$CI_COMMIT_SHORT_SHA \
+      --timeout 10m \
+      --values values-${COUNTRY}.yaml \
+      $HELM_SERVICE_NAME ./helm
+
+build_image:
+  extends:
+    - .build
+  stage: build
+
+approve:
+  stage: approve
+  script:
+    - echo $GITLAB_USER_EMAIL
+  environment: production
+  when: manual
+  allow_failure: false
+  only:
+    - master
+
+deploy_prod_id:
+  extends:
+    - .deploy
+    - .prod_id
+  needs:
+    - approve
+  stage: deploy
+  when: manual
+  tags:
+    - prod-id-consumer
+    - private-cluster-op
+
+deploy_prod_my:
+  extends:
+    - .deploy
+    - .prod_my
+  needs:
+    - approve
+  stage: deploy
+  when: manual
+  tags:
+    - prod-my-consumer
+    - private-cluster-op
+
+deploy_prod_th:
+  extends:
+    - .deploy
+    - .prod_th
+  needs:
+    - approve
+  stage: deploy
+  when: manual
+  tags:
+    - prod-th-consumer
+    - private-cluster-op
+
+deploy_prod_ph:
+  extends:
+    - .deploy
+    - .prod_ph
+  needs:
+    - approve
+  stage: deploy
+  when: manual
+  tags:
+    - prod-ph-consumer
+    - private-cluster-op

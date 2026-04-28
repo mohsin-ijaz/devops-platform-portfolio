@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ssl-exporter-wrapper
+description: SSL Certificate Expiry Exporter for Prometheus
+type: application
+version: 1.0.0
+appVersion: "2.4.3"

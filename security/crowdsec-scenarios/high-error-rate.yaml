@@ -1,0 +1,51 @@
+# High Error Rate Detection
+# Detects IPs generating excessive 4xx/5xx errors (scanning, fuzzing)
+
+type: leaky
+name: custom/high-error-rate
+description: "Detects IPs generating excessive HTTP errors (404, 403, 500, etc.)"
+filter: |
+  evt.Meta.log_type == 'http_access-log'
+  and (
+    evt.Parsed.http_status startsWith "4"
+    or evt.Parsed.http_status startsWith "5"
+  )
+groupby: evt.Meta.source_ip
+
+capacity: 30                       # Alert after 30 errors
+leakspeed: 1m                     # Bucket leaks over 1 minute
+blackhole: 5m
+
+labels:
+  service: http
+  type: probe
+  confidence: medium
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip
+---
+# Specifically track 404 errors (path enumeration)
+type: leaky
+name: custom/path-enumeration
+description: "Detects path enumeration via 404 errors"
+filter: |
+  evt.Meta.log_type == 'http_access-log'
+  and evt.Parsed.http_status == "404"
+groupby: evt.Meta.source_ip
+
+distinct: evt.Parsed.request      # Count unique 404 paths
+capacity: 20                       # Alert after 20 unique 404s
+leakspeed: 2m
+blackhole: 5m
+
+labels:
+  service: http
+  type: enumeration
+  confidence: high
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip

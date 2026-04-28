@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui
+spec:
+  template:
+    spec:
+      containers:
+      - name: kafka-ui
+        env:
+        - name: SPRING_SECURITY_USER_NAME
+          $patch: delete
+        - name: SPRING_SECURITY_USER_PASSWORD
+          $patch: delete

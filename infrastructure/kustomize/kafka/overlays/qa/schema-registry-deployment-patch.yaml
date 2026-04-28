@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schema-registry
+spec:
+  template:
+    spec:
+      # nodeSelector:
+      #   cloud.google.com/gke-nodepool: np-cs-qa-enterprise-db-kafka-asse1-01
+      #   workload: kafka
+      tolerations:
+      - effect: NoSchedule
+        key: dedicated
+        operator: Equal
+        value: kafka
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - kafka
+            topologyKey: kubernetes.io/hostname
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - kafka-ui
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      containers:
+      - name: schema-registry
+        env:
+        - name: SCHEMA_REGISTRY_KAFKASTORE_TOPIC_CONFIG
+          value: "cleanup.policy=compact"
+        - name: SCHEMA_REGISTRY_KAFKASTORE_TOPIC
+          value: "_schemas"
+        - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+          value: kafka-0.kafka.kafka-qa.svc.cluster.local:9092,kafka-1.kafka.kafka-qa.svc.cluster.local:9092,kafka-2.kafka.kafka-qa.svc.cluster.local:9092

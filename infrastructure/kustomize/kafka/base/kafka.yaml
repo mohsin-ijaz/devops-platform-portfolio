@@ -1,0 +1,187 @@
+# https://www.christopherbiscardi.com/post/confluent-kafka-gke/
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  labels:
+    app: kafka
+    server: kafka
+    type: code
+    tier: backend
+    env: shared
+spec:
+  serviceName: kafka
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+        server: kafka
+        type: code
+        tier: backend
+        env: shared
+    spec:
+      # nodeSelector:
+      #   app: kafka
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      terminationGracePeriodSeconds: 300
+      containers:
+        - name: k8skafka-kafka
+          imagePullPolicy: Always
+          image: confluentinc/cp-kafka:7.4.0
+          # resources:
+            # limits:
+            #   memory: "4Gi"
+            #   cpu: "800m"
+          ports:
+            - containerPort: 9092
+              name: server
+            - containerPort: 9094
+              name: sasl-plaintext
+            - containerPort: 9095
+              name: localhost
+          env:
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xmx6G -Xms1G"
+            - name: KAFKA_OPTS
+              value: "-Dlogging.level=INFO -Djava.security.auth.login.config=/etc/kafka/secrets/kafka_jaas.conf"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-cm
+                  key: advertised.listeners
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: PLAINTEXT:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT,LOCALHOST:PLAINTEXT
+            - name: KAFKA_LISTENERS
+              value: PLAINTEXT://:9092,EXTERNAL://:9094,LOCALHOST://:9095
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: PLAINTEXT
+            - name: KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL
+              value: PLAIN
+            - name: KAFKA_SASL_ENABLED_MECHANISMS
+              value: PLAIN
+            - name: KAFKA_LISTENER_NAME_SASL_PLAINTEXT_SASL_ENABLED_MECHANISMS
+              value: PLAIN
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "3"
+            - name: KAFKA_DELETE_TOPIC_ENABLE
+              value: "true" # for production should be set to false
+            - name: KAFKA_CLEANUP_POLICY
+              value: "compact"
+            - name: KAFKA_CONTROLLED_SHUTDOWN_ENABLE # migrate topic partition leadership before broker is stopped
+              value: "true"
+            - name: KAFKA_AUTO_LEADER_REBALANCE_ENABLE #rebalance leader partitions automatically among nodes
+              value: "true"
+            - name: KAFKA_PRODUCER_MAX_REQUEST_SIZE
+              value: "10485760"
+            - name: KAFKA_REPLICA_FETCH_MAX_BYTES
+              value: "10485760"
+            - name: KAFKA_MESSAGE_MAX_BYTES
+              value: "10485760"
+            - name: KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES
+              value: "10485760"
+            # - name: KAFKA_LOG_RETENTION_HOURS
+            #   value: "120"
+            - name: KAFKA_LOG_RETENTION_HOURS
+              value: "-1"
+            - name: KAFKA_LOG_RETENTION_BYTES
+              value: "-1"
+            - name: KAFKA_LOG_DIRS
+              value: "/var/lib/kafka/kdata"
+            - name: KAFKA_LOG_RETENTION_MS
+              value: "-1"
+            - name: KAFKA_LOG4J_ROOT_LOGLEVEL
+              value: "WARN"
+            - name: KAFKA_TOOLS_LOG4J_LOGLEVEL
+              value: "ERROR"
+            - name: KAFKA_LOG4J_LOGGERS
+              value: "kafka=WARN,kafka.log.LogCleaner=WARN,kafka.controller=WARN,state.change.logger=WARN"
+            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+            - name: KAFKA_JMX_PORT
+              value: "5555"
+            - name: KAFKA_JMX_HOSTNAME
+              value: "localhost"
+          volumeMounts:
+            - name: datadir
+              mountPath: /var/lib/kafka
+            - name: kafka-jaas-volume
+              mountPath: /etc/kafka/secrets
+          readinessProbe:
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/usr/bin/kafka-server-stop"]
+        - name: kafka-exporter
+          image: danielqsj/kafka-exporter:v1.7.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--kafka.server=localhost:9092"
+          ports:
+            - name: kafka-exporter
+              containerPort: 9308
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+        - name: node-exporter
+          image: prom/node-exporter:v1.7.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--path.rootfs=/"
+          ports:
+            - name: node-exporter
+              containerPort: 9100
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+        - name: jmx-exporter
+          image: bitnamilegacy/jmx-exporter:0.20.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: jmx-metrics
+              containerPort: 9999
+          env:
+            - name: JAVA_OPTS
+              value: "-Xmx128m"
+            - name: JMX_EXPORTER_PORT
+              value: "9999"
+            - name: JMX_EXPORTER_CONFIG
+              value: "/etc/jmx-exporter/jmx-exporter-config.yaml"
+          volumeMounts:
+            - name: kafka-jmx-exporter-config
+              mountPath: /etc/jmx-exporter
+      volumes:
+        - name: kafka-jaas-volume
+          configMap:
+            name: kafka-jaas
+        - name: kafka-jmx-exporter-config
+          configMap:
+            name: kafka-jmx-exporter-config
+  volumeClaimTemplates:
+    - metadata:
+        name: datadir
+        annotations:
+          volume.beta.kubernetes.io/storage-class: "kafka-expand-pvc"
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 500Gi

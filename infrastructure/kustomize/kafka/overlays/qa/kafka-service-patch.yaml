@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+spec:
+  ports:
+  - port: 9092
+    name: server
+  - port: 9093
+    name: controller
+  - port: 9094
+    name: sasl-plaintext
+  - port: 9095
+    name: localhost
+  - port: 9308
+    name: kafka-exporter
+  - port: 9100
+    name: node-exporter
+  - port: 9999
+    name: jmx-metrics
+  clusterIP: None
+  selector:
+    app: kafka

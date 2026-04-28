@@ -1,0 +1,37 @@
+apiVersion: v2
+name: mimir-wrapper
+description: LGTM Stack Mimir deployment with additional resources
+type: application
+version: 1.0.0
+appVersion: "3.0.0"
+
+# Keywords for discovery
+keywords:
+  - mimir
+  - metrics
+  - observability
+  - lgtm-stack
+
+# Maintainers
+maintainers:
+  - name: Platform Team
+    email: platform@company.com
+
+# Dependencies - Official Grafana Mimir chart
+dependencies:
+  - name: mimir-distributed
+    version: 6.0.1
+    repository: https://grafana.github.io/helm-charts
+    alias: mimir
+    condition: mimir.enabled
+
+# Annotations for ArgoCD
+annotations:
+  # ArgoCD sync wave
+  argocd.argoproj.io/sync-wave: "2"
+  
+  # SRE metadata
+  sre.io/service: "mimir"
+  sre.io/tier: "storage"
+  sre.io/criticality: "high"
+  sre.io/oncall: "platform-team"

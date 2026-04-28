@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+spec:
+  template:
+    spec:
+      containers:
+        - name: k8skafka-kafka
+          resources:
+            limits:
+              memory: 8Gi
+              cpu: "1"
+            requests:
+              memory: 2Gi
+              cpu: "0.5"
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - |
+              if [ "${HOSTNAME##*-}" = "0" ]; then
+                EXTERNAL_IP="10.130.1.100"
+              elif [ "${HOSTNAME##*-}" = "1" ]; then
+                EXTERNAL_IP="10.130.1.101"
+              elif [ "${HOSTNAME##*-}" = "2" ]; then
+                EXTERNAL_IP="10.130.1.102"
+              fi
+
+              if [ "${HOSTNAME##*-}" = "0" ]; then
+                LOCAL_PORT="9094"
+              elif [ "${HOSTNAME##*-}" = "1" ]; then
+                LOCAL_PORT="9095"
+              elif [ "${HOSTNAME##*-}" = "2" ]; then
+                LOCAL_PORT="9096"
+              fi
+
+              if [ "${HOSTNAME##*-}" = "0" ]; then
+                EXTERNAL_IP_PUB="<GCP_IP>"
+              elif [ "${HOSTNAME##*-}" = "1" ]; then
+                EXTERNAL_IP_PUB="<GCP_IP>"
+              elif [ "${HOSTNAME##*-}" = "2" ]; then
+                EXTERNAL_IP_PUB="35.185.191.198"
+              fi
+
+              KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka-${HOSTNAME##*-}.kafka.kafka.svc.cluster.local:9092,EXTERNAL://${EXTERNAL_IP}:9094,LOCALHOST://127.0.0.1:${LOCAL_PORT},EXTERNAL_PUB://${EXTERNAL_IP_PUB}:9097
+              KAFKA_BROKER_ID=${HOSTNAME##*-}
+              /etc/confluent/docker/run
+          env:
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xmx6G -Xms3G -XX:+UseG1GC"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: PLAINTEXT:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT,LOCALHOST:PLAINTEXT,EXTERNAL_PUB:SASL_PLAINTEXT
+            - name: KAFKA_LISTENERS
+              value: PLAINTEXT://:9092,EXTERNAL://:9094,LOCALHOST://:9095,EXTERNAL_PUB://:9097
+            - name: KAFKA_LISTENER_NAME_EXTERNAL_PUB_SASL_ENABLED_MECHANISMS
+              value: PLAIN

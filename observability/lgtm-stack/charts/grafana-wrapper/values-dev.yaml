@@ -1,0 +1,225 @@
+# Grafana Wrapper Chart - Development Values
+# This passes values to the official grafana chart
+
+# Enable the official Grafana chart
+grafana:
+  enabled: true
+  
+  # Replicas
+  replicas: 1
+  
+  # Service account configuration
+  serviceAccount:
+    create: false
+    name: grafana-sa
+  
+  # Admin credentials (change in production!)
+  adminUser: admin
+  # adminPassword will be auto-generated if not set
+  # adminPassword: changeme
+  
+  # Persistence for dashboards
+  persistence:
+    enabled: true
+    type: pvc
+    size: 10Gi
+    storageClassName: premium-rwo
+    accessModes:
+      - ReadWriteOnce
+  
+  # Resources
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  
+  # Node selector - system pool for Grafana
+  nodeSelector:
+    lgtm-role: grafana-system
+  
+  # Tolerations for system pool
+  tolerations: []
+  
+  # Affinity for pod spreading
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - grafana
+            topologyKey: kubernetes.io/hostname
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  
+  # Ingress (disabled for now, can enable later)
+  ingress:
+    enabled: false
+  
+  # Grafana configuration
+  grafana.ini:
+    server:
+      root_url: "https://monitoring.acme.com"
+      serve_from_sub_path: false
+      domain: monitoring.acme.com
+    
+    analytics:
+      reporting_enabled: false
+      check_for_updates: false
+    
+    log:
+      mode: console
+      level: info
+    
+    auth:
+      disable_login_form: true
+    
+    auth.google:
+      enabled: true
+      client_id: ${GF_AUTH_GOOGLE_CLIENT_ID}
+      client_secret: ${GF_AUTH_GOOGLE_CLIENT_SECRET}
+      scopes: openid email profile
+      auth_url: https://accounts.google.com/o/oauth2/v2/auth
+      token_url: https://oauth2.googleapis.com/token
+      api_url: https://openidconnect.googleapis.com/v1/userinfo
+      allowed_domains: acme.com acme.com
+      allow_sign_up: true
+      role_attribute_path: (email == '<YOUR_EMAIL>' || email == 'ally.shayan<YOUR_DOMAIN>' || email == 'ahmad.alkhoudary<YOUR_DOMAIN>' || email == 'ibrahim.alnameh<YOUR_DOMAIN>') && 'Admin' || 'Viewer'
+      skip_org_role_sync: true
+    
+    auth.anonymous:
+      enabled: false
+    
+    users:
+      auto_assign_org: true
+      auto_assign_org_role: Viewer
+    
+    explore:
+      enabled: true
+    
+    # Unified alerting (Grafana 8+)
+    unified_alerting:
+      enabled: true
+    
+    alerting:
+      enabled: false  # Disable legacy alerting
+  
+  # Datasources - mount our custom ConfigMap
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources: []  # Will be overridden by our ConfigMap
+  
+  # Dashboard providers
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+  
+  # Pre-loaded dashboards (can add custom dashboards here)
+  dashboards:
+    default:
+      # Kubernetes cluster monitoring dashboard
+      kubernetes-cluster:
+        gnetId: 7249
+        revision: 1
+        datasource: Mimir
+      
+      # Loki dashboard
+      loki-dashboard:
+        gnetId: 13639
+        revision: 2
+        datasource: Loki
+  
+  # Sidecar for automatic dashboard discovery
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      folder: /tmp/dashboards
+      defaultFolderName: "General"
+      searchNamespace: ALL
+    
+    datasources:
+      enabled: true
+      label: grafana_datasource
+      labelValue: "1"
+      searchNamespace: ALL
+  
+  # Plugins to install
+  plugins:
+    - grafana-piechart-panel
+    - grafana-clock-panel
+    - grafana-mongodb-atlas-datasource
+  
+  # Environment variables
+  env:
+    GF_PATHS_DATA: /var/lib/grafana
+    GF_PATHS_LOGS: /var/log/grafana
+    GF_PATHS_PLUGINS: /var/lib/grafana/plugins
+    GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+  
+  # Secrets from Kubernetes - using envFromSecrets for multiple secrets
+  envFromSecrets:
+    - name: grafana-google-oauth
+    - name: grafana-mongodb-atlas
+  
+  # RBAC
+  rbac:
+    create: true
+    pspEnabled: false
+  
+  # Security context
+  securityContext:
+    runAsUser: 472
+    runAsGroup: 472
+    fsGroup: 472
+  
+  # Liveness and readiness probes
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: 3000
+    initialDelaySeconds: 60
+    timeoutSeconds: 30
+    failureThreshold: 10
+  
+  readinessProbe:
+    httpGet:
+      path: /api/health
+      port: 3000
+    initialDelaySeconds: 30
+    timeoutSeconds: 30
+
+# Datasources configuration
+datasources:
+  enabled: true
+
+# Configuration for additional resources (our custom templates)
+workloadIdentity:
+  enabled: true
+  gcp_service_account: <GCP_SERVICE_ACCOUNT>
+
+# MongoDB Atlas configuration
+mongodbAtlas:
+  enabled: true

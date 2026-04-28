@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+spec:
+  template:
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: np-cs-prod-enterprise-db-kafka-asse1-01
+      tolerations:
+      - effect: NoSchedule
+        key: dedicated
+        operator: Equal
+        value: kafka

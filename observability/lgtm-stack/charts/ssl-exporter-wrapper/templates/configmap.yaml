@@ -1,0 +1,15 @@
+{{- if .Values.targets }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ssl-exporter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ssl-exporter.labels" . | nindent 4 }}
+data:
+  targets.yaml: |
+    targets:
+    {{- range .Values.targets }}
+      - {{ . }}
+    {{- end }}
+{{- end }}

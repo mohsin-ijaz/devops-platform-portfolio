@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: cert-kafka-schema
+spec:
+  domains:
+    - dev-kafka-schema.acme.dev

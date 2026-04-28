@@ -1,0 +1,15 @@
+---
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: waypoint-tracing
+  namespace: enterprise-cms-qa-th
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: waypoint
+  tracing:
+  - providers:
+    - name: zipkin
+    randomSamplingPercentage: 100

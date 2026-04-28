@@ -1,0 +1,28 @@
+{{- if .Values.service.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "acme-app.fullname" . }}-service-http
+  labels:
+    {{- include "acme-app.labels" . | nindent 4 }}
+    {{- include "acme-app.appLabels" (merge (dict "docType" "service") .) | nindent 4 }}
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  {{- if .Values.service.ports }}
+    {{- with .Values.service.ports }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- else }}
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.appContainerPort }}
+      protocol: TCP
+      name: http
+  {{- end }} 
+  selector:
+    {{- include "acme-app.selectorLabels" . | nindent 4 }}
+    {{- include "acme-app.appLabels" . | nindent 4 }}
+{{- end -}}
+

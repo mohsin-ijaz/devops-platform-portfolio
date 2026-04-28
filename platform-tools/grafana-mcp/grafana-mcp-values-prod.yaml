@@ -1,0 +1,36 @@
+# Grafana MCP Helm Values - Production
+# This enables LibreChat to connect directly without a proxy
+
+grafana:
+  # Production Grafana instance URL
+  url: https://<YOUR_GRAFANA_URL>
+  # API key for production Grafana
+  apiKey: <GRAFANA_SERVICE_ACCOUNT_TOKEN>
+
+# Configure the MCP server to use streamable-http transport
+# Add args to container to switch from default SSE to streamable-http
+extraArgs:
+  - "-t"
+  - "streamable-http"
+
+# Container configuration
+image:
+  registry: docker.io
+  repository: grafana/mcp-grafana
+  tag: "0.7.9"
+  pullPolicy: IfNotPresent
+
+# Resource limits
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"
+
+# Service configuration
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8000

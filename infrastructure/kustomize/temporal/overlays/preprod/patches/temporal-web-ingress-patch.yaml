@@ -1,0 +1,10 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: temporal-web-ingress
+spec:
+  tls:
+  - hosts:
+    - preprod-temporal.acme.dev
+  rules:
+  - host: preprod-temporal.acme.dev

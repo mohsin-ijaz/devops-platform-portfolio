@@ -1,0 +1,11 @@
+apiVersion: builtin
+kind: HelmChartInflationGenerator
+metadata:
+  name: filebeat
+repo: https://helm.elastic.co
+name: filebeat
+version: 8.5.1
+releaseName: elasticsearch
+namespace: elastic-system
+valuesFile: filebeat-values.yaml
+includeCRDs: true

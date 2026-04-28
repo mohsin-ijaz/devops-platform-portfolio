@@ -1,0 +1,6 @@
+- op: add
+  path: /spec/template/spec/containers/0/image
+  value: <GCP_REGION>-docker.pkg.dev/<GCP_PROJECT_ID>/docker/kafka-connect:v7.7.1-mongodb1.13.0
+- op: add
+  path: /spec/replicas
+  value: 3

@@ -1,0 +1,16 @@
+include: 'k8s/common-secrets/gitlab-ci.yaml'
+
+stages:
+  - deploy_argocd_apps
+
+
+deploy_argocd_apps:
+  extends: 
+    - .deploy_argocd_apps
+  variables:
+    ENV: prod-consumer
+    GKE_APPS_CLUSTER_NAME: $GKE_PROD_APPS_CLUSTER_NAME
+    GCP_PROJECT_ID: $GCP_PROD_PROJECT_ID
+    GCP_REGION: $GCP_PROD_REGION
+  tags:
+    - cs-gcp-prod-consumer-apps-gke-standard-gitlab-runner

@@ -1,0 +1,41 @@
+[
+  {
+    "uid": "dfedj045vkfswa",
+    "name": "PagerDuty Critical",
+    "type": "pagerduty",
+    "settings": {
+      "class": "{{ .CommonLabels.grafana_folder }}",
+      "component": "{{ .CommonLabels.alertname }}",
+      "description": "Alert: {{ .CommonLabels.alertname }}\nSeverity: {{ .CommonLabels.severity }}\nFolder: {{ .CommonLabels.grafana_folder }}\n\nSummary: {{ .CommonAnnotations.summary }}\n\nDescription: {{ .CommonAnnotations.description }}\n\nFiring Alerts: {{ len .Alerts.Firing }}\n\n{{ range .Alerts }}---\nStatus: {{ .Status | toUpper }}\nLabels:\n{{ range .Labels.SortedPairs }}  {{ .Name }}: {{ .Value }}\n{{ end }}\nValues: {{ .ValueString }}\n\nDashboard: {{ .DashboardURL }}\nPanel: {{ .PanelURL }}\nSilence: {{ .SilenceURL }}\n{{ end }}",
+      "group": "{{ .CommonLabels.namespace }}",
+      "integrationKey": "[REDACTED]",
+      "severity": "critical",
+      "summary": "{{ .CommonLabels.alertname }} - {{ .CommonAnnotations.summary }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "efednabv7tkhsa",
+    "name": "PagerDuty Warning",
+    "type": "pagerduty",
+    "settings": {
+      "class": "{{ .CommonLabels.grafana_folder }}",
+      "component": "{{ .CommonLabels.alertname }}",
+      "description": "Alert: {{ .CommonLabels.alertname }}\nSeverity: {{ .CommonLabels.severity }}\nFolder: {{ .CommonLabels.grafana_folder }}\n\nSummary: {{ .CommonAnnotations.summary }}\n\nDescription: {{ .CommonAnnotations.description }}\n\nFiring Alerts: {{ len .Alerts.Firing }}\n\n{{ range .Alerts }}---\nStatus: {{ .Status | toUpper }}\nLabels:\n{{ range .Labels.SortedPairs }}  {{ .Name }}: {{ .Value }}\n{{ end }}\nValues: {{ .ValueString }}\n\nDashboard: {{ .DashboardURL }}\nPanel: {{ .PanelURL }}\nSilence: {{ .SilenceURL }}\n{{ end }}",
+      "group": "{{ .CommonLabels.namespace }}",
+      "integrationKey": "[REDACTED]",
+      "severity": "warning",
+      "summary": "{{ .CommonLabels.alertname }} - {{ .CommonAnnotations.summary }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "",
+    "name": "email receiver",
+    "type": "email",
+    "settings": {
+      "addresses": "<example@email.com>"
+    },
+    "disableResolveMessage": false
+  }
+]

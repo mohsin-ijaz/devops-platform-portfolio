@@ -1,0 +1,192 @@
+# Weekly Retraining CronJob
+# Runs every Sunday at 02:00 UTC on a fresh 6-month window.
+# Re-trains both Isolation Forest and LSTM Autoencoder so the model
+# stays current as infrastructure evolves.
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: anomaly-trainer
+  namespace: monitoring
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: anomaly-trainer
+  namespace: monitoring
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "create", "update", "patch"]
+    resourceNames: ["anomaly-model-version"]
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: anomaly-detection-retraining
+  namespace: monitoring
+  labels:
+    app: anomaly-detection
+    component: training
+  annotations:
+    description: "Weekly retrain on latest 6-month window — keeps the model current as infra evolves"
+spec:
+  # Every Sunday at 02:00 UTC
+  schedule: "0 2 * * 0"
+  concurrencyPolicy: Forbid       # Don't allow concurrent training runs
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 3600   # If missed, skip (don't retry after 1hr)
+
+  jobTemplate:
+    spec:
+      backoffLimit: 1             # One retry on failure — training is expensive
+      activeDeadlineSeconds: 14400 # 4-hour timeout — kill if stuck
+
+      template:
+        metadata:
+          labels:
+            app: anomaly-detection
+            component: training
+        spec:
+          serviceAccountName: anomaly-trainer
+          restartPolicy: OnFailure
+
+          # Run on CPU-optimised nodes (training doesn't need GPU for this scale)
+          nodeSelector:
+            workload: general
+          tolerations:
+            - key: workload
+              operator: Equal
+              value: general
+              effect: NoSchedule
+
+          initContainers:
+            # sanity check before spending an hour on training
+            - name: preflight-check
+              image: curlimages/curl:8.5.0
+              command:
+                - sh
+                - -c
+                - |
+                  echo "Checking Mimir connectivity..."
+                  curl -sf --max-time 10 \
+                    -H "X-Scope-OrgID: ${MIMIR_TENANT_ID}" \
+                    "${MIMIR_URL}/api/v1/query?query=up" | grep -q '"status":"success"'
+                  echo "OK, starting training"
+              env:
+                - name: MIMIR_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: anomaly-training-secrets
+                      key: mimir-url
+                - name: MIMIR_TENANT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: anomaly-training-secrets
+                      key: mimir-tenant-id
+
+          containers:
+            - name: trainer
+              image: <YOUR_REGISTRY>/anomaly-detection-trainer:<IMAGE_TAG>
+              imagePullPolicy: Always
+              command:
+                - python
+                - training/train.py
+                - --config
+                - /app/config/features.yaml
+                - --output
+                - /models/$(date +%Y%m%d)
+                - --workers
+                - "4"
+
+              env:
+                - name: MIMIR_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: anomaly-training-secrets
+                      key: mimir-url
+                - name: MIMIR_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: anomaly-training-secrets
+                      key: mimir-token
+                - name: MIMIR_TENANT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: anomaly-training-secrets
+                      key: mimir-tenant-id
+                - name: MODEL_OUTPUT_BUCKET
+                  valueFrom:
+                    secretKeyRef:
+                      name: anomaly-training-secrets
+                      key: model-output-bucket
+                - name: TF_CPP_MIN_LOG_LEVEL
+                  value: "2"
+                - name: TF_ENABLE_ONEDNN_OPTS
+                  value: "0"
+
+              resources:
+                requests:
+                  cpu: "4"
+                  memory: 16Gi
+                limits:
+                  cpu: "8"
+                  memory: 32Gi
+
+              volumeMounts:
+                - name: training-data
+                  mountPath: /data
+                - name: model-output
+                  mountPath: /models
+                - name: config
+                  mountPath: /app/config
+                  readOnly: true
+
+              lifecycle:
+                postStart:
+                  exec:
+                    command: ["/bin/sh", "-c", "echo Training started at $(date) >> /data/training.log"]
+                preStop:
+                  exec:
+                    command: ["/bin/sh", "-c", "echo Training ended at $(date) >> /data/training.log"]
+
+          volumes:
+            - name: training-data
+              persistentVolumeClaim:
+                claimName: anomaly-training-data
+            - name: model-output
+              persistentVolumeClaim:
+                claimName: anomaly-model-output
+            - name: config
+              configMap:
+                name: anomaly-detection-config
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: anomaly-training-data
+  namespace: monitoring
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: premium-rwo
+  resources:
+    requests:
+      storage: 50Gi   # 6 months × ~100 metrics × 288 points/day × entity count
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: anomaly-model-output
+  namespace: monitoring
+spec:
+  accessModes: [ReadWriteMany]   # Shared between trainer and scorer
+  storageClassName: standard-rwx
+  resources:
+    requests:
+      storage: 10Gi

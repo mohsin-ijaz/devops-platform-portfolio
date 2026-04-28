@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: temporal-es-index-setup
+  namespace: temporal
+  labels:
+    app.kubernetes.io/name: temporal
+    app.kubernetes.io/instance: temporal
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: temporal
+spec:
+  backoffLimit: 100
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      name: temporal-es-index-setup
+      labels:
+        app.kubernetes.io/name: temporal
+        app.kubernetes.io/instance: temporal
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: temporal
+    spec:
+      restartPolicy: "OnFailure"
+      initContainers:
+        - name: check-elasticsearch
+          image: "temporalio/admin-tools:1.21.4"
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: ES_USER
+            valueFrom:
+              secretKeyRef:
+                name: temporal-es-visibility-store
+                key: es-kube-username
+          - name: ES_PWD
+            valueFrom:
+              secretKeyRef:
+                name: temporal-es-visibility-store
+                key: es-kube-password
+          command: ['sh', '-c', 'until curl --silent --fail -u "${ES_USER}":"${ES_PWD}" http://temporal-elasticsearch-es-http.elastic-system.svc.cluster.local:9200 2>&1 > /dev/null; do echo waiting for elasticsearch to start; sleep 1; done;']
+      containers:
+        - name: create-elasticsearch-index
+          image: "temporalio/admin-tools:1.21.4"
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: ES_USER
+            valueFrom:
+              secretKeyRef:
+                name: temporal-es-visibility-store
+                key: es-kube-username
+          - name: ES_PWD
+            valueFrom:
+              secretKeyRef:
+                name: temporal-es-visibility-store
+                key: es-kube-password
+          command: ['sh', '-c']
+          args:
+            - 'curl -X PUT --fail -u "${ES_USER}":"${ES_PWD}" http://temporal-elasticsearch-es-http.elastic-system.svc.cluster.local:9200/_template/temporal_visibility_v1_template -H "Content-Type: application/json" --data-binary "@schema/elasticsearch/visibility/index_template_v7.json" 2>&1 &&
+              curl -X PUT --fail -u "${ES_USER}":"${ES_PWD}" http://temporal-elasticsearch-es-http.elastic-system.svc.cluster.local:9200/temporal_visibility_v1 2>&1'

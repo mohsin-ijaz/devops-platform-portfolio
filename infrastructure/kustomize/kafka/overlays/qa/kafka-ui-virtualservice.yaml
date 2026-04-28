@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: kafka-ui-vs
+  namespace: kafka-qa
+spec:
+  hosts:
+  - enterprise-kafka.acme.com
+  gateways:
+  - istio-system/enterprise-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: kafka-ui
+        port:
+          number: 80
+

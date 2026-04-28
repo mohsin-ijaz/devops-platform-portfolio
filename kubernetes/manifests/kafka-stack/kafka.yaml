@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-svc
+  labels:
+    app: kafka
+spec:
+  ports:
+    - port: 9093
+      name: server
+    - port: 9308
+      name: exporter
+  clusterIP: None
+  selector:
+    app: kafka
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: kafka-pdb
+spec:
+  selector:
+    matchLabels:
+      app: kafka
+  minAvailable: 2
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-cm
+data:
+  advertised.listeners: PLAINTEXT://kafka-0.kafka-svc.default.svc.cluster.local:9093
+  connect: zk-kafka-0.zk-kafka-svc.default.svc.cluster.local:2181,zk-kafka-1.zk-kafka-svc.default.svc.cluster.local:2181,zk-kafka-2.zk-kafka-svc.default.svc.cluster.local:2181
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+spec:
+  serviceName: kafka-svc
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - kafka
+              topologyKey: "kubernetes.io/hostname"
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app"
+                      operator: In
+                      values:
+                        - zk-kafka
+                topologyKey: "kubernetes.io/hostname"
+      terminationGracePeriodSeconds: 300
+      containers:
+        - name: k8skafka-kafka
+          imagePullPolicy: Always
+          image: confluentinc/cp-kafka:5.4.0
+          resources: {{ resources }}
+          ports:
+            - containerPort: 9093
+              name: server
+          command:
+            - sh
+            - -c
+            - "KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka-${HOSTNAME##*-}.kafka-svc.default.svc.cluster.local:9093
+              KAFKA_BROKER_ID=${HOSTNAME##*-}
+              /etc/confluent/docker/run"
+          env: {{ env }}
+          volumeMounts:
+            - name: datadir
+              mountPath: /var/lib/kafka
+        - name: metrics
+          image: danielqsj/kafka-exporter:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-c"]
+          args:
+            - kafka_exporter --kafka.server=localhost:9093;
+          ports:
+            - name: metrics
+              containerPort: 9308
+      nodeSelector: {{ node_selector }}
+      tolerations: {{ tolerations }}
+  volumeClaimTemplates:
+    - metadata:
+        name: datadir
+        annotations:
+          volume.beta.kubernetes.io/storage-class: "ssd-expand"
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 500Gi

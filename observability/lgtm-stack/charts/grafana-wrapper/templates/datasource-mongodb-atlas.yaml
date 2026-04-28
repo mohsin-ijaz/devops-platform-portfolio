@@ -1,0 +1,59 @@
+{{- if .Values.mongodbAtlas.enabled }}
+# MongoDB Atlas datasource configuration for Grafana
+# Supports multiple Atlas projects
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-mongodb-atlas-datasource
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grafana-wrapper.labels" . | nindent 4 }}
+    grafana_datasource: "1"
+data:
+  mongodb-atlas.yaml: |
+    apiVersion: 1
+    datasources:
+      # Indonesia Production ENTERPRISE Cluster
+      - name: MongoDB Atlas - Indonesia Prod
+        type: grafana-mongodb-atlas-datasource
+        access: proxy
+        editable: false
+        jsonData:
+          publicKey: ${MONGODB_ATLAS_PUBLIC_KEY}
+          projectId: ${MONGODB_ATLAS_ID_PROD_PROJECT_ID}
+        secureJsonData:
+          privateKey: ${MONGODB_ATLAS_PRIVATE_KEY}
+      
+      # Malaysia Production ENTERPRISE Cluster
+      - name: MongoDB Atlas - Malaysia Prod
+        type: grafana-mongodb-atlas-datasource
+        access: proxy
+        editable: false
+        jsonData:
+          publicKey: ${MONGODB_ATLAS_PUBLIC_KEY}
+          projectId: ${MONGODB_ATLAS_MY_PROD_PROJECT_ID}
+        secureJsonData:
+          privateKey: ${MONGODB_ATLAS_PRIVATE_KEY}
+      
+      # Thailand Production ENTERPRISE Cluster
+      - name: MongoDB Atlas - Thailand Prod
+        type: grafana-mongodb-atlas-datasource
+        access: proxy
+        editable: false
+        jsonData:
+          publicKey: ${MONGODB_ATLAS_PUBLIC_KEY}
+          projectId: ${MONGODB_ATLAS_TH_PROD_PROJECT_ID}
+        secureJsonData:
+          privateKey: ${MONGODB_ATLAS_PRIVATE_KEY}
+      
+      # UAT Environment ENTERPRISE Cluster
+      - name: MongoDB Atlas - UAT
+        type: grafana-mongodb-atlas-datasource
+        access: proxy
+        editable: false
+        jsonData:
+          publicKey: ${MONGODB_ATLAS_PUBLIC_KEY}
+          projectId: ${MONGODB_ATLAS_UAT_PROJECT_ID}
+        secureJsonData:
+          privateKey: ${MONGODB_ATLAS_PRIVATE_KEY}
+{{- end }}

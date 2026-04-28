@@ -1,0 +1,173 @@
+groups:
+  - name: finops.cost.cluster
+    interval: 5m
+    rules:
+      - record: finops:cluster:current_monthly_cost
+        expr: |
+          sum by (cluster) (finops:namespace:current_monthly_cost)
+      - record: finops:cluster:optimized_monthly_cost
+        expr: |
+          sum by (cluster) (finops:namespace:optimized_monthly_cost)
+      - record: finops:cluster:savings_monthly
+        expr: |
+          sum by (cluster) (finops:namespace:savings_monthly)
+      - record: finops:cluster:savings_percent
+        expr: |
+          (finops:cluster:savings_monthly / finops:cluster:current_monthly_cost) * 100
+
+  - name: finops.cost.namespace
+    interval: 5m
+    rules:
+      - record: finops:namespace:current_monthly_cost
+        expr: |
+          (
+            sum by (cluster, namespace) (kube_pod_container_resource_requests{resource="cpu"}) * 0.033 +
+            sum by (cluster, namespace) (kube_pod_container_resource_requests{resource="memory"}) / 1073741824 * 0.0044
+          ) * 730
+      - record: finops:namespace:optimized_monthly_cost
+        expr: |
+          (
+            sum by (cluster, namespace) (kube_vpa_container_recommendation_target_cpu) * 0.033 +
+            sum by (cluster, namespace) (kube_vpa_container_recommendation_target_memory) / 1073741824 * 0.0044
+          ) * 730
+      - record: finops:namespace:savings_monthly
+        expr: |
+          finops:namespace:current_monthly_cost - finops:namespace:optimized_monthly_cost
+      - record: finops:namespace:savings_percent
+        expr: |
+          (finops:namespace:savings_monthly / finops:namespace:current_monthly_cost) * 100
+      - record: finops:namespace:workload_count
+        expr: |
+          count by (cluster, namespace) (kube_vpa_container_recommendation_target_cpu)
+
+  - name: finops.cost.workload
+    interval: 5m
+    rules:
+      - record: finops:workload:current_cpu_request
+        expr: |
+          max by (cluster, namespace, target_name, container) (
+            label_replace(
+              label_replace(
+                kube_pod_container_resource_requests{resource="cpu"}
+                * on(pod, namespace, cluster) group_left(owner_name)
+                max by (pod, namespace, cluster, owner_name) (kube_pod_owner),
+                "workload", "$1", "owner_name", "^(.+?)(?:-[a-f0-9]{8,10})?$"
+              ),
+              "target_name", "$1", "workload", "(.*)"
+            )
+          )
+      - record: finops:workload:current_memory_request
+        expr: |
+          max by (cluster, namespace, target_name, container) (
+            label_replace(
+              label_replace(
+                kube_pod_container_resource_requests{resource="memory"}
+                * on(pod, namespace, cluster) group_left(owner_name)
+                max by (pod, namespace, cluster, owner_name) (kube_pod_owner),
+                "workload", "$1", "owner_name", "^(.+?)(?:-[a-f0-9]{8,10})?$"
+              ),
+              "target_name", "$1", "workload", "(.*)"
+            )
+          )
+      - record: finops:workload:current_cpu_limit
+        expr: |
+          max by (cluster, namespace, target_name, container) (
+            label_replace(
+              label_replace(
+                kube_pod_container_resource_limits{resource="cpu"}
+                * on(pod, namespace, cluster) group_left(owner_name)
+                max by (pod, namespace, cluster, owner_name) (kube_pod_owner),
+                "workload", "$1", "owner_name", "^(.+?)(?:-[a-f0-9]{8,10})?$"
+              ),
+              "target_name", "$1", "workload", "(.*)"
+            )
+          )
+      - record: finops:workload:current_memory_limit
+        expr: |
+          max by (cluster, namespace, target_name, container) (
+            label_replace(
+              label_replace(
+                kube_pod_container_resource_limits{resource="memory"}
+                * on(pod, namespace, cluster) group_left(owner_name)
+                max by (pod, namespace, cluster, owner_name) (kube_pod_owner),
+                "workload", "$1", "owner_name", "^(.+?)(?:-[a-f0-9]{8,10})?$"
+              ),
+              "target_name", "$1", "workload", "(.*)"
+            )
+          )
+      - record: finops:workload:cpu_savings_monthly
+        expr: |
+          (
+            finops:workload:current_cpu_request
+            - on(cluster, namespace, target_name, container)
+            kube_vpa_container_recommendation_target_cpu
+          ) * 0.033 * 730
+      - record: finops:workload:memory_savings_monthly
+        expr: |
+          (
+            finops:workload:current_memory_request
+            - on(cluster, namespace, target_name, container)
+            kube_vpa_container_recommendation_target_memory
+          ) / 1073741824 * 0.0044 * 730
+      - record: finops:workload:total_savings_monthly
+        expr: |
+          (finops:workload:cpu_savings_monthly or vector(0))
+          + on(cluster, namespace, target_name, container)
+          (finops:workload:memory_savings_monthly or vector(0))
+
+  - name: finops.counts
+    interval: 5m
+    rules:
+      - record: finops:cluster:overprovisioned_count
+        expr: |
+          count by (cluster) (finops:workload:is_overprovisioned) or vector(0)
+      - record: finops:cluster:underprovisioned_count
+        expr: |
+          count by (cluster) (finops:workload:cpu_deficit) or vector(0)
+      - record: finops:cluster:analyzed_count
+        expr: |
+          count by (cluster) (kube_vpa_container_recommendation_target_cpu)
+
+  - name: finops.status.workload
+    interval: 5m
+    rules:
+      - record: finops:workload:is_overprovisioned
+        expr: |
+          (
+            finops:workload:current_cpu_request
+            - on(cluster, namespace, target_name, container)
+            kube_vpa_container_recommendation_target_cpu
+          ) > 0.01
+      - record: finops:workload:cpu_deficit
+        expr: |
+          (
+            kube_vpa_container_recommendation_lowerbound_cpu
+            - on(cluster, namespace, target_name, container)
+            finops:workload:current_cpu_request
+          ) > 0.01
+      - record: finops:workload:memory_deficit
+        expr: |
+          (
+            kube_vpa_container_recommendation_lowerbound_memory
+            - on(cluster, namespace, target_name, container)
+            finops:workload:current_memory_request
+          ) > 1048576
+      - record: finops:workload:cpu_deficit_amount
+        expr: |
+          (
+            kube_vpa_container_recommendation_lowerbound_cpu
+            - on(cluster, namespace, target_name, container)
+            finops:workload:current_cpu_request
+          ) > 0
+      - record: finops:workload:memory_deficit_amount
+        expr: |
+          (
+            kube_vpa_container_recommendation_lowerbound_memory
+            - on(cluster, namespace, target_name, container)
+            finops:workload:current_memory_request
+          ) > 0
+      - record: finops:workload:cpu_delta
+        expr: |
+          finops:workload:current_cpu_request
+          - on(cluster, namespace, target_name, container)
+          kube_vpa_container_recommendation_target_cpu

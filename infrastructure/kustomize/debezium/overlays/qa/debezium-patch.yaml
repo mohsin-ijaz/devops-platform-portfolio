@@ -1,0 +1,23 @@
+
+- op: add
+  path: /spec/template/spec/tolerations
+  value:
+  - effect: NoSchedule
+    key: dedicated
+    operator: Equal
+    value: kafka
+- op: add
+  path: /spec/template/spec/affinity
+  value:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - kafka
+        topologyKey: kubernetes.io/hostname
+- op: add
+  path: /spec/template/spec/containers/0/image
+  value: <GCP_REGION>-docker.pkg.dev/<GCP_QA_PROJECT>/cs-qa-base-artifact-enterprise/debezium:v2.4-mongodb1.11.1-msk1.0.6

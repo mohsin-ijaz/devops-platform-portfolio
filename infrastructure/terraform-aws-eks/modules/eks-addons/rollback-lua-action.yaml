@@ -1,0 +1,57 @@
+# Preserve existing built-in actions (resume, restart, abort)
+mergeBuiltinActions: true
+
+# Discovery script - determines which actions to show based on rollout state
+discovery.lua: |
+  actions = {}
+
+  -- Check if rollback has been requested
+  local requested = false
+  if obj.metadata.annotations ~= nil then
+    if obj.metadata.annotations["rollback.acme.com/requested"] ~= nil then
+      requested = true
+    end
+  end
+
+  -- Show appropriate action based on state
+  if requested then
+    -- If rollback is in progress, show cancel option
+    actions["cancel-rollback"] = {["disabled"] = false}
+  else
+    -- If no rollback in progress, show rollback option
+    actions["rollback-to-previous"] = {["disabled"] = false}
+  end
+
+  return actions
+
+# Action definitions
+definitions:
+  # Rollback to Previous action - triggers git revert via controller
+  - name: rollback-to-previous
+    action.lua: |
+      local os = require("os")
+
+      -- Initialize annotations table if it doesn't exist
+      if obj.metadata.annotations == nil then
+          obj.metadata.annotations = {}
+      end
+
+      -- Set rollback request annotation with current timestamp
+      obj.metadata.annotations["rollback.acme.com/requested"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
+      obj.metadata.annotations["rollback.acme.com/requested-by"] = "argocd-ui"
+
+      return obj
+
+  # Cancel Rollback action - removes rollback request
+  - name: cancel-rollback
+    action.lua: |
+      -- Initialize annotations table if it doesn't exist
+      if obj.metadata.annotations == nil then
+          obj.metadata.annotations = {}
+      end
+
+      -- Remove rollback request annotations
+      obj.metadata.annotations["rollback.acme.com/requested"] = nil
+      obj.metadata.annotations["rollback.acme.com/requested-by"] = nil
+
+      return obj

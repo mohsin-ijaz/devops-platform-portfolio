@@ -1,0 +1,92 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: temporal-schema-setup
+  namespace: temporal
+  labels:
+    app.kubernetes.io/name: temporal
+    app.kubernetes.io/instance: temporal
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: temporal
+spec:
+  backoffLimit: 100
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      name: temporal-schema-setup
+      labels:
+        app.kubernetes.io/name: temporal
+        app.kubernetes.io/instance: temporal
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: temporal
+    spec:
+      restartPolicy: "OnFailure"
+      initContainers:
+        - name: check-cassandra-service
+          image: busybox
+          command: ['sh', '-c', 'until nslookup cassandra-headless.cassandra.svc.cluster.local; do echo waiting for cassandra service; sleep 1; done;']
+        - name: check-cassandra
+          image: "cassandra:4.1.3"
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until cqlsh cassandra-headless.cassandra.svc.cluster.local 9042 -e "SHOW VERSION"; do echo waiting for cassandra to start; sleep 1; done;']
+        - name: create-default-store
+          image: "temporalio/admin-tools:1.21.4"
+          imagePullPolicy: IfNotPresent
+          command: ['temporal-cassandra-tool', 'create', '-k', 'temporal', '--replication-factor', '1']
+          env:
+            - name: CASSANDRA_HOST
+              value: cassandra-headless.cassandra.svc.cluster.local
+            - name: CASSANDRA_PORT
+              value: "9042"
+            - name: CASSANDRA_KEYSPACE
+              value: temporal
+            - name: CASSANDRA_USER
+              value: user
+            - name: CASSANDRA_PASSWORD
+              value: password
+        - name: create-visibility-store
+          image: "temporalio/admin-tools:1.21.4"
+          imagePullPolicy: IfNotPresent
+          command: ['temporal-cassandra-tool', 'create', '-k', 'temporal_visibility', '--replication-factor', '1']
+          env:
+            - name: CASSANDRA_HOST
+              value: cassandra-headless.cassandra.svc.cluster.local
+            - name: CASSANDRA_PORT
+              value: "9042"
+            - name: CASSANDRA_KEYSPACE
+              value: temporal_visibility
+            - name: CASSANDRA_USER
+              value: user
+            - name: CASSANDRA_PASSWORD
+              value: password
+      containers:
+        - name: default-schema
+          image: "temporalio/admin-tools:1.21.4"
+          imagePullPolicy: IfNotPresent
+          command: ['temporal-cassandra-tool', 'setup-schema', '-v', '0.0']
+          env:
+            - name: CASSANDRA_HOST
+              value: cassandra-headless.cassandra.svc.cluster.local
+            - name: CASSANDRA_PORT
+              value: "9042"
+            - name: CASSANDRA_KEYSPACE
+              value: temporal
+            - name: CASSANDRA_USER
+              value: user
+            - name: CASSANDRA_PASSWORD
+              value: password
+        - name: visibility-schema
+          image: "temporalio/admin-tools:1.21.4"
+          imagePullPolicy: IfNotPresent
+          command: ['temporal-cassandra-tool', 'setup-schema', '-v', '0.0']
+          env:
+            - name: CASSANDRA_HOST
+              value: cassandra-headless.cassandra.svc.cluster.local
+            - name: CASSANDRA_PORT
+              value: "9042"
+            - name: CASSANDRA_KEYSPACE
+              value: temporal_visibility
+            - name: CASSANDRA_USER
+              value: user
+            - name: CASSANDRA_PASSWORD
+              value: password

@@ -1,0 +1,31 @@
+# Aggressive Crawler Detection
+# Detects IPs hitting too many unique URLs in a short time
+# This is typical bot/scraper behavior
+
+type: leaky
+name: custom/aggressive-crawler
+description: "Detects IPs crawling many unique URLs rapidly - typical bot behavior"
+filter: evt.Meta.log_type == 'http_access-log'
+groupby: evt.Meta.source_ip
+
+# Bucket configuration
+distinct: evt.Parsed.request      # Count unique URLs
+capacity: 50                       # Alert after 50 unique URLs
+leakspeed: 2m                     # Bucket leaks over 2 minutes
+
+# Blackhole: don't create new alerts for this IP for 5 minutes
+blackhole: 5m
+
+# Reprocess through other scenarios
+reprocess: true
+
+labels:
+  service: http
+  type: crawl
+  confidence: medium
+  remediation: true               # Enable blocking
+
+# Scoring for decision
+scope:
+  type: ip
+  expression: evt.Meta.source_ip

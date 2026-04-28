@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-connect-jmx-exporter-config
+data:
+  jmx-exporter-config.yaml: |
+    hostPort: 127.0.0.1:5555
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    rules:
+    - pattern: kafka.connect<type=connect-worker-metrics><>([^:]+)
+      name: kafka_connect_worker_$1
+      type: GAUGE
+    - pattern: kafka.connect<type=connect-worker-rebalance-metrics><>([^:]+)
+      name: kafka_connect_worker_rebalance_$1
+      type: GAUGE
+    - pattern: kafka.connect<type=connector-metrics, connector=([^,]+)><>([^:]+)
+      name: kafka_connect_connector_$2
+      labels:
+        connector: $1
+      type: GAUGE
+    - pattern: kafka.connect<type=task-metrics, connector=([^,]+), task=([^,]+)><>([^:]+)
+      name: kafka_connect_task_$3
+      labels:
+        connector: $1
+        task: $2
+      type: GAUGE
+    - pattern: kafka.connect<type=sink-task-metrics, connector=([^,]+), task=([^,]+)><>([^:]+)
+      name: kafka_connect_sink_task_$3
+      labels:
+        connector: $1
+        task: $2
+      type: GAUGE
+    - pattern: kafka.connect<type=source-task-metrics, connector=([^,]+), task=([^,]+)><>([^:]+)
+      name: kafka_connect_source_task_$3
+      labels:
+        connector: $1
+        task: $2
+      type: GAUGE
+    - pattern: java.lang<type=([^,]+), name=([^,>]+)><>([^:]+)
+      name: java_lang_$1_$3
+      labels:
+        name: $2
+      type: GAUGE
+    - pattern: java.lang<type=Memory><>([^:]+)
+      name: java_lang_memory_$1
+      type: GAUGE
+    - pattern: kafka.connect<type=([^,]+), name=([^,>]+)><>([^:]+)
+      name: kafka_connect_$1_$3
+      labels:
+        name: $2
+      type: GAUGE

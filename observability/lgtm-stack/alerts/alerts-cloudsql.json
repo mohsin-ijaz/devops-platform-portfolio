@@ -1,0 +1,3320 @@
+[
+  {
+    "id": 107,
+    "uid": "cfe6n4awl5urkc",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "CloudSQL Connection Alerts",
+    "title": "CloudSQL Aborted Connections Spike",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "metrics",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "google-cloud-monitoring",
+        "model": {
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "metricQuery": {
+            "alignmentPeriod": "+60s",
+            "crossSeriesReducer": "REDUCE_NONE",
+            "metricType": "cloudsql.googleapis.com/database/mysql/aborted_connects_count",
+            "perSeriesAligner": "ALIGN_RATE",
+            "projectName": "<YOUR_TENANT_ID>"
+          },
+          "queryType": "metrics",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "max",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  10
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:34:31Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "3m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "cloudsql-comprehensive",
+      "__panelId__": "4",
+      "description": "{{ index .Labels \"resource.label.database_id\" }} - Aborted: {{ printf \"%.0f\" .Values.B.Value }}",
+      "summary": "CloudSQL Aborted Connections: {{ index .Labels \"resource.label.database_id\" }}"
+    },
+    "labels": {
+      "service": "cloudsql",
+      "severity": "warning",
+      "type": "connection"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 104,
+    "uid": "ffe6n36enfda8a",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "CloudSQL Replication Alerts",
+    "title": "CloudSQL Replication Lag High",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "metrics",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "google-cloud-monitoring",
+        "model": {
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "metricQuery": {
+            "alignmentPeriod": "+60s",
+            "crossSeriesReducer": "REDUCE_NONE",
+            "metricType": "cloudsql.googleapis.com/database/mysql/replication/seconds_behind_master",
+            "perSeriesAligner": "ALIGN_MEAN",
+            "projectName": "<YOUR_TENANT_ID>"
+          },
+          "queryType": "metrics",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "max",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  60
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:46:10Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "3m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "cloudsql-comprehensive",
+      "__panelId__": "10",
+      "description": "{{ index .Labels \"resource.label.database_id\" }} - Lag: {{ printf \"%.0f\" .Values.B.Value }}s",
+      "summary": "CloudSQL Replication Lag: {{ index .Labels \"resource.label.database_id\" }}"
+    },
+    "labels": {
+      "service": "cloudsql",
+      "severity": "critical",
+      "type": "replication"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 100,
+    "uid": "ffe6n0sjf30g0b",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "CloudSQL Resource Alerts",
+    "title": "CloudSQL CPU Utilization High",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "metrics",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "google-cloud-monitoring",
+        "model": {
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "metricQuery": {
+            "alignmentPeriod": "+60s",
+            "crossSeriesReducer": "REDUCE_NONE",
+            "metricType": "cloudsql.googleapis.com/database/cpu/utilization",
+            "perSeriesAligner": "ALIGN_MEAN",
+            "projectName": "<YOUR_TENANT_ID>"
+          },
+          "queryType": "metrics",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "max",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0.8
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:33:35Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "cloudsql-comprehensive",
+      "__panelId__": "1",
+      "description": "{{ index .Labels \"resource.label.database_id\" }} - CPU: {{ printf \"%.2f\" .Values.B.Value }} (>0.85 threshold)",
+      "summary": "CloudSQL CPU High: {{ index .Labels \"resource.label.database_id\" }}"
+    },
+    "labels": {
+      "service": "cloudsql",
+      "severity": "warning",
+      "type": "resource"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 101,
+    "uid": "afe6n1x1uascga",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "CloudSQL Resource Alerts",
+    "title": "CloudSQL Memory Utilization High",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "metrics",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "google-cloud-monitoring",
+        "model": {
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "metricQuery": {
+            "alignmentPeriod": "+60s",
+            "crossSeriesReducer": "REDUCE_NONE",
+            "metricType": "cloudsql.googleapis.com/database/memory/utilization",
+            "perSeriesAligner": "ALIGN_MEAN",
+            "projectName": "<YOUR_TENANT_ID>"
+          },
+          "queryType": "metrics",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "max",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0.85
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:33:57Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "cloudsql-comprehensive",
+      "__panelId__": "2",
+      "description": "{{ index .Labels \"resource.label.database_id\" }} - Memory: {{ printf \"%.2f\" .Values.B.Value }} (>0.85 threshold)",
+      "summary": "CloudSQL Memory High: {{ index .Labels \"resource.label.database_id\" }}"
+    },
+    "labels": {
+      "service": "cloudsql",
+      "severity": "warning",
+      "type": "resource"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 102,
+    "uid": "cfe6n1xauxla8a",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "CloudSQL Resource Alerts",
+    "title": "CloudSQL Disk Utilization High",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "metrics",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "google-cloud-monitoring",
+        "model": {
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "metricQuery": {
+            "alignmentPeriod": "+60s",
+            "crossSeriesReducer": "REDUCE_NONE",
+            "metricType": "cloudsql.googleapis.com/database/disk/utilization",
+            "perSeriesAligner": "ALIGN_MEAN",
+            "projectName": "<YOUR_TENANT_ID>"
+          },
+          "queryType": "metrics",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "max",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0.8
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:34:07Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "cloudsql-comprehensive",
+      "__panelId__": "3",
+      "description": "{{ index .Labels \"resource.label.database_id\" }} - Disk: {{ printf \"%.2f\" .Values.B.Value }} (>0.8 threshold)",
+      "summary": "CloudSQL Disk High: {{ index .Labels \"resource.label.database_id\" }}"
+    },
+    "labels": {
+      "service": "cloudsql",
+      "severity": "warning",
+      "type": "resource"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 103,
+    "uid": "dfe6n1xoqdaf4c",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "CloudSQL Resource Alerts",
+    "title": "CloudSQL Disk Utilization Critical",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "metrics",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "google-cloud-monitoring",
+        "model": {
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "metricQuery": {
+            "alignmentPeriod": "+60s",
+            "crossSeriesReducer": "REDUCE_NONE",
+            "metricType": "cloudsql.googleapis.com/database/disk/utilization",
+            "perSeriesAligner": "ALIGN_MEAN",
+            "projectName": "<YOUR_TENANT_ID>"
+          },
+          "queryType": "metrics",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "max",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0.9
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:34:21Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "cloudsql-comprehensive",
+      "__panelId__": "3",
+      "description": "{{ index .Labels \"resource.label.database_id\" }} - Disk: {{ printf \"%.2f\" .Values.B.Value }} (>0.90 threshold)",
+      "summary": "CloudSQL Disk CRITICAL: {{ index .Labels \"resource.label.database_id\" }}"
+    },
+    "labels": {
+      "service": "cloudsql",
+      "severity": "critical",
+      "type": "resource"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 105,
+    "uid": "cfe6n36vn8hz4d",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "CloudSQL Transaction Alerts",
+    "title": "CloudSQL Deadlocks Detected",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "metrics",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "google-cloud-monitoring",
+        "model": {
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "metricQuery": {
+            "alignmentPeriod": "+60s",
+            "crossSeriesReducer": "REDUCE_NONE",
+            "metricType": "cloudsql.googleapis.com/database/mysql/innodb/deadlocks_count",
+            "perSeriesAligner": "ALIGN_RATE",
+            "projectName": "<YOUR_TENANT_ID>"
+          },
+          "queryType": "metrics",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "sum",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:30:23Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "cloudsql-comprehensive",
+      "__panelId__": "11",
+      "description": "{{ index .Labels \"resource.label.database_id\" }} - Deadlocks: {{ printf \"%.0f\" .Values.B.Value }}",
+      "summary": "CloudSQL Deadlocks: {{ index .Labels \"resource.label.database_id\" }}"
+    },
+    "labels": {
+      "service": "cloudsql",
+      "severity": "warning",
+      "type": "transaction"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 106,
+    "uid": "efe6n37efyznkd",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "CloudSQL Transaction Alerts",
+    "title": "CloudSQL Long Running Transaction",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "metrics",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "google-cloud-monitoring",
+        "model": {
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "metricQuery": {
+            "alignmentPeriod": "+60s",
+            "crossSeriesReducer": "REDUCE_NONE",
+            "metricType": "cloudsql.googleapis.com/database/mysql/innodb/active_trx_longest_time",
+            "perSeriesAligner": "ALIGN_MAX",
+            "projectName": "<YOUR_TENANT_ID>"
+          },
+          "queryType": "metrics",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "max",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  300
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:30:24Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "cloudsql-comprehensive",
+      "__panelId__": "12",
+      "description": "{{ index .Labels \"resource.label.database_id\" }} - Duration: {{ printf \"%.0f\" .Values.B.Value }}s",
+      "summary": "CloudSQL Long Transaction: {{ index .Labels \"resource.label.database_id\" }}"
+    },
+    "labels": {
+      "service": "cloudsql",
+      "severity": "warning",
+      "type": "transaction"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 108,
+    "uid": "ffe6n4bo9jcowe",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "CloudSQL Transaction Alerts",
+    "title": "CloudSQL High Rows Locked",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "metrics",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "google-cloud-monitoring",
+        "model": {
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "metricQuery": {
+            "alignmentPeriod": "+60s",
+            "crossSeriesReducer": "REDUCE_NONE",
+            "metricType": "cloudsql.googleapis.com/database/mysql/innodb/active_trx_rows_locked",
+            "perSeriesAligner": "ALIGN_MAX",
+            "projectName": "<YOUR_TENANT_ID>"
+          },
+          "queryType": "metrics",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "max",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  10000
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T08:30:26Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "3m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "cloudsql-comprehensive",
+      "__panelId__": "13",
+      "description": "{{ index .Labels \"resource.label.database_id\" }} - Rows Locked: {{ printf \"%.0f\" .Values.B.Value }}",
+      "summary": "CloudSQL High Rows Locked: {{ index .Labels \"resource.label.database_id\" }}"
+    },
+    "labels": {
+      "service": "cloudsql",
+      "severity": "warning",
+      "type": "transaction"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 92,
+    "uid": "efe6mq3k4ye4gf",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Buffer Pool",
+    "title": "MySQL Buffer Pool Hit Low - V4B ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT ROUND((1 - (SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_buffer_pool_reads') / NULLIF((SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_buffer_pool_read_requests'), 0)) * 100, 2) as hit_pct",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  95
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:07Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "6",
+      "description": "Buffer pool hit rate below 95%. Excessive disk I/O, queries may be slow.",
+      "summary": "MySQL buffer pool hit rate low on V4B ID Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 93,
+    "uid": "bfe6mq3z1ukg0c",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Buffer Pool",
+    "title": "MySQL Buffer Pool Hit Low - V4B MY Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT ROUND((1 - (SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_buffer_pool_reads') / NULLIF((SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_buffer_pool_read_requests'), 0)) * 100, 2) as hit_pct",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  95
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:02Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "6",
+      "description": "Buffer pool hit rate below 95%. Excessive disk I/O, queries may be slow.",
+      "summary": "MySQL buffer pool hit rate low on V4B MY Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 94,
+    "uid": "afe6mq48rgcu8d",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Buffer Pool",
+    "title": "MySQL Buffer Pool Hit Low - V3A ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "v3a-id-prod-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT ROUND((1 - (SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_buffer_pool_reads') / NULLIF((SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_buffer_pool_read_requests'), 0)) * 100, 2) as hit_pct",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  95
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:02Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "6",
+      "description": "Buffer pool hit rate below 95%. Excessive disk I/O, queries may be slow.",
+      "summary": "MySQL buffer pool hit rate low on V3A ID Prod"
+    },
+    "labels": {
+      "instance": "v3a-id-prod",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 95,
+    "uid": "efe6mq4j8j11cf",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Buffer Pool",
+    "title": "MySQL Buffer Pool Hit Low - V4B TH Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT ROUND((1 - (SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_buffer_pool_reads') / NULLIF((SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_buffer_pool_read_requests'), 0)) * 100, 2) as hit_pct",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  95
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:02Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "6",
+      "description": "Buffer pool hit rate below 95%. Excessive disk I/O, queries may be slow.",
+      "summary": "MySQL buffer pool hit rate low on V4B TH Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 80,
+    "uid": "cfe6mn2qop3wgf",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Connection Errors",
+    "title": "MySQL Max Connection Errors - V4B ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Connection_errors_max_connections'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:09Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "33",
+      "description": "Connections are being rejected due to max_connections limit.",
+      "summary": "MySQL connections rejected on V4B ID Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 81,
+    "uid": "ffe6mn3kxgum8d",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Connection Errors",
+    "title": "MySQL Max Connection Errors - V4B MY Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Connection_errors_max_connections'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:04Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "33",
+      "description": "Connections are being rejected due to max_connections limit.",
+      "summary": "MySQL connections rejected on V4B MY Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 82,
+    "uid": "bfe6mn415t3i8d",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Connection Errors",
+    "title": "MySQL Max Connection Errors - V3A ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "v3a-id-prod-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Connection_errors_max_connections'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:05Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "33",
+      "description": "Connections are being rejected due to max_connections limit.",
+      "summary": "MySQL connections rejected on V3A ID Prod"
+    },
+    "labels": {
+      "instance": "v3a-id-prod",
+      "service": "mysql",
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 83,
+    "uid": "ffe6mn4j4kt1cf",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Connection Errors",
+    "title": "MySQL Max Connection Errors - V4B TH Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Connection_errors_max_connections'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:05Z",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "1m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "33",
+      "description": "Connections are being rejected due to max_connections limit.",
+      "summary": "MySQL connections rejected on V4B TH Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "critical"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 76,
+    "uid": "cfe6mm764eby8b",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Connection Pool",
+    "title": "MySQL Connection Pool High - V4B ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT ROUND((SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_connected') / @@max_connections * 100, 1) as conn_pct",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  80
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:09Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "30",
+      "description": "Connection pool usage is high. Risk of exhaustion.",
+      "summary": "MySQL connection pool > 80% on V4B ID Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 77,
+    "uid": "bfe6mm7fa0xkwd",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Connection Pool",
+    "title": "MySQL Connection Pool High - V4B MY Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT ROUND((SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_connected') / @@max_connections * 100, 1) as conn_pct",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  80
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:07Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "30",
+      "description": "Connection pool usage is high. Risk of exhaustion.",
+      "summary": "MySQL connection pool > 80% on V4B MY Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 78,
+    "uid": "efe6mm7v5voqoc",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Connection Pool",
+    "title": "MySQL Connection Pool High - V3A ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "v3a-id-prod-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT ROUND((SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_connected') / @@max_connections * 100, 1) as conn_pct",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  80
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:07Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "30",
+      "description": "Connection pool usage is high. Risk of exhaustion.",
+      "summary": "MySQL connection pool > 80% on V3A ID Prod"
+    },
+    "labels": {
+      "instance": "v3a-id-prod",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 79,
+    "uid": "ffe6mm86temtca",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Connection Pool",
+    "title": "MySQL Connection Pool High - V4B TH Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT ROUND((SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_connected') / @@max_connections * 100, 1) as conn_pct",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  80
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:08Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "30",
+      "description": "Connection pool usage is high. Risk of exhaustion.",
+      "summary": "MySQL connection pool > 80% on V4B TH Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 75,
+    "uid": "cfe6mlaknlk3ka",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Critical",
+    "title": "MySQL Connection Pool High - V4B ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT ROUND((SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_connected') / @@max_connections * 100, 1) as conn_pct",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  80
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:08Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "5m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "30",
+      "description": "Connection pool usage critical. Risk of connection exhaustion.",
+      "summary": "MySQL connection pool usage is above 80%"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 88,
+    "uid": "efe6moho8nx8gc",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Lock Contention",
+    "title": "MySQL Active Lock Waits - V4B ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_row_lock_current_waits'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  10
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:09Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "3m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "14",
+      "description": "More than 10 transactions waiting on row locks. Check for blocking queries.",
+      "summary": "MySQL lock contention on V4B ID Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 89,
+    "uid": "bfe6mohxoa48wb",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Lock Contention",
+    "title": "MySQL Active Lock Waits - V4B MY Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_row_lock_current_waits'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  10
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:12Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "3m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "14",
+      "description": "More than 10 transactions waiting on row locks. Check for blocking queries.",
+      "summary": "MySQL lock contention on V4B MY Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 90,
+    "uid": "ffe6moi8rtvk0a",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Lock Contention",
+    "title": "MySQL Active Lock Waits - V3A ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "v3a-id-prod-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_row_lock_current_waits'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  10
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:12Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "3m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "14",
+      "description": "More than 10 transactions waiting on row locks. Check for blocking queries.",
+      "summary": "MySQL lock contention on V3A ID Prod"
+    },
+    "labels": {
+      "instance": "v3a-id-prod",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 91,
+    "uid": "ffe6moir82vi8d",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Lock Contention",
+    "title": "MySQL Active Lock Waits - V4B TH Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Innodb_row_lock_current_waits'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  10
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:13Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "3m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "14",
+      "description": "More than 10 transactions waiting on row locks. Check for blocking queries.",
+      "summary": "MySQL lock contention on V4B TH Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 96,
+    "uid": "ffe6mqyd3dkhsc",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Long Running Queries",
+    "title": "MySQL Long Running Query - V4B ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT COUNT(*) as cnt FROM information_schema.PROCESSLIST WHERE TIME > 60 AND COMMAND NOT IN ('Sleep', 'Binlog Dump GTID', 'Daemon') AND USER NOT IN ('cloudsqladmin', 'cloudsqlreplica')",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:17Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "3",
+      "description": "Query running longer than 60 seconds. May indicate lock contention or missing index.",
+      "summary": "Long running query detected on V4B ID Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 97,
+    "uid": "ffe6mqylu0s1sf",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Long Running Queries",
+    "title": "MySQL Long Running Query - V4B MY Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT COUNT(*) as cnt FROM information_schema.PROCESSLIST WHERE TIME > 60 AND COMMAND NOT IN ('Sleep', 'Binlog Dump GTID', 'Daemon') AND USER NOT IN ('cloudsqladmin', 'cloudsqlreplica')",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:17Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "3",
+      "description": "Query running longer than 60 seconds. May indicate lock contention or missing index.",
+      "summary": "Long running query detected on V4B MY Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 98,
+    "uid": "bfe6mqyvc4veoe",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Long Running Queries",
+    "title": "MySQL Long Running Query - V3A ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "v3a-id-prod-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT COUNT(*) as cnt FROM information_schema.PROCESSLIST WHERE TIME > 60 AND COMMAND NOT IN ('Sleep', 'Binlog Dump GTID', 'Daemon') AND USER NOT IN ('cloudsqladmin', 'cloudsqlreplica')",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:18Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "3",
+      "description": "Query running longer than 60 seconds. May indicate lock contention or missing index.",
+      "summary": "Long running query detected on V3A ID Prod"
+    },
+    "labels": {
+      "instance": "v3a-id-prod",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 99,
+    "uid": "cfe6mqz9rjrb4d",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Long Running Queries",
+    "title": "MySQL Long Running Query - V4B TH Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT COUNT(*) as cnt FROM information_schema.PROCESSLIST WHERE TIME > 60 AND COMMAND NOT IN ('Sleep', 'Binlog Dump GTID', 'Daemon') AND USER NOT IN ('cloudsqladmin', 'cloudsqlreplica')",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:18Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "3",
+      "description": "Query running longer than 60 seconds. May indicate lock contention or missing index.",
+      "summary": "Long running query detected on V4B TH Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 84,
+    "uid": "afe6mns9pu7swd",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Thread Overload",
+    "title": "MySQL Threads Running High - V4B ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_running'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  50
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:06:23Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "31",
+      "description": "More than 50 threads actively running queries. Database may be overloaded.",
+      "summary": "MySQL thread overload on V4B ID Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 85,
+    "uid": "dfe6mnsinz4e8d",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Thread Overload",
+    "title": "MySQL Threads Running High - V4B MY Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_running'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  50
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:21Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "31",
+      "description": "More than 50 threads actively running queries. Database may be overloaded.",
+      "summary": "MySQL thread overload on V4B MY Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 86,
+    "uid": "dfe6mnsrtlq0we",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Thread Overload",
+    "title": "MySQL Threads Running High - V3A ID Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "v3a-id-prod-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_running'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  50
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:21Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "31",
+      "description": "More than 50 threads actively running queries. Database may be overloaded.",
+      "summary": "MySQL thread overload on V3A ID Prod"
+    },
+    "labels": {
+      "instance": "v3a-id-prod",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  },
+  {
+    "id": 87,
+    "uid": "ffe6mnt1gpm2ob",
+    "orgID": 1,
+    "folderUID": "bfdsu4dq8bi0wd",
+    "ruleGroup": "MySQL Thread Overload",
+    "title": "MySQL Threads Running High - V4B TH Prod",
+    "condition": "C",
+    "data": [
+      {
+        "refId": "A",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "datasourceUid": "acme-<COUNTRY>-prod-consumer-perf",
+        "model": {
+          "format": "table",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "rawSql": "SELECT CAST(VARIABLE_VALUE AS UNSIGNED) as val FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_running'",
+          "refId": "A"
+        }
+      },
+      {
+        "refId": "B",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "last",
+          "refId": "B",
+          "type": "reduce"
+        }
+      },
+      {
+        "refId": "C",
+        "queryType": "",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        },
+        "datasourceUid": "__expr__",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  50
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "reducer": {
+                "type": "last"
+              }
+            }
+          ],
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        }
+      }
+    ],
+    "updated": "2026-02-26T07:35:21Z",
+    "noDataState": "NoData",
+    "execErrState": "Error",
+    "for": "2m",
+    "keep_firing_for": "0s",
+    "annotations": {
+      "__dashboardUid__": "mysql-performance-debug",
+      "__panelId__": "31",
+      "description": "More than 50 threads actively running queries. Database may be overloaded.",
+      "summary": "MySQL thread overload on V4B TH Prod"
+    },
+    "labels": {
+      "instance": "acme-<COUNTRY>-prod-consumer",
+      "service": "mysql",
+      "severity": "warning"
+    },
+    "provenance": "api",
+    "isPaused": false,
+    "notification_settings": null,
+    "record": null
+  }
+]

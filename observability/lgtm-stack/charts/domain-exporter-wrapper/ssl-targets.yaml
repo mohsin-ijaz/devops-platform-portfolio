@@ -1,0 +1,13 @@
+# SSL Certificate Monitoring Configuration
+# Replace the example domains with your actual domains
+
+# Your domains to monitor for SSL certificate expiry
+domains:
+  - https://example1.com
+  - https://example2.com
+  - https://api.example.com
+  - https://dashboard.example.com
+  # Add your actual domains here
+
+# Prometheus recording and alerting rules for SSL monitoring
+# You'll need to add these to your Prometheus configuration

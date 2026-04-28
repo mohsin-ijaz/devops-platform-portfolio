@@ -1,0 +1,168 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: filebeat-audit
+  namespace: kube-system
+  labels:
+    app: filebeat-audit
+    compliance: iso27001
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: filebeat-audit
+  labels:
+    app: filebeat-audit
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces", "pods", "nodes"]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: filebeat-audit
+subjects:
+  - kind: ServiceAccount
+    name: filebeat-audit
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: filebeat-audit
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat-audit
+  namespace: kube-system
+  labels:
+    app: filebeat-audit
+    compliance: iso27001
+
+  annotations:
+    compliance.iso27001/controls: "A.12.4.1,A.12.4.3,A.16.1.7"
+    compliance.iso27001/description: "Ships kube-apiserver audit logs to Elasticsearch"
+spec:
+  selector:
+    matchLabels:
+      app: filebeat-audit
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: filebeat-audit
+        compliance: iso27001
+    spec:
+      serviceAccountName: filebeat-audit
+      terminationGracePeriodSeconds: 30
+      hostNetwork: false
+      dnsPolicy: ClusterFirstWithHostNet
+
+      # must run on control-plane nodes — that's where the audit log file lives
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+
+      # high priority so it doesn't get evicted when the node is under pressure
+      priorityClassName: system-node-critical
+
+      containers:
+        - name: filebeat-audit
+          image: docker.elastic.co/beats/filebeat:8.12.0
+          args: ["-c", "/etc/filebeat/filebeat.yml", "-e"]
+
+          env:
+            - name: ELASTICSEARCH_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: filebeat-audit-credentials
+                  key: elasticsearch-host
+            - name: ELASTICSEARCH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: filebeat-audit-credentials
+                  key: elasticsearch-username
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: filebeat-audit-credentials
+                  key: elasticsearch-password
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+          securityContext:
+            runAsUser: 0  # needs root to read the audit log
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+              add: ["DAC_READ_SEARCH"]  # read files owned by root
+
+          volumeMounts:
+            - name: config
+              mountPath: /etc/filebeat
+              readOnly: true
+            - name: audit-logs
+              mountPath: /var/log/kubernetes/audit
+              readOnly: true
+            - name: data
+              mountPath: /usr/share/filebeat/data
+            - name: varlog-filebeat
+              mountPath: /var/log/filebeat
+
+          livenessProbe:
+            exec:
+              command: ["filebeat", "test", "output"]
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command: ["filebeat", "test", "config"]
+            initialDelaySeconds: 10
+            periodSeconds: 30
+
+      volumes:
+        - name: config
+          configMap:
+            name: filebeat-audit-config
+            defaultMode: 0600
+
+        - name: audit-logs
+          hostPath:
+            path: /var/log/kubernetes/audit
+            type: DirectoryOrCreate
+
+        - name: data
+          hostPath:
+            path: /var/lib/filebeat-audit
+            type: DirectoryOrCreate
+
+        - name: varlog-filebeat
+          hostPath:
+            path: /var/log/filebeat-audit
+            type: DirectoryOrCreate

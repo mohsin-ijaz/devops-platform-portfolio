@@ -1,0 +1,32 @@
+apiVersion: v2
+name: domain-exporter-wrapper
+description: LGTM Stack Domain Expiry Monitoring wrapper
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+# Keywords for discovery
+keywords:
+  - domain-exporter
+  - domain-monitoring
+  - domain-expiry
+  - observability
+  - lgtm-stack
+
+# Maintainers
+maintainers:
+  - name: Platform Team
+    email: platform@company.com
+
+# No dependencies - we'll deploy caarlos0/domain_exporter directly
+
+# Annotations for ArgoCD
+annotations:
+  # ArgoCD sync wave - after Prometheus
+  argocd.argoproj.io/sync-wave: "3"
+  
+  # SRE metadata
+  sre.io/service: "domain-exporter"
+  sre.io/tier: "monitoring"
+  sre.io/criticality: "medium"
+  sre.io/oncall: "platform-team"

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-ui-config
+  namespace: kafka
+data:
+  application.yml: |-
+    kafka:
+      clusters:
+        - name: kafka
+          bootstrapServers: kafka:9092
+          schemaRegistry: http://schema-registry:8081
+          kafkaConnect:
+            - name: kafka-connect
+              address: http://kafka-connect:8083
+    auth:
+      type: LOGIN_FORM
+      users:
+        - username: acme
+          password: <KAFKA_UI_PASSWORD>
+          roles: [ADMIN]
+    logging:
+      level:
+        com.provectus.kafka.ui: INFO
+        org.apache.kafka: WARN
+        root: INFO

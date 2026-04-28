@@ -1,0 +1,9 @@
+streamlit
+kubernetes
+google-api-python-client
+google-cloud-container
+google-cloud-compute
+APScheduler
+pytz
+requests
+python-dotenv

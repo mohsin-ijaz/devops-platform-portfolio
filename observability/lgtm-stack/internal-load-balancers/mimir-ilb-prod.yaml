@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-ilb-prod
+  namespace: lgtm-stack
+  annotations:
+    # Internal Load Balancer (private, not internet-facing)
+    networking.gke.io/load-balancer-type: "Internal"
+    # Allow cross-project access (for other clusters to reach <GCP_MGMT_PROJECT>)
+    networking.gke.io/internal-load-balancer-allow-global-access: "true"
+  labels:
+    app: mimir
+    component: ilb
+    service: mimir-ingestion
+    environment: production
+spec:
+  type: LoadBalancer
+  
+  # Static IP - Reserved for Production
+  loadBalancerIP: <MIMIR_ILB_STATIC_IP>  # Reserve via: gcloud compute addresses create mimir-ilb-prod --region=<GCP_REGION> --subnet=<GCP_SUBNET>
+  
+  # Security: Allow only GCP internal networks
+  loadBalancerSourceRanges:
+    - 10.0.0.0/8  # All GCP internal networks
+  
+  ports:
+    - name: http-metrics
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  
+  # Target the mimir gateway (exposes NGINX on 8080)
+  selector:
+    app.kubernetes.io/name: mimir
+    app.kubernetes.io/component: gateway
+  
+  # Session affinity for consistent routing
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+  
+  externalTrafficPolicy: Cluster

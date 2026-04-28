@@ -1,0 +1,109 @@
+{
+  "k8s-audit-template": {
+    "index_patterns": ["k8s-audit-*"],
+    "_meta": {
+      "description": "Field mappings for k8s audit logs. dynamic=false to prevent field explosion from unknown request bodies.",
+      "version": "1.0.0"
+    },
+    "template": {
+      "settings": {
+        "number_of_shards": 2,
+        "number_of_replicas": 1,
+        "codec": "best_compression",
+        "refresh_interval": "10s",
+        "index.lifecycle.name": "k8s-audit-retention-policy",
+        "index.lifecycle.rollover_alias": "k8s-audit",
+        "index.mapping.total_fields.limit": 2000
+      },
+      "mappings": {
+        "dynamic": "false",
+        "_source": {
+          "enabled": true
+        },
+        "properties": {
+
+          "@timestamp": { "type": "date" },
+          "requestReceivedTimestamp": { "type": "date" },
+          "stageTimestamp": { "type": "date" },
+
+          "level": { "type": "keyword" },
+          "stage": { "type": "keyword" },
+          "auditID": { "type": "keyword" },
+
+          "verb": { "type": "keyword" },
+          "requestURI": { "type": "keyword" },
+          "responseStatus": {
+            "properties": {
+              "code": { "type": "integer" },
+              "status": { "type": "keyword" },
+              "reason": { "type": "keyword" },
+              "message": { "type": "text" }
+            }
+          },
+
+          "user": {
+            "properties": {
+              "username": { "type": "keyword" },
+              "uid": { "type": "keyword" },
+              "groups": { "type": "keyword" },
+              "extra": { "type": "object", "dynamic": "true" }
+            }
+          },
+
+          "impersonatedUser": {
+            "properties": {
+              "username": { "type": "keyword" },
+              "uid": { "type": "keyword" },
+              "groups": { "type": "keyword" }
+            }
+          },
+
+          "sourceIPs": { "type": "ip" },
+          "userAgent": { "type": "keyword" },
+
+          "objectRef": {
+            "properties": {
+              "resource": { "type": "keyword" },
+              "namespace": { "type": "keyword" },
+              "name": { "type": "keyword" },
+              "uid": { "type": "keyword" },
+              "apiGroup": { "type": "keyword" },
+              "apiVersion": { "type": "keyword" },
+              "resourceVersion": { "type": "keyword" },
+              "subresource": { "type": "keyword" }
+            }
+          },
+
+          "requestObject": {
+            "type": "object",
+            "enabled": false
+          },
+          "responseObject": {
+            "type": "object",
+            "enabled": false
+          },
+
+          "annotations": {
+            "type": "object",
+            "dynamic": "true"
+          },
+
+          "cluster": { "type": "keyword" },
+          "environment": { "type": "keyword" },
+          "compliance_framework": { "type": "keyword" },
+
+          "audit": {
+            "properties": {
+              "risk_tier": { "type": "keyword" },
+              "alert_type": { "type": "keyword" },
+              "actor_type": { "type": "keyword" },
+              "actor_name": { "type": "keyword" },
+              "actor_namespace": { "type": "keyword" },
+              "iso_controls": { "type": "keyword" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

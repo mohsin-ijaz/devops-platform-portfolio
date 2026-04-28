@@ -1,0 +1,122 @@
+# LibreChat Prometheus Exporter Deployment
+# Exposes LibreChat MongoDB metrics for Prometheus/Mimir scraping
+# Source: https://github.com/virtUOS/librechat_exporter
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: librechat-exporter
+  namespace: lgtm-stack-prod
+  labels:
+    app.kubernetes.io/name: librechat-exporter
+    app.kubernetes.io/component: metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: librechat-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: librechat-exporter
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: exporter
+          image: ghcr.io/virtuos/librechat_exporter:latest
+          ports:
+            - containerPort: 8000
+              name: metrics
+          env:
+            # MongoDB connection (exporter uses MONGODB_URI, not MONGO_URI)
+            - name: MONGODB_URI
+              value: "mongodb://root:<MONGO_ROOT_PASSWORD>@mongodb.lgtm-stack-prod.svc.cluster.local:27017/librechat?authSource=admin"
+            # Database name (default is "LibreChat" uppercase, but our DB is lowercase)
+            - name: MONGODB_DATABASE
+              value: "librechat"
+
+            # Logging level
+            - name: LOGGING_LEVEL
+              value: "info"
+
+            # Enable all metric groups for comprehensive tracking
+            - name: ENABLE_BASIC_METRICS
+              value: "true"
+            - name: ENABLE_TOKEN_METRICS
+              value: "true"
+            - name: ENABLE_USER_METRICS
+              value: "true"
+            - name: ENABLE_MODEL_METRICS
+              value: "true"
+            - name: ENABLE_TIME_WINDOW_METRICS
+              value: "true"
+            - name: ENABLE_RATING_METRICS
+              value: "true"
+            - name: ENABLE_TOOL_METRICS
+              value: "true"
+            - name: ENABLE_FILE_METRICS
+              value: "false"
+
+            # Scrape interval (how often to query MongoDB)
+            - name: SCRAPE_INTERVAL
+              value: "60"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: librechat-exporter
+  namespace: lgtm-stack-prod
+  labels:
+    app.kubernetes.io/name: librechat-exporter
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: metrics
+  selector:
+    app.kubernetes.io/name: librechat-exporter
+---
+# ServiceMonitor for Prometheus Operator
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: librechat-exporter
+  namespace: lgtm-stack-prod
+  labels:
+    app.kubernetes.io/name: librechat-exporter
+    app.kubernetes.io/part-of: lgtm-stack-prod  # Required for Prometheus to pick up this monitor
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: librechat-exporter
+  endpoints:
+    - port: metrics
+      interval: 60s
+      scrapeTimeout: 30s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - lgtm-stack-prod

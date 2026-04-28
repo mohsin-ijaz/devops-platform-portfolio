@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: schema-registry-jmx-exporter-config
+data:
+  jmx-exporter-config.yaml: |
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    rules:
+      - pattern: kafka.schema.registry<type=([^,]+), name=([^,>]+)><>([^:]+)
+        name: schema_registry_$1_$3
+        labels:
+          name: $2
+        type: GAUGE
+      - pattern: java.lang<type=Memory><>([^:]+)
+        name: java_lang_memory_$1
+        type: GAUGE
+      - pattern: java.lang<type=GarbageCollector, name=(.+)><>([^:]+)
+        name: java_lang_gc_$2
+        labels:
+          name: $1
+        type: GAUGE
+

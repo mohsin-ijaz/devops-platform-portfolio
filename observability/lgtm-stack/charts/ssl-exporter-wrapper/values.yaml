@@ -1,0 +1,26 @@
+# Base values for ssl-exporter-wrapper chart
+# SSL Certificate Expiry monitoring using ribbybibby/ssl_exporter
+
+# Docker image configuration
+image:
+  repository: ribbybibby/ssl-exporter
+  tag: "2.4.3"
+  pullPolicy: IfNotPresent
+
+# ServiceMonitor configuration
+serviceMonitor:
+  enabled: false
+  interval: "1h"
+  scrapeTimeout: "30s"
+
+# Default targets (override in values-prod.yaml)
+targets: []
+
+# Default resources
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi

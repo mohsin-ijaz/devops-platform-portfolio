@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ksql
+  labels:
+    app: ksql
+spec:
+  ports:
+  - port: 8088
+  selector:
+    app: ksql

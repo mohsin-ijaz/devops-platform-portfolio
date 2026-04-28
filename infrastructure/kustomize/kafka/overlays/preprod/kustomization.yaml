@@ -1,0 +1,58 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+- pairs:
+    env: preprod
+
+resources:
+- ../../base
+- kafka-external-pub-0.yaml
+- kafka-external-pub-1.yaml
+- kafka-external-pub-2.yaml
+- schema-registry-external-pub.yaml
+
+patches:
+- path: kafka-internal-0-patch.yaml
+  target:
+    kind: Service
+    name: kafka-internal-0
+    version: v1
+- path: kafka-internal-1-patch.yaml
+  target:
+    kind: Service
+    name: kafka-internal-1
+    version: v1
+- path: kafka-internal-2-patch.yaml
+  target:
+    kind: Service
+    name: kafka-internal-2
+    version: v1
+- path: kafka-external-0-patch.yaml
+  target:
+    kind: Service
+    name: kafka-0-external
+    version: v1
+- path: kafka-external-1-patch.yaml
+  target:
+    kind: Service
+    name: kafka-1-external
+    version: v1
+- path: kafka-external-2-patch.yaml
+  target:
+    kind: Service
+    name: kafka-2-external
+    version: v1
+- path: schema-registry-patch.yaml
+  target:
+    kind: Service
+    name: schema-registry
+    version: v1
+- path: kafka-ui-patch.yaml
+  target:
+    kind: Service
+    name: kafka-ui
+    version: v1
+
+patchesStrategicMerge:
+- kafka-patch.yaml

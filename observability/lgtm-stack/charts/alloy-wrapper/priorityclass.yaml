@@ -1,0 +1,8 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: alloy-high-priority
+value: 100000000
+preemptionPolicy: PreemptLowerPriority
+globalDefault: false
+description: "High priority for observability DaemonSet so it can preempt lower priority pods if needed"

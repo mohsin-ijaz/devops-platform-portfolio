@@ -1,0 +1,60 @@
+stages:
+  - provision
+  - deploy
+  - destroy
+
+variables:
+  TF_ROOT: "infra/terraform"
+  ANSIBLE_DIR: "infra/ansible"
+  GOOGLE_APPLICATION_CREDENTIALS: "${CI_PROJECT_DIR}/key.json"
+
+before_script:
+  - apt-get update && apt-get install -y curl unzip sshpass software-properties-common python3 python3-pip python3-venv openssh-client
+  - python3 -m venv venv
+  - source venv/bin/activate
+  - pip install ansible
+  - curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
+  - apt-get update && apt-get install -y terraform
+  - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+  - mv kustomize /usr/local/bin/kustomize
+  - mkdir -p ~/.ssh ./infra/terraform
+  - test -f ./infra/terraform/ci-ssh-key || ssh-keygen -t rsa -b 4096 -f ./infra/terraform/ci-ssh-key -N ""
+  - cp ./infra/terraform/ci-ssh-key ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
+  - eval "$(ssh-agent -s)"
+  - ssh-add ~/.ssh/id_rsa
+  - echo -e "Host *\n  StrictHostKeyChecking no\n" > ~/.ssh/config
+
+provision:
+  stage: provision
+  when: manual
+  script:
+    - echo "$GCP_SA_KEY_JSON" > "$CI_PROJECT_DIR/key.json"
+    - cd $TF_ROOT
+    - terraform init
+    - terraform apply -auto-approve
+  artifacts:
+    paths:
+      - infra/terraform/ci-ssh-key
+      - infra/terraform/ci-ssh-key.pub
+      - infra/ansible/inventory.ini
+    expire_in: 1 hour
+
+deploy:
+  stage: deploy
+  when: manual
+  dependencies:
+    - provision
+  script:
+    - cd $ANSIBLE_DIR
+    - ansible-playbook -i inventory.ini bootstrap.yml
+
+destroy:
+  stage: destroy
+  when: manual
+  script:
+    - echo "$GCP_SA_KEY_JSON" > "$CI_PROJECT_DIR/key.json"
+    - cd $TF_ROOT
+    - terraform init
+    - terraform destroy -auto-approve

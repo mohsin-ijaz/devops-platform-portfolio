@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-ilb
+  namespace: lgtm-stack
+  annotations:
+    # Internal Load Balancer (private, not internet-facing)
+    networking.gke.io/load-balancer-type: "Internal"
+    # Allow cross-project access (for <GCP_QA_PROJECT> to reach <GCP_MGMT_PROJECT>)
+    networking.gke.io/internal-load-balancer-allow-global-access: "true"
+  labels:
+    app: loki
+    component: ilb
+    service: loki-ingestion
+spec:
+  type: LoadBalancer
+  
+  # Static IP
+  loadBalancerIP: <LOKI_ILB_IP>
+  
+  # Security: Allow only GCP internal networks
+  loadBalancerSourceRanges:
+    - 10.0.0.0/8  # All GCP internal networks
+  
+  ports:
+    - name: http-logs
+      port: 3100
+      targetPort: 8080
+      protocol: TCP
+  
+  # Target the loki-gateway service
+  selector:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: gateway
+  
+  # Session affinity for consistent routing
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+  
+  externalTrafficPolicy: Cluster

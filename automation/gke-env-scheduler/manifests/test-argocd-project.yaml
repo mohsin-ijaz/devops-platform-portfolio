@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: devenv-test
+  namespace: argocd
+spec:
+  description: Isolated test project for Dev Environment Manager testing
+  
+  # Allow deployments to test namespace only
+  destinations:
+    - namespace: devenv-test
+      server: https://kubernetes.default.svc
+  
+  # Source repositories (adjust to your repo)
+  sourceRepos:
+    - '*'
+  
+  # Cluster resource whitelist
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+  
+  # Namespace resource whitelist
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: ConfigMap
+    - group: ''
+      kind: Secret
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet
+  
+  # Sync windows (will be managed by our controller)
+  syncWindows: []
+  
+  # Roles for access control
+  roles:
+    - name: admin
+      description: Admin access for testing
+      policies:
+        - p, proj:devenv-test:admin, applications, *, devenv-test/*, allow

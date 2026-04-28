@@ -1,0 +1,6 @@
+- op: replace
+  path: /spec/template/spec/containers/0/image
+  value: <GCP_REGION>-docker.pkg.dev/<GCP_QA_PROJECT>/cs-qa-base-artifact-enterprise/kafka-connect:v7.7.1-mongodb1.13.0-msk1.0.6
+- op: replace
+  path: /spec/replicas
+  value: 3

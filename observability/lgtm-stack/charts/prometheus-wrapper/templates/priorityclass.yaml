@@ -1,0 +1,19 @@
+---
+# PriorityClass for node-exporter
+# This ensures node-exporter can preempt lower priority pods to run on every node
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: lgtm-node-exporter-critical
+  labels:
+    app.kubernetes.io/part-of: lgtm-stack
+    app.kubernetes.io/component: monitoring
+# Maximum allowed user-defined priority value (1000000000)
+# This makes it higher than most workloads (default is 0) but lower than system priorities
+value: 1000000000
+preemptionPolicy: PreemptLowerPriority
+globalDefault: false
+description: >-
+  Priority class for LGTM node-exporter DaemonSet.
+  Ensures node-exporter can run on all nodes by preempting lower priority pods when necessary.
+  This is critical for observability - without node metrics, we have no visibility into node health.

@@ -1,0 +1,785 @@
+# Prometheus Stack - Development Values
+
+kube-prometheus-stack:
+  enabled: true
+
+  # Prometheus
+  prometheus:
+    enabled: true
+    
+    prometheusSpec:
+      replicas: 2
+      retention: 15d
+      retentionSize: "45GB"
+
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 4Gi
+        limits:
+          cpu: 2000m
+          memory: 8Gi
+
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: premium-rwo
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 50Gi
+
+      nodeSelector:
+        workload: prometheus
+      
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: prometheus
+          effect: NoSchedule
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: prometheus
+              topologyKey: kubernetes.io/hostname
+
+      remoteWrite: []
+
+      serviceMonitorSelectorNilUsesHelmValues: false
+      serviceMonitorSelector:
+        matchExpressions:
+          - key: app.kubernetes.io/part-of
+            operator: In
+            values:
+              - lgtm-stack
+              - kube-prometheus-stack
+
+      serviceMonitorNamespaceSelector:
+        matchNames:
+          - lgtm-stack
+      
+      podMonitorSelector:
+        matchLabels:
+          app.kubernetes.io/part-of: lgtm-stack
+      
+      podMonitorNamespaceSelector:
+        matchNames:
+          - lgtm-stack
+
+      probeSelector: {}
+      probeNamespaceSelector: {}
+
+      ruleSelector:
+        matchLabels:
+          app.kubernetes.io/part-of: lgtm-stack
+      
+      ruleNamespaceSelector:
+        matchNames:
+          - lgtm-stack
+
+      metricRelabelings:
+        - sourceLabels: [namespace]
+          regex: "^(?!lgtm-stack$).*"
+          action: drop
+        - sourceLabels: [exported_namespace]
+          regex: "^(?!lgtm-stack$).*"
+          action: drop
+
+      additionalScrapeConfigs:
+        - job_name: 'mimir-components'
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                names:
+                  - lgtm-stack
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              regex: mimir
+              action: keep
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              regex: "true"
+              action: keep
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              replacement: $1:$2
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+
+        - job_name: 'loki-components'
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                names:
+                  - lgtm-stack
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              regex: loki
+              action: keep
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
+              regex: http-metrics
+              action: keep
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+
+        - job_name: 'tempo-components'
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                names:
+                  - lgtm-stack
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              regex: tempo
+              action: keep
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
+              regex: http-metrics
+              action: keep
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+
+        - job_name: 'grafana'
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                names:
+                  - lgtm-stack
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              regex: grafana
+              action: keep
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+
+        - job_name: "acme-<ENV>-cluster-mongo-metrics"
+          scrape_interval: 10s
+          metrics_path: /metrics
+          scheme: https
+          basic_auth:
+            username: lgtm-stack
+            password: lgtm-stack123
+          http_sd_configs:
+            - url: https://cloud.mongodb.com/prometheus/v1.0/groups/<MONGODB_ATLAS_GROUP_ID>/discovery
+              refresh_interval: 60s
+              basic_auth:
+                username: lgtm-stack
+                password: lgtm-stack123
+
+        - job_name: "acme-<ENV>-cluster-mongo-metrics"
+          scrape_interval: 10s
+          metrics_path: /metrics
+          scheme: https
+          basic_auth:
+            username: lgtm-stack
+            password: lgtm-stack123
+          http_sd_configs:
+            - url: https://cloud.mongodb.com/prometheus/v1.0/groups/<MONGODB_ATLAS_GROUP_ID>/discovery
+              refresh_interval: 60s
+              basic_auth:
+                username: lgtm-stack
+                password: lgtm-stack123
+
+        - job_name: "acme-<ENV>-cluster-mongo-metrics"
+          scrape_interval: 10s
+          metrics_path: /metrics
+          scheme: https
+          basic_auth:
+            username: lgtm-stack
+            password: lgtm-stack123
+          http_sd_configs:
+            - url: https://cloud.mongodb.com/prometheus/v1.0/groups/<MONGODB_ATLAS_GROUP_ID>/discovery
+              refresh_interval: 60s
+              basic_auth:
+                username: lgtm-stack
+                password: lgtm-stack123
+
+        - job_name: "acme-<ENV>-cluster-mongo-metrics"
+          scrape_interval: 10s
+          metrics_path: /metrics
+          scheme: https
+          basic_auth:
+            username: lgtm-stack
+            password: lgtm-stack123
+          http_sd_configs:
+            - url: https://cloud.mongodb.com/prometheus/v1.0/groups/<MONGODB_ATLAS_GROUP_ID>/discovery
+              refresh_interval: 60s
+              basic_auth:
+                username: lgtm-stack
+                password: lgtm-stack123
+
+      externalLabels:
+        cluster: <GKE_MGMT_CLUSTER>
+        environment: dev
+        region: <GCP_REGION>-a
+        prometheus_replica: $(POD_NAME)
+
+      web:
+        pageTitle: "LGTM Prometheus - Dev"
+
+      enableFeatures:
+        - exemplar-storage
+        - memory-snapshot-on-shutdown
+
+      enforcedSampleLimit: 50000
+      enforcedTargetLimit: 500
+      enforcedLabelLimit: 50
+      enforcedLabelNameLengthLimit: 512
+      enforcedLabelValueLengthLimit: 2048
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: prometheus
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
+    service:
+      type: ClusterIP
+      port: 9090
+      targetPort: 9090
+
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      selfMonitor: true
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  # Alertmanager
+  alertmanager:
+    enabled: false
+  
+  # Grafana
+  grafana:
+    enabled: true
+
+    # Use same Grafana version as prod for consistency
+    image:
+      repository: grafana/grafana
+      tag: "12.2.0"
+
+    deploymentStrategy:
+      type: Recreate
+
+    adminPassword: "<GRAFANA_ADMIN_PASSWORD>"
+
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+    persistence:
+      enabled: true
+      type: pvc
+      size: 10Gi
+      storageClassName: premium-rwo
+
+    nodeSelector:
+      workload: prometheus
+
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: prometheus
+        effect: NoSchedule
+
+    plugins:
+      - victoriametrics-logs-datasource
+      - grafana-lokiexplore-app 1.0.37
+      - grafana-exploretraces-app
+      - grafana-metricsdrilldown-app
+      - grafana-pyroscope-app
+
+    service:
+      type: ClusterIP
+      port: 80
+
+    securityContext:
+      runAsUser: 472
+      runAsGroup: 472
+      fsGroup: 472
+
+    additionalDataSources:
+      - name: Mimir
+        type: prometheus
+        access: proxy
+        url: http://mimir-gateway.lgtm-stack.svc.cluster.local/prometheus
+        uid: PAE45454D0EDB9216
+        isDefault: false
+        editable: false
+        jsonData:
+          httpMethod: POST
+          prometheusType: Mimir
+          timeInterval: 30s
+          incrementalQuerying: true
+          incrementalQueryOverlapWindow: 10m
+          httpHeaderName1: 'X-Scope-OrgID'
+        secureJsonData:
+          httpHeaderValue1: '<GCP_QA_PROJECT>'
+
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki-gateway.lgtm-stack.svc.cluster.local
+        uid: P8E80F9AEF21F6940
+        editable: false
+        jsonData:
+          maxLines: 1000
+          derivedFields:
+            - datasourceUid: tempo
+              matcherRegex: "trace_id=(\\w+)"
+              name: TraceID
+              url: "$${__value.raw}"
+        secureJsonData: {}
+        version: 1
+      
+      - name: Tempo
+        type: tempo
+        access: proxy
+        url: http://tempo-query-frontend.lgtm-stack.svc.cluster.local:3200
+        uid: tempo
+        editable: false
+        jsonData:
+          httpMethod: GET
+          tracesToLogsV2:
+            datasourceUid: P8E80F9AEF21F6940
+            filterByTraceID: true
+            filterBySpanID: false
+            spanStartTimeShift: "-1h"
+            spanEndTimeShift: "1h"
+            customQuery: true
+            query: '{$${__tags}} |= "$${__span.traceId}"'
+            tags:
+              - key: "service.name"
+                value: "app"
+          tracesToMetrics:
+            datasourceUid: PAE45454D0EDB9216
+            spanStartTimeShift: "-30m"
+            spanEndTimeShift: "30m"
+            tags:
+              - key: "service.name"
+                value: "service"
+            queries:
+              - name: "Service Debug Dashboard"
+                query: "sum(rate(traces_spanmetrics_calls_total{$$__tags}[5m]))"
+          nodeGraph:
+            enabled: true
+          search:
+            hide: false
+          lokiSearch:
+            datasourceUid: P8E80F9AEF21F6940
+
+      - name: VictoriaLogs
+        type: victoriametrics-logs-datasource
+        access: proxy
+        url: http://victorialogs-vmauth.lgtm-stack.svc.cluster.local:8427
+        uid: victorialogs
+        editable: false
+        jsonData:
+          httpMethod: GET
+
+    # Sidecar
+    sidecar:
+      dashboards:
+        enabled: false
+        defaultFolderName: "Kubernetes"
+        label: grafana_dashboard
+      datasources:
+        enabled: true
+        defaultDatasourceEnabled: true
+        uid: prometheus
+      plugins:
+        enabled: true
+        label: grafana_plugin
+        labelValue: "1"
+
+    # Grafana config
+    grafana.ini:
+      server:
+        root_url: "https://monitoring-dev.acme.com"
+        domain: monitoring-dev.acme.com
+      analytics:
+        reporting_enabled: false
+        check_for_updates: false
+      log:
+        mode: console
+        level: info
+      auth:
+        disable_login_form: true
+      auth.google:
+        enabled: true
+        client_id: ${GF_AUTH_GOOGLE_CLIENT_ID}
+        client_secret: ${GF_AUTH_GOOGLE_CLIENT_SECRET}
+        scopes: openid email profile
+        auth_url: https://accounts.google.com/o/oauth2/v2/auth
+        token_url: https://oauth2.googleapis.com/token
+        api_url: https://openidconnect.googleapis.com/v1/userinfo
+        allowed_domains: acme.com acme.com
+        allow_sign_up: true
+        skip_org_role_sync: true
+        role_attribute_path: (email == '<YOUR_EMAIL>' || email == '<YOUR_EMAIL>' || email == 'ally.shayan<YOUR_DOMAIN>' || email == 'ahmad.alkhoudary<YOUR_DOMAIN>' || email == 'ibrahim.alnameh<YOUR_DOMAIN>') && 'Admin' || 'Viewer'
+      auth.anonymous:
+        enabled: false
+      users:
+        auto_assign_org: true
+        auto_assign_org_role: Viewer
+        default_theme: dark
+      explore:
+        enabled: true
+      plugins:
+        public_key_retrieval_disabled: true
+        public_key_retrieval_on_startup: false
+      feature_toggles:
+        backgroundPluginInstaller: false
+      unified_alerting:
+        enabled: true
+      alerting:
+        enabled: false
+      date_formats:
+        default_timezone: Asia/Kuala_Lumpur
+    
+    envFromSecret: grafana-google-oauth
+
+  # Prometheus Operator
+  prometheusOperator:
+    enabled: true
+    
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+    nodeSelector:
+      workload: prometheus
+    
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: prometheus
+        effect: NoSchedule
+
+    admissionWebhooks:
+      enabled: true
+      patch:
+        enabled: true
+        nodeSelector:
+          workload: prometheus
+        tolerations:
+          - key: workload
+            operator: Equal
+            value: prometheus
+            effect: NoSchedule
+
+    tls:
+      enabled: true
+    
+    serviceMonitor:
+      enabled: true
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  # Kube State Metrics
+  kube-state-metrics:
+    enabled: true
+    
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    
+    nodeSelector:
+      workload: prometheus
+    
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: prometheus
+        effect: NoSchedule
+    
+    prometheus:
+      monitor:
+        enabled: true
+        interval: 30s
+        labels:
+          app.kubernetes.io/part-of: kube-prometheus-stack
+        metricRelabelings:
+          - sourceLabels: []
+            targetLabel: cluster
+            replacement: <GKE_MGMT_CLUSTER>
+
+    rbac:
+      create: true
+      extraRules:
+        - apiGroups: ["autoscaling.k8s.io"]
+          resources: ["verticalpodautoscalers"]
+          verbs: ["list", "watch"]
+
+    customResourceState:
+      enabled: true
+      config:
+        kind: CustomResourceStateMetrics
+        spec:
+          resources:
+            - groupVersionKind:
+                group: autoscaling.k8s.io
+                version: v1
+                kind: VerticalPodAutoscaler
+              metricNamePrefix: kube_vpa
+              labelsFromPath:
+                verticalpodautoscaler: [metadata, name]
+                namespace: [metadata, namespace]
+                target_api_version: [spec, targetRef, apiVersion]
+                target_kind: [spec, targetRef, kind]
+                target_name: [spec, targetRef, name]
+              metrics:
+                # VPA update mode
+                - name: "update_mode"
+                  help: "The update mode of the VPA"
+                  each:
+                    type: Info
+                    info:
+                      labelsFromPath:
+                        update_mode: [spec, updatePolicy, updateMode]
+                # Target CPU recommendation
+                - name: "container_recommendation_target_cpu"
+                  help: "Target CPU recommendation for container in millicores"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [target, cpu]
+                      labelsFromPath:
+                        container: [containerName]
+                # Target Memory recommendation
+                - name: "container_recommendation_target_memory"
+                  help: "Target memory recommendation for container in bytes"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [target, memory]
+                      labelsFromPath:
+                        container: [containerName]
+                # Lower bound CPU
+                - name: "container_recommendation_lowerbound_cpu"
+                  help: "Lower bound CPU recommendation for container in millicores"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [lowerBound, cpu]
+                      labelsFromPath:
+                        container: [containerName]
+                # Lower bound Memory
+                - name: "container_recommendation_lowerbound_memory"
+                  help: "Lower bound memory recommendation for container in bytes"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [lowerBound, memory]
+                      labelsFromPath:
+                        container: [containerName]
+                # Upper bound CPU
+                - name: "container_recommendation_upperbound_cpu"
+                  help: "Upper bound CPU recommendation for container in millicores"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [upperBound, cpu]
+                      labelsFromPath:
+                        container: [containerName]
+                # Upper bound Memory
+                - name: "container_recommendation_upperbound_memory"
+                  help: "Upper bound memory recommendation for container in bytes"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [upperBound, memory]
+                      labelsFromPath:
+                        container: [containerName]
+
+  # Node Exporter
+  prometheus-node-exporter:
+    enabled: true
+    priorityClassName: lgtm-node-exporter-critical
+    hostNetwork: true
+    hostPID: true
+    hostRootFsMount:
+      enabled: true
+    
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+    prometheus:
+      monitor:
+        enabled: true
+        interval: 30s
+        labels:
+          app.kubernetes.io/part-of: lgtm-stack
+
+    tolerations:
+      - operator: Exists
+        effect: NoSchedule
+
+  # Default Rules
+  defaultRules:
+    create: true
+    rules:
+      alertmanager: false
+      etcd: false
+      configReloaders: true
+      general: true
+      k8s: true
+      kubeApiserverAvailability: true
+      kubeApiserverSlos: true
+      kubeControllerManager: true
+      kubelet: true
+      kubeProxy: true
+      kubePrometheusGeneral: true
+      kubePrometheusNodeRecording: true
+      kubernetesApps: true
+      kubernetesResources: true
+      kubernetesStorage: true
+      kubernetesSystem: true
+      kubeSchedulerAlerting: true
+      kubeSchedulerRecording: true
+      kubeStateMetrics: true
+      network: true
+      node: true
+      nodeExporterAlerting: true
+      nodeExporterRecording: true
+      prometheus: true
+      prometheusOperator: true
+
+    labels:
+      app.kubernetes.io/part-of: lgtm-stack
+
+  # API Server
+  kubeApiServer:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  # Kubelet
+  kubelet:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  # CoreDNS
+  coreDns:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+  
+  # Kube Controller Manager
+  kubeControllerManager:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+  
+  # Kube Scheduler
+  kubeScheduler:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+  
+  # Kube Proxy
+  kubeProxy:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+  
+  # Kube ETCD
+  kubeEtcd:
+    enabled: false
+
+# MySQL Datasources (disabled for dev)
+mysqlDatasources:
+  enabled: false
+
+# WireGuard Gateway (disabled for dev)
+wireguardGateway:
+  enabled: false
+
+# Workload Identity
+workloadIdentity:
+  enabled: false
+
+# Network Policy
+networkPolicy:
+  enabled: true
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

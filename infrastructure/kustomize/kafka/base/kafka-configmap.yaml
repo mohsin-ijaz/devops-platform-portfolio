@@ -1,0 +1,16 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: kafka-pdb
+spec:
+  selector:
+    matchLabels:
+      app: kafka
+  minAvailable: 3
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-cm
+data:
+  advertised.listeners: PLAINTEXT://kafka-0.kafka.kafka.svc.cluster.local:9092,SASL_PLAINTEXT://kafka-0.kafka.kafka.svc.cluster.local:9094

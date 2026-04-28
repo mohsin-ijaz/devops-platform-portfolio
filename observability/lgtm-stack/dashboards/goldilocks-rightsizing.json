@@ -1,0 +1,2233 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 780,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "count(kube_vpa_update_mode{cluster=~\"$cluster\", namespace=~\"$namespace\"})",
+          "refId": "A"
+        }
+      ],
+      "title": "Total VPAs",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 3,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "count(kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"})",
+          "refId": "A"
+        }
+      ],
+      "title": "Containers Analyzed",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 6,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "count(count by (namespace) (kube_vpa_update_mode{cluster=~\"$cluster\", namespace=~\"$namespace\"}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Namespaces",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Workloads where Current Request > Target (can reduce to save)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 9,
+        "y": 1
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "count(\n  (\n    max by (namespace, container, target_name) (\n      label_replace(\n        label_replace(\n          kube_pod_container_resource_requests{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n          * on(pod, namespace, cluster) group_left(owner_name)\n          max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n          \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n        ),\n        \"target_name\", \"$1\", \"workload\", \"(.*)\"\n      )\n    )\n    - on(namespace, container, target_name) \n    kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"}\n  ) > 0.01\n) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Over-Provisioned",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Workloads where Current Request < Lower Bound (risk of issues)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 12,
+        "y": 1
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "count(\n  (\n    kube_vpa_container_recommendation_lowerbound_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"}\n    - on(namespace, container, target_name)\n    max by (namespace, container, target_name) (\n      label_replace(\n        label_replace(\n          kube_pod_container_resource_requests{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n          * on(pod, namespace, cluster) group_left(owner_name)\n          max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n          \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n        ),\n        \"target_name\", \"$1\", \"workload\", \"(.*)\"\n      )\n    )\n  ) > 0.01\n) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Under-Provisioned",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Workloads without resource limits set",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 15,
+        "y": 1
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "count(\n  kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"}\n  unless on(namespace, container, target_name)\n  max by (namespace, container, target_name) (\n    label_replace(\n      label_replace(\n        kube_pod_container_resource_limits{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n        * on(pod, namespace, cluster) group_left(owner_name)\n        max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n        \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n      ),\n      \"target_name\", \"$1\", \"workload\", \"(.*)\"\n    )\n  )\n) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "No Limits Set",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 18,
+        "y": 1
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "count(kube_vpa_update_mode{cluster=~\"$cluster\", namespace=~\"$namespace\", update_mode=\"Off\"})",
+          "refId": "A"
+        }
+      ],
+      "title": "VPAs in Off Mode",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 9,
+      "panels": [],
+      "title": "Optimization Potential",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Total CPU currently requested by all pods with VPA recommendations",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      "id": 60,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(\n  max by (namespace, container, target_name) (\n    label_replace(\n      label_replace(\n        kube_pod_container_resource_requests{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n        * on(pod, namespace, cluster) group_left(owner_name)\n        max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n        \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n      ),\n      \"target_name\", \"$1\", \"workload\", \"(.*)\"\n    )\n  )\n  * on(namespace, container, target_name) group_left()\n  (kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"} * 0 + 1)\n) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Current CPU Requests (cores)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Total CPU recommended by VPA for all containers",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 5
+      },
+      "id": 61,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"}) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Recommended CPU (cores)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Percentage of CPU that could be saved. Positive = over-provisioned (can save), Negative = under-provisioned (need more)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 5
+      },
+      "id": 62,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "(\n  sum(\n    max by (namespace, container, target_name) (\n      label_replace(\n        label_replace(\n          kube_pod_container_resource_requests{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n          * on(pod, namespace, cluster) group_left(owner_name)\n          max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n          \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n        ),\n        \"target_name\", \"$1\", \"workload\", \"(.*)\"\n      )\n    )\n    * on(namespace, container, target_name) group_left()\n    (kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"} * 0 + 1)\n  )\n  - sum(kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"})\n)\n/\nsum(\n  max by (namespace, container, target_name) (\n    label_replace(\n      label_replace(\n        kube_pod_container_resource_requests{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n        * on(pod, namespace, cluster) group_left(owner_name)\n        max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n        \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n      ),\n      \"target_name\", \"$1\", \"workload\", \"(.*)\"\n    )\n  )\n  * on(namespace, container, target_name) group_left()\n  (kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"} * 0 + 1)\n)\n* 100 or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Savings %",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Total Memory currently requested by all pods with VPA recommendations",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 5
+      },
+      "id": 63,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(\n  max by (namespace, container, target_name) (\n    label_replace(\n      label_replace(\n        kube_pod_container_resource_requests{resource=\"memory\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n        * on(pod, namespace, cluster) group_left(owner_name)\n        max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n        \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n      ),\n      \"target_name\", \"$1\", \"workload\", \"(.*)\"\n    )\n  )\n  * on(namespace, container, target_name) group_left()\n  (kube_vpa_container_recommendation_target_memory{cluster=~\"$cluster\", namespace=~\"$namespace\"} * 0 + 1)\n) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Current Memory Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Total Memory recommended by VPA for all containers",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 5
+      },
+      "id": 64,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(kube_vpa_container_recommendation_target_memory{cluster=~\"$cluster\", namespace=~\"$namespace\"}) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Recommended Memory",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Percentage of Memory that could be saved. Positive = over-provisioned (can save), Negative = under-provisioned (need more)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 5
+      },
+      "id": 65,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "(\n  sum(\n    max by (namespace, container, target_name) (\n      label_replace(\n        label_replace(\n          kube_pod_container_resource_requests{resource=\"memory\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n          * on(pod, namespace, cluster) group_left(owner_name)\n          max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n          \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n        ),\n        \"target_name\", \"$1\", \"workload\", \"(.*)\"\n      )\n    )\n    * on(namespace, container, target_name) group_left()\n    (kube_vpa_container_recommendation_target_memory{cluster=~\"$cluster\", namespace=~\"$namespace\"} * 0 + 1)\n  )\n  - sum(kube_vpa_container_recommendation_target_memory{cluster=~\"$cluster\", namespace=~\"$namespace\"})\n)\n/\nsum(\n  max by (namespace, container, target_name) (\n    label_replace(\n      label_replace(\n        kube_pod_container_resource_requests{resource=\"memory\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n        * on(pod, namespace, cluster) group_left(owner_name)\n        max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n        \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n      ),\n      \"target_name\", \"$1\", \"workload\", \"(.*)\"\n    )\n  )\n  * on(namespace, container, target_name) group_left()\n  (kube_vpa_container_recommendation_target_memory{cluster=~\"$cluster\", namespace=~\"$namespace\"} * 0 + 1)\n)\n* 100 or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Savings %",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 10,
+      "panels": [],
+      "title": "CPU Rightsizing Details",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Complete CPU rightsizing view: Current settings vs VPA recommendations with savings potential",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "decimals": 3,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cur Req"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cur Lim"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-orange",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Lower"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Target"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Upper"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Req \u0394%"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 10
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Namespace"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Workload"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Container"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Req \u0394%"
+          }
+        ]
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\", target_name=~\"$workload\"}, \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "target"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(kube_vpa_container_recommendation_lowerbound_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\", target_name=~\"$workload\"}, \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "lower"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(kube_vpa_container_recommendation_upperbound_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\", target_name=~\"$workload\"}, \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "upper"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(max by (namespace, container, target_name) (\n  label_replace(\n    label_replace(\n      kube_pod_container_resource_requests{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n      * on(pod, namespace, cluster) group_left(owner_name)\n      max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n      \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n    ),\n    \"target_name\", \"$1\", \"workload\", \"(.*)\"\n  )\n), \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "cur_req"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(max by (namespace, container, target_name) (\n  label_replace(\n    label_replace(\n      kube_pod_container_resource_limits{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n      * on(pod, namespace, cluster) group_left(owner_name)\n      max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n      \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n    ),\n    \"target_name\", \"$1\", \"workload\", \"(.*)\"\n  )\n), \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "cur_lim"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join((\n  max by (namespace, container, target_name) (\n    label_replace(\n      label_replace(\n        kube_pod_container_resource_requests{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n        * on(pod, namespace, cluster) group_left(owner_name)\n        max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n        \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n      ),\n      \"target_name\", \"$1\", \"workload\", \"(.*)\"\n    )\n  )\n  - on(namespace, container, target_name)\n  kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"}\n)\n/\nmax by (namespace, container, target_name) (\n  label_replace(\n    label_replace(\n      kube_pod_container_resource_requests{resource=\"cpu\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n      * on(pod, namespace, cluster) group_left(owner_name)\n      max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n      \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n    ),\n    \"target_name\", \"$1\", \"workload\", \"(.*)\"\n  )\n)\n* 100, \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "req_delta"
+        }
+      ],
+      "title": "CPU: Current vs Recommended (values in cores)",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "join_key",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "Value #target"
+              }
+            ],
+            "match": "any",
+            "type": "include"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "pattern": "^(namespace 1|target_name 1|container 1|Value #cur_req|Value #cur_lim|Value #lower|Value #target|Value #upper|Value #req_delta)$"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Value #cur_lim": 4,
+              "Value #cur_req": 3,
+              "Value #lower": 5,
+              "Value #req_delta": 8,
+              "Value #target": 6,
+              "Value #upper": 7,
+              "container 1": 2,
+              "namespace 1": 0,
+              "target_name 1": 1
+            },
+            "renameByName": {
+              "Value #cur_lim": "Cur Lim",
+              "Value #cur_req": "Cur Req",
+              "Value #lower": "Lower",
+              "Value #req_delta": "Req \u0394%",
+              "Value #target": "Target",
+              "Value #upper": "Upper",
+              "container 1": "Container",
+              "namespace 1": "Namespace",
+              "target_name 1": "Workload"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 20,
+      "panels": [],
+      "title": "Memory Rightsizing Details",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Complete Memory rightsizing view: Current settings vs VPA recommendations with savings potential",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cur Req"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cur Lim"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-orange",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Lower"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Target"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Upper"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Req \u0394%"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 10
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Namespace"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Workload"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Container"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 21,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Req \u0394%"
+          }
+        ]
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(kube_vpa_container_recommendation_target_memory{cluster=~\"$cluster\", namespace=~\"$namespace\", target_name=~\"$workload\"}, \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "target"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(kube_vpa_container_recommendation_lowerbound_memory{cluster=~\"$cluster\", namespace=~\"$namespace\", target_name=~\"$workload\"}, \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "lower"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(kube_vpa_container_recommendation_upperbound_memory{cluster=~\"$cluster\", namespace=~\"$namespace\", target_name=~\"$workload\"}, \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "upper"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(max by (namespace, container, target_name) (\n  label_replace(\n    label_replace(\n      kube_pod_container_resource_requests{resource=\"memory\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n      * on(pod, namespace, cluster) group_left(owner_name)\n      max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n      \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n    ),\n    \"target_name\", \"$1\", \"workload\", \"(.*)\"\n  )\n), \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "cur_req"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join(max by (namespace, container, target_name) (\n  label_replace(\n    label_replace(\n      kube_pod_container_resource_limits{resource=\"memory\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n      * on(pod, namespace, cluster) group_left(owner_name)\n      max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n      \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n    ),\n    \"target_name\", \"$1\", \"workload\", \"(.*)\"\n  )\n), \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "cur_lim"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "label_join((\n  max by (namespace, container, target_name) (\n    label_replace(\n      label_replace(\n        kube_pod_container_resource_requests{resource=\"memory\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n        * on(pod, namespace, cluster) group_left(owner_name)\n        max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n        \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n      ),\n      \"target_name\", \"$1\", \"workload\", \"(.*)\"\n    )\n  )\n  - on(namespace, container, target_name)\n  kube_vpa_container_recommendation_target_memory{cluster=~\"$cluster\", namespace=~\"$namespace\"}\n)\n/\nmax by (namespace, container, target_name) (\n  label_replace(\n    label_replace(\n      kube_pod_container_resource_requests{resource=\"memory\", cluster=~\"$cluster\", namespace=~\"$namespace\"}\n      * on(pod, namespace, cluster) group_left(owner_name)\n      max by (pod, namespace, cluster, owner_name) (kube_pod_owner{cluster=~\"$cluster\", namespace=~\"$namespace\"}),\n      \"workload\", \"$1\", \"owner_name\", \"^(.+?)(?:-[a-z0-9]{5,10})?$\"\n    ),\n    \"target_name\", \"$1\", \"workload\", \"(.*)\"\n  )\n)\n* 100, \"join_key\", \"|\", \"namespace\", \"target_name\", \"container\")",
+          "format": "table",
+          "instant": true,
+          "refId": "req_delta"
+        }
+      ],
+      "title": "Memory: Current vs Recommended",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "join_key",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "Value #target"
+              }
+            ],
+            "match": "any",
+            "type": "include"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "pattern": "^(namespace 1|target_name 1|container 1|Value #cur_req|Value #cur_lim|Value #lower|Value #target|Value #upper|Value #req_delta)$"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Value #cur_lim": 4,
+              "Value #cur_req": 3,
+              "Value #lower": 5,
+              "Value #req_delta": 8,
+              "Value #target": 6,
+              "Value #upper": 7,
+              "container 1": 2,
+              "namespace 1": 0,
+              "target_name 1": 1
+            },
+            "renameByName": {
+              "Value #cur_lim": "Cur Lim",
+              "Value #cur_req": "Cur Req",
+              "Value #lower": "Lower",
+              "Value #req_delta": "Req \u0394%",
+              "Value #target": "Target",
+              "Value #upper": "Upper",
+              "container 1": "Container",
+              "namespace 1": "Namespace",
+              "target_name 1": "Workload"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 30,
+      "panels": [],
+      "title": "Trends Over Time",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "cores",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
+      "id": 31,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "topk(10, kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\", target_name=~\"$workload\"})",
+          "legendFormat": "{{namespace}}/{{target_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top 10 CPU Recommendations Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "id": 32,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "topk(10, kube_vpa_container_recommendation_target_memory{cluster=~\"$cluster\", namespace=~\"$namespace\", target_name=~\"$workload\"})",
+          "legendFormat": "{{namespace}}/{{target_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top 10 Memory Recommendations Over Time",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 44
+      },
+      "id": 40,
+      "panels": [],
+      "title": "By Namespace",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 45
+      },
+      "id": 41,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "topk(10, sum by (namespace) (kube_vpa_container_recommendation_target_cpu{cluster=~\"$cluster\", namespace=~\"$namespace\"}))",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Recommended CPU by Namespace (cores)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 45
+      },
+      "id": 42,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "topk(10, sum by (namespace) (kube_vpa_container_recommendation_target_memory{cluster=~\"$cluster\", namespace=~\"$namespace\"}))",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Recommended Memory by Namespace",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 50,
+      "panels": [],
+      "title": "Reference Guide",
+      "type": "row"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 51,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "## Column Reference\n\n| Column | Color | Description |\n|--------|-------|-------------|\n| **Cur Req** | Orange | Current `resources.requests` - what's guaranteed to the container |\n| **Cur Lim** | Light Orange | Current `resources.limits` - maximum before throttle/OOM |\n| **Lower** | Red | VPA lower bound - minimum safe value, don't go below |\n| **Target** | Blue | VPA recommended `requests` value |\n| **Upper** | Purple | VPA recommended `limits` value |\n| **Req \u0394%** | Color-coded | Savings potential: `(Cur Req - Target) / Cur Req \u00d7 100` |\n\n## Status Indicators (Req \u0394%)\n\n| Color | Meaning | Action |\n|-------|---------|--------|\n| **Green** (>10%) | Over-provisioned | Can reduce requests to save costs |\n| **Yellow** (0-10%) | Slightly over-provisioned | Minor optimization possible |\n| **Red** (<0%) | Under-provisioned | Increase requests to avoid OOM/throttling |\n\n## How to Apply Recommendations\n\n```yaml\nresources:\n  requests:\n    cpu: \"<Target value>\"      # Blue column\n    memory: \"<Target value>\"   # Blue column  \n  limits:\n    cpu: \"<Upper value>\"       # Purple column\n    memory: \"<Upper value>\"    # Purple column\n```\n\n## Important Notes\n\n- **CPU** values shown in cores (0.5 = 500m)\n- **Memory** values auto-formatted (Mi/Gi)\n- **Lower bound** = absolute minimum - going below risks performance issues\n- VPA needs ~24h of data to provide stable recommendations\n- Review recommendations during peak load periods before applying",
+        "mode": "markdown"
+      },
+      "pluginVersion": "12.2.0",
+      "title": "",
+      "type": "text"
+    }
+  ],
+  "preload": false,
+  "refresh": "5m",
+  "schemaVersion": 42,
+  "tags": [
+    "goldilocks",
+    "vpa",
+    "rightsizing",
+    "cost-optimization"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Mimir",
+          "value": "PAE45454D0EDB9216"
+        },
+        "includeAll": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "/Mimir|Prometheus/",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": "<GKE_CLUSTER_NAME>",
+          "value": "<GKE_CLUSTER_NAME>"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(kube_vpa_update_mode, cluster)",
+        "includeAll": false,
+        "name": "cluster",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_vpa_update_mode, cluster)"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(kube_vpa_update_mode{cluster=~\"$cluster\"}, namespace)",
+        "includeAll": true,
+        "multi": true,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_vpa_update_mode{cluster=~\"$cluster\"}, namespace)"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(kube_vpa_update_mode{cluster=~\"$cluster\", namespace=~\"$namespace\"}, target_name)",
+        "includeAll": true,
+        "multi": true,
+        "name": "workload",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_vpa_update_mode{cluster=~\"$cluster\", namespace=~\"$namespace\"}, target_name)"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Goldilocks Rightsizing",
+  "uid": "goldilocks-complete",
+  "version": 6
+}

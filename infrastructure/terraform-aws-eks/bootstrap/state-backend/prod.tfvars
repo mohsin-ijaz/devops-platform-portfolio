@@ -1,0 +1,12 @@
+# Prod Account Bootstrap
+
+project_name = "otis"
+company      = "acme"
+aws_region   = "<AWS_REGION>"
+environment  = "prod"
+
+additional_principals = [
+  "<AWS_NETWORK_ACCOUNT_ID>"  # Network account for cross-state access
+]
+
+tags = {}

@@ -1,0 +1,4 @@
+- op: remove
+  path: /spec/template/spec/containers/0/env/9
+# This removes the KAFKA_ADVERTISED_LISTENERS env var that references kafka-cm
+# The startup script in kafka-patch-kraft.yaml will set it dynamically instead

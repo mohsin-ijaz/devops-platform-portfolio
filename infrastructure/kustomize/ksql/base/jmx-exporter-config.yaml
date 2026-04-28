@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ksql-jmx-exporter-config
+data:
+  jmx-exporter-config.yaml: |
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    rules:
+    - pattern: io.confluent.ksql.metrics<type=([^,]+), key=([^,>]+)><>([^:]+)
+      name: ksql_$1_$3
+      labels:
+        key: $2
+      type: GAUGE
+    - pattern: io.confluent.ksql.metrics<type=([^,]+)><>([^:]+)
+      name: ksql_$1_$2
+      type: GAUGE
+    - pattern: kafka.producer<type=producer-metrics, client-id=([^,>]+)><>([^:]+)
+      name: kafka_producer_$2
+      labels:
+        client_id: $1
+      type: GAUGE
+    - pattern: kafka.consumer<type=consumer-metrics, client-id=([^,>]+)><>([^:]+)
+      name: kafka_consumer_$2
+      labels:
+        client_id: $1
+      type: GAUGE
+    - pattern: kafka.streams<type=stream-metrics, client-id=([^,>]+)><>([^:]+)
+      name: kafka_streams_$2
+      labels:
+        client_id: $1
+      type: GAUGE
+    - pattern: java.lang<type=([^,]+), name=([^,>]+)><>([^:]+)
+      name: java_lang_$1_$3
+      labels:
+        name: $2
+      type: GAUGE
+    - pattern: java.lang<type=Memory><>([^:]+)
+      name: java_lang_memory_$1
+      type: GAUGE
+    - pattern: io.confluent.ksql.metrics<type=([^,]+), (.*)><>([^:]+)
+      name: ksql_$1_$3
+      type: GAUGE

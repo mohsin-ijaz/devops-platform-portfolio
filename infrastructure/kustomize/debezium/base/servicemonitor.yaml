@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: debezium
+  labels:
+    app: debezium
+    release: prometheus-stack
+spec:
+  endpoints:
+  - port: jmx-metrics
+    interval: 30s
+    path: /metrics
+  selector:
+    matchLabels:
+      app: debezium

@@ -1,0 +1,93 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: schema-registry
+spec:
+  selector:
+    matchLabels:
+      app: schema-registry
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: schema-registry
+    spec:
+      terminationGracePeriodSeconds: 30
+      enableServiceLinks: false #https://github.com/confluentinc/schema-registry/issues/689#issuecomment-824769666
+      initContainers:
+        - name: jmx-agent-downloader
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          command: ["sh","-c"]
+          args:
+            - "wget -O /opt/jmx/jmx_prometheus_javaagent.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.20.0/jmx_prometheus_javaagent-0.20.0.jar"
+          volumeMounts:
+            - name: jmx-agent
+              mountPath: /opt/jmx
+      containers:
+        - name: schema-registry
+          image: confluentinc/cp-schema-registry:7.4.0
+          resources:
+            limits:
+              memory: 6Gi
+              cpu: "1"
+            requests:
+              memory: 1Gi
+              cpu: "0.2"
+          env:
+            - name: SCHEMA_REGISTRY_HOST_NAME
+              value: schema-registry
+            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+              value: kafka-0.kafka.kafka.svc.cluster.local:9092,kafka-1.kafka.kafka.svc.cluster.local:9092,kafka-2.kafka.kafka.svc.cluster.local:9092
+            - name: SCHEMA_REGISTRY_LISTENERS
+              value: http://0.0.0.0:8081,https://0.0.0.0:8082
+            - name: SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL
+              value: "WARN"
+            - name: SCHEMA_REGISTRY_DEBUG
+              value: "true"
+            - name: SCHEMA_REGISTRY_SSL_CLIENT_AUTHENTICATION
+              value: NONE
+            - name: SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL
+              value: http
+            - name: SCHEMA_REGISTRY_HEAP_OPTS
+              value: "-Xmx5G -Xms1G -XX:+UseG1GC"
+            - name: SCHEMA_REGISTRY_KAFKASTORE_TIMEOUT_MS
+              value: "30000"
+            - name: SCHEMA_REGISTRY_OPTS
+              value: "-javaagent:/opt/jmx/jmx_prometheus_javaagent.jar=5556:/etc/jmx-exporter/jmx-exporter-config.yaml"
+          volumeMounts:
+            - name: schema-registry-cm-volume
+              mountPath: /etc/kafka/secrets
+            - name: jmx-exporter-config
+              mountPath: /etc/jmx-exporter
+            - name: jmx-agent
+              mountPath: /opt/jmx
+          livenessProbe:
+            httpGet:
+              path: /config
+              port: 8081
+              httpHeaders:
+                - name: Authorization
+                  value: Basic a2Fma2EtdWk6Q2Fyc29tZUAxMjM0
+            initialDelaySeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /config
+              port: 8081
+              httpHeaders:
+                - name: Authorization
+                  value: Basic a2Fma2EtdWk6Q2Fyc29tZUAxMjM0
+            initialDelaySeconds: 30
+          ports:
+            - containerPort: 8081
+            - containerPort: 5556
+              name: jmx-metrics
+      volumes:
+        - name: schema-registry-cm-volume
+          configMap:
+            name: schema-registry-cm
+        - name: jmx-exporter-config
+          configMap:
+            name: schema-registry-jmx-exporter-config
+        - name: jmx-agent
+          emptyDir: {}

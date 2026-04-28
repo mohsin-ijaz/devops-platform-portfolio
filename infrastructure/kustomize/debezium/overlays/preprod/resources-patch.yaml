@@ -1,0 +1,21 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: debezium
+spec:
+  template:
+    spec:
+      containers:
+        - name: debezium
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: 500m
+            limits:
+              memory: 4Gi
+              cpu: "2"
+          env:
+            - name: HEAP_OPTS
+              value: "-Xmx4G -Xms4G -XX:+UseG1GC"
+            - name: LOG_LEVEL
+              value: "DEBUG"

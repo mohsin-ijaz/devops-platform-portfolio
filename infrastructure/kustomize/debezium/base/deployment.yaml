@@ -1,0 +1,85 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: debezium
+  labels:
+    app: debezium
+spec:
+  selector:
+    matchLabels:
+      app: debezium
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: debezium
+    spec:
+      terminationGracePeriodSeconds: 30
+      initContainers:
+        - name: jmx-agent-downloader
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          command: ["sh","-c"]
+          args:
+            - "wget -O /opt/jmx/jmx_prometheus_javaagent.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.20.0/jmx_prometheus_javaagent-0.20.0.jar"
+          volumeMounts:
+            - name: jmx-agent
+              mountPath: /opt/jmx
+      containers:
+        - name: debezium
+          imagePullPolicy: Always
+          env:
+            - name: KAFKA_JMX_PORT
+              value: "5555"
+            - name: KAFKA_JMX_HOSTNAME
+              value: "localhost"
+            - name: BOOTSTRAP_SERVERS
+              value: kafka:9092
+            - name: GROUP_ID
+              value: "1"
+            - name: CONFIG_STORAGE_TOPIC
+              value: debezium_connect_configs
+            - name: OFFSET_STORAGE_TOPIC
+              value: debezium_connect_offsets
+            - name: STATUS_STORAGE_TOPIC
+              value: debezium_connect_statuses
+            - name: KEY_CONVERTER
+              value: io.confluent.connect.avro.AvroConverter
+            - name: VALUE_CONVERTER
+              value: io.confluent.connect.avro.AvroConverter
+            - name: INTERNAL_KEY_CONVERTER
+              value: org.apache.kafka.connect.json.JsonConverter
+            - name: INTERNAL_VALUE_CONVERTER
+              value: org.apache.kafka.connect.json.JsonConverter
+            - name: CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL
+              value: http://schema-registry:8081
+            - name: CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL
+              value: http://schema-registry:8081
+            - name: CONNECT_PRODUCER_MAX_REQUEST_SIZE
+              value: "10485760"
+            - name: CONNECT_MAX_REQUEST_SIZE
+              value: "10485760"
+            - name: CONNECT_CONSUMER_MAX_PARTITION_FETCH_BYTES
+              value: "10485760"
+            - name: KAFKA_OPTS
+              value: "-javaagent:/opt/jmx/jmx_prometheus_javaagent.jar=5556:/etc/jmx-exporter/jmx-exporter-config.yaml"
+          ports:
+            - containerPort: 8083
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 100m
+            limits:
+              memory: 4Gi
+              cpu: "1"
+          volumeMounts:
+            - name: jmx-agent
+              mountPath: /opt/jmx
+            - name: jmx-exporter-config
+              mountPath: /etc/jmx-exporter
+      volumes:
+        - name: jmx-exporter-config
+          configMap:
+            name: debezium-jmx-exporter-config
+        - name: jmx-agent
+          emptyDir: {}

@@ -1,0 +1,6 @@
+# @todo: Not in use, will have to complete ConfigManager changes for this to work
+#         will be renamed to env by the ConfigManager based on your deployment
+environment: na
+is_sub_module: false
+paths:
+  dir_name: icarcli

@@ -1,0 +1,25 @@
+# Base values for domain-exporter-wrapper chart
+# This file contains minimal defaults for caarlos0/domain_exporter
+
+# Docker image configuration
+image:
+  tag: "v1.24.1"
+  pullPolicy: IfNotPresent
+
+# ServiceMonitor configuration
+serviceMonitor:
+  enabled: false
+  interval: "6h"
+  scrapeTimeout: "30s"
+
+# Default domains (override in values-dev.yaml)
+domains: []
+
+# Default resources
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi

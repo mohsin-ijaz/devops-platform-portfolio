@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: "1.0.0c"
+description: A Helm Chart for Acme CONSUMER Apps
+name: acme-app-consumer
+type: application
+version: 1.0.0

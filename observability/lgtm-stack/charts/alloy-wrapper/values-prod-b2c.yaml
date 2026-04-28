@@ -1,0 +1,955 @@
+alloy:
+  # High availability configuration for production
+  replicas: 2  # Increased from QA: 2 → 3
+  
+  alloy:
+    clustering:
+      enabled: false
+    
+    # Mount host /var/log for Kubernetes logs
+    mounts:
+      varlog: true
+      dockercontainers: false
+    
+    # Resource management - sized for PRODUCTION workload
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1536Mi
+      limits:
+        cpu: 2000m
+        memory: 3Gi
+    
+    # Persistent storage for WAL and positions (mounted via extraVolumeMounts below)
+    # Removed mounts.extra to rely on chart-supported extraVolumeMounts
+    
+    extraPorts:
+      - name: "otlp-grpc"
+        port: 4317
+        targetPort: 4317
+        protocol: "TCP"
+      - name: "otlp-http"
+        port: 4318
+        targetPort: 4318
+        protocol: "TCP"
+    
+    # Alloy configuration in River format
+    configMap:
+      content: |
+        // ============================================================================
+        // LGTM Stack Configuration for CONSUMER PRODUCTION Cluster
+        // Cluster: <GKE_CLUSTER_NAME>
+        // ============================================================================
+        
+        // ----------------------------------------------------------------------------
+        // Prometheus Remote Write - Metrics to Mimir
+        // ----------------------------------------------------------------------------
+        prometheus.remote_write "mimir" {
+          endpoint {
+            url = "http://<MIMIR_ILB_IP>:8080/api/v1/push"  // Production Mimir ILB
+            
+            headers = {
+              "X-Scope-OrgID" = "<YOUR_TENANT_ID>",
+            }
+            
+            queue_config {
+              capacity             = 10000
+              max_shards           = 50
+              max_samples_per_send = 2000
+              batch_send_deadline  = "5s"
+              min_shards           = 5
+              max_backoff          = "5s"
+              min_backoff          = "30ms"
+            }
+            
+            metadata_config {
+              send          = true
+              send_interval = "1m"
+            }
+          }
+          
+          external_labels = {
+            cluster = "<GKE_CLUSTER_NAME>",
+            env     = "production",
+            region  = "<GCP_REGION>",
+            project = "<GCP_PROJECT_ID>",
+          }
+        }
+
+        // ----------------------------------------------------------------------------
+        // Loki Write - Logs to Loki
+        // ----------------------------------------------------------------------------
+        loki.write "loki" {
+          endpoint {
+            url = "http://<LOKI_ILB_IP>:3100/loki/api/v1/push"  // Production Loki ILB
+
+            tenant_id = "<YOUR_TENANT_ID>"
+          }
+
+          external_labels = {
+            cluster = "<GKE_CLUSTER_NAME>",
+            env     = "production",
+            region  = "<GCP_REGION>",
+            project = "<GCP_PROJECT_ID>",
+          }
+        }
+
+        
+        // ----------------------------------------------------------------------------
+        // OTLP Receiver - Traces to Tempo
+        // ----------------------------------------------------------------------------
+        otelcol.receiver.otlp "tempo" {
+          grpc {
+            endpoint = "0.0.0.0:4317"
+          }
+          
+          http {
+            endpoint = "0.0.0.0:4318"
+          }
+          
+          output {
+            traces = [otelcol.exporter.otlp.tempo.input]
+          }
+        }
+        
+        otelcol.exporter.otlp "tempo" {
+          client {
+            endpoint = "<TEMPO_ILB_IP>:4317"  // Production Tempo ILB (gRPC)
+            
+            tls {
+              insecure = true
+            }
+            
+            headers = {
+              "x-scope-orgid" = "<YOUR_TENANT_ID>",
+            }
+            
+            compression = "gzip"
+          }
+        }
+        
+        // ----------------------------------------------------------------------------
+        // Kubernetes Service Discovery
+        // ----------------------------------------------------------------------------
+        discovery.kubernetes "pods" {
+          role = "pod"
+        }
+        
+        discovery.kubernetes "nodes" {
+          role = "node"
+        }
+        
+        discovery.kubernetes "services" {
+          role = "service"
+        }
+        
+        discovery.kubernetes "endpoints" {
+          role = "endpoints"
+        }
+
+
+        discovery.kubernetes "local_node" {
+          role = "node"
+          selectors {
+            role  = "node"
+            field = "metadata.name=" + coalesce(sys.env("HOSTNAME"), constants.hostname)
+          }
+        }
+
+
+        discovery.relabel "pods" {
+          targets = discovery.kubernetes.pods.targets
+
+          // Disable metrics scraping in DaemonSet; handled by separate metrics Deployment
+          rule {
+            action = "keep"
+            source_labels = ["__meta_kubernetes_pod_node_name"]
+            regex = "DO_NOT_SCRAPE"
+          }
+
+          // Keep only target namespaces for production metrics
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            action        = "keep"
+            regex         = "(<YOUR_NS_1>|<YOUR_NS_2>|<YOUR_NS_N>)"  # TODO: list your consumer namespaces
+          }
+
+          // Keep only pods with prometheus scrape annotation
+          rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+            action        = "keep"
+            regex         = "true"
+          }
+          
+          // Extract scrape port from annotation or default to container port
+          rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_port", "__meta_kubernetes_pod_container_port_number"]
+            action        = "replace"
+            target_label  = "__address__"
+            regex         = "([^:]+)(?::\\d+)?;(\\d+)"
+            replacement   = "$1:$2"
+          }
+          
+          // Extract metrics path from annotation or default to /metrics
+          rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_path"]
+            action        = "replace"
+            target_label  = "__metrics_path__"
+            regex         = "(.+)"
+          }
+          
+          // Add namespace label
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            target_label  = "namespace"
+          }
+          
+          // Add pod name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_name"]
+            target_label  = "pod"
+          }
+          
+          // Add container name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_container_name"]
+            target_label  = "container"
+          }
+          
+          // Add node name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_node_name"]
+            target_label  = "node"
+          }
+          
+          // Add app label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app"]
+            target_label  = "app"
+          }
+          
+          // Add app.kubernetes.io/name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+            target_label  = "app_name"
+          }
+          
+          // Add service label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_component"]
+            target_label  = "component"
+          }
+        }
+        
+        prometheus.scrape "pods" {
+          targets    = discovery.relabel.pods.output
+          forward_to = [prometheus.remote_write.mimir.receiver]
+          
+          scrape_interval = "30s"
+          scrape_timeout  = "10s"
+        }
+
+
+        discovery.relabel "cadvisor" {
+          targets = discovery.kubernetes.local_node.targets
+
+          // Disable metrics scraping in DaemonSet; handled by separate metrics Deployment
+          rule {
+            action = "keep"
+            source_labels = ["__meta_kubernetes_node_name"]
+            regex = "DO_NOT_SCRAPE"
+          }
+
+          rule {
+            source_labels = ["__address__"]
+            regex         = "([^:]+)(?:\\d+)?"
+            replacement   = "$1:10250"
+            target_label  = "__address__"
+          }
+
+          rule {
+            replacement  = "/metrics/cadvisor"
+            target_label = "__metrics_path__"
+          }
+
+          rule {
+            source_labels = ["__meta_kubernetes_node_name"]
+            target_label  = "node"
+          }
+        }
+
+        prometheus.scrape "cadvisor" {
+          targets         = discovery.relabel.cadvisor.output
+          forward_to      = [prometheus.relabel.cadvisor_filter.receiver]
+          scrape_interval = "30s"
+          scrape_timeout  = "10s"
+
+          bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+          tls_config {
+            ca_file              = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+            insecure_skip_verify = true
+          }
+        }
+
+        // Metric relabeling for cAdvisor - filter to target namespaces only
+        prometheus.relabel "cadvisor_filter" {
+          forward_to = [prometheus.remote_write.mimir.receiver]
+
+          rule {
+            source_labels = ["namespace"]
+            regex = "<YOUR_NS_1>|<YOUR_NS_2>|<YOUR_NS_N>"  # TODO: list your consumer namespaces
+            action = "keep"
+          }
+        }
+
+       
+        discovery.relabel "kubelet" {
+          targets = discovery.kubernetes.local_node.targets
+
+          // Disable metrics scraping in DaemonSet; handled by separate metrics Deployment
+          rule {
+            action = "keep"
+            source_labels = ["__meta_kubernetes_node_name"]
+            regex = "DO_NOT_SCRAPE"
+          }
+
+          rule {
+            source_labels = ["__address__"]
+            regex         = "([^:]+)(?:\\d+)?"
+            replacement   = "$1:10250"
+            target_label  = "__address__"
+          }
+
+          rule {
+            replacement  = "/metrics"
+            target_label = "__metrics_path__"
+          }
+
+          rule {
+            source_labels = ["__meta_kubernetes_node_name"]
+            target_label  = "node"
+          }
+        }
+
+        prometheus.scrape "kubelet" {
+          targets         = discovery.relabel.kubelet.output
+          forward_to      = [prometheus.remote_write.mimir.receiver]
+          scrape_interval = "30s"
+          scrape_timeout  = "10s"
+
+          bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+          tls_config {
+            ca_file              = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+            insecure_skip_verify = true
+          }
+        }
+
+        discovery.kubernetes "local_pods" {
+          role = "pod"
+          selectors {
+            role  = "pod"
+            field = "spec.nodeName=" + coalesce(sys.env("HOSTNAME"), constants.hostname)
+          }
+        }
+
+        discovery.relabel "pod_logs" {
+          targets = discovery.kubernetes.local_pods.targets
+
+          // Filter: only collect logs from specific namespaces (PRODUCTION)
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            regex         = "<YOUR_NS_1>|<YOUR_NS_2>|<YOUR_NS_N>"  # TODO: list your consumer namespaces
+            action        = "keep"
+          }
+
+          // Add namespace label
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            target_label  = "namespace"
+          }
+
+          // Add pod name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_name"]
+            target_label  = "pod"
+          }
+
+          // Add container name label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_container_name"]
+            target_label  = "container"
+          }
+
+          // Add node label
+          rule {
+            source_labels = ["__meta_kubernetes_pod_node_name"]
+            target_label  = "node"
+          }
+
+
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app"]
+            target_label  = "app"
+          }
+
+          // Fallback 1: Use app.kubernetes.io/name if app is empty
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+            regex         = ";(.+)"
+            replacement   = "$1"
+            target_label  = "app"
+          }
+
+          // Fallback 2: Use container name if app is still empty
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_label_app_kubernetes_io_name", "__meta_kubernetes_pod_container_name"]
+            regex         = ";;(.+)"
+            replacement   = "$1"
+            target_label  = "app"
+          }
+
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+            target_label  = "app_name"
+          }
+
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_component"]
+            target_label  = "component"
+          }
+
+
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app"]
+            target_label  = "service_name"
+          }
+
+          // Fallback 1: Use app.kubernetes.io/name if service_name is empty
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+            regex         = ";(.+)"
+            replacement   = "$1"
+            target_label  = "service_name"
+          }
+
+          // Fallback 2: Use container name if service_name is still empty
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_label_app_kubernetes_io_name", "__meta_kubernetes_pod_container_name"]
+            regex         = ";;(.+)"
+            replacement   = "$1"
+            target_label  = "service_name"
+          }
+
+          // Set log path
+          rule {
+            source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+            separator     = "/"
+            target_label  = "__path__"
+            replacement   = "/var/log/pods/*$1/*.log"
+          }
+        }
+
+        // ============================================================================
+        // Log Processing Pipeline - Based on Promtail migration best practices
+        // ============================================================================
+        
+        // Loki processing pipeline (with label extraction)
+        loki.process "pod_logs" {
+          forward_to = [loki.write.loki.receiver]
+
+          // Stage 1: Parse CRI/Docker format and extract stream, flags, timestamp
+          stage.cri {}
+
+
+          stage.drop {
+            older_than = "1h"
+            drop_counter_reason = "timestamp_too_old"
+          }
+
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "Kubernetes probes"
+          // ========================================================================
+          stage.drop {
+            expression = "GET.*kube-probe"
+            drop_counter_reason = "kubernetes_probes"
+          }
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "Health check"
+          // ========================================================================
+          stage.drop {
+            expression = `(Health check triggered|"/health"|"/_health"|ELB-HealthChecker)`
+            drop_counter_reason = "health_check"
+          }
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "Uptime robot"
+          // ========================================================================
+          stage.drop {
+            expression = "uptimerobot"
+            drop_counter_reason = "uptime_robot"
+          }
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "Access Tail Info"
+          // ========================================================================
+          stage.drop {
+            expression = `==> /var/log/nginx/(access|error)\.log <==`
+            drop_counter_reason = "access_tail_info"
+          }
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "ENTERPRISE - Unnecessary logs"
+          // ========================================================================
+          stage.drop {
+            expression = `acme-lib\.nexus-passport-validate-token`
+            drop_counter_reason = "enterprise_unnecessary_logs"
+          }
+
+          // ========================================================================
+          // Rate Limit: acme-lib.token-verification logs
+          // ========================================================================
+          // stage.regex {
+          //   expression = "(?P<is_token_verification>.*acme-lib\\.token-verification.*)"
+          // }
+          // stage.labels {
+          //   values = {
+          //     token_verification = "is_token_verification",
+          //   }
+          // }
+          // stage.match {
+          //   selector = "{token_verification!=\"\"}"
+          //   stage.limit {
+          //     rate          = 0.000278  // 1 per hour (1/3600)
+          //     burst         = 1
+          //     drop          = true
+          //     by_label_name = "app"
+          //   }
+          // }
+          // stage.label_drop {
+          //   values = ["token_verification"]
+          // }
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "ENTERPRISE - CMS credentials"
+          // ========================================================================
+          stage.drop {
+            expression = `"password"`
+            drop_counter_reason = "enterprise_cms_credentials"
+          }
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "Quick Exclude - Need fix from Applications"
+          // ========================================================================
+          stage.drop {
+            expression = `(GET index\.html|GET index\.php|\[GIN\].*GET "/"|Stream connection ended and command aborted)`
+            drop_counter_reason = "quick_exclude"
+          }
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "NGINX access log"
+          // ========================================================================
+          stage.drop {
+            expression = "nginx.*access"
+            drop_counter_reason = "nginx_access_log"
+          }
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "Exclude Nginx for Prod"
+          // ========================================================================
+          stage.drop {
+            expression = "nginx.*slim-api"
+            drop_counter_reason = "exclude_nginx_prod"
+          }
+
+          // ========================================================================
+          // Datadog Exclusion Filter: "combine-access-logs"
+          // ========================================================================
+          stage.drop {
+            expression = `HTTP/1\.[01].*source.*app`
+            drop_counter_reason = "combine_access_logs"
+          }
+
+          // Stage 2: Extract labels from CRI output
+          stage.labels {
+            values = {
+              flags  = "",
+              stream = "",
+            }
+          }
+
+          // Stage 3: Extract log level from various formats
+          // Pattern 1: Bracketed levels [info], [error]
+          stage.regex {
+            expression = "(?i)\\[(?P<bracket_level>debug|info|warn|warning|error|fatal|trace|panic|critical)\\]"
+          }
+
+          // Pattern 2: Uppercase levels ERROR, WARN, INFO
+          stage.regex {
+            expression = "(?i)\\b(?P<upper_level>ERROR|WARN|WARNING|INFO|DEBUG|FATAL|TRACE|PANIC|CRITICAL)\\b"
+          }
+
+          // Pattern 3: JSON levels "level":"info"
+          stage.regex {
+            expression = "\"level\"[:\\s]*\"(?P<json_level>debug|info|warn|warning|error|fatal|trace|panic|critical)"
+          }
+
+          // Pattern 4: Key-value levels level=info, level:error
+          stage.regex {
+            expression = "level[=:]\\s*(?P<kv_level>debug|info|warn|warning|error|fatal|trace|panic|critical)"
+          }
+
+          // Stage 4: Set level label with priority
+          stage.labels {
+            values = {
+              level = "bracket_level",
+            }
+          }
+
+          stage.match {
+            selector = "{level=\"\"}"
+            stage.labels {
+              values = {
+                level = "upper_level",
+              }
+            }
+          }
+
+          stage.match {
+            selector = "{level=\"\"}"
+            stage.labels {
+              values = {
+                level = "json_level",
+              }
+            }
+          }
+
+          stage.match {
+            selector = "{level=\"\"}"
+            stage.labels {
+              values = {
+                level = "kv_level",
+              }
+            }
+          }
+
+          // Stage 5: Default level to info if not detected
+          stage.match {
+            selector = "{level=\"\"}"
+            stage.static_labels {
+              values = {
+                level = "info",
+              }
+            }
+          }
+
+          // ========================================================================
+          // Stage 5.25: Normalize level labels to lowercase
+          // ========================================================================
+          stage.replace {
+            expression = "(?i)^(INFO|Info)$"
+            source     = "level"
+            replace    = "info"
+          }
+          stage.replace {
+            expression = "(?i)^(ERROR|Error)$"
+            source     = "level"
+            replace    = "error"
+          }
+          stage.replace {
+            expression = "(?i)^(DEBUG|Debug)$"
+            source     = "level"
+            replace    = "debug"
+          }
+          stage.replace {
+            expression = "(?i)^(WARN|Warn|WARNING|Warning|warning)$"
+            source     = "level"
+            replace    = "warn"
+          }
+          stage.replace {
+            expression = "(?i)^(TRACE|Trace)$"
+            source     = "level"
+            replace    = "trace"
+          }
+          stage.replace {
+            expression = "(?i)^(FATAL|Fatal)$"
+            source     = "level"
+            replace    = "fatal"
+          }
+          stage.replace {
+            expression = "(?i)^(PANIC|Panic)$"
+            source     = "level"
+            replace    = "panic"
+          }
+          stage.replace {
+            expression = "(?i)^(CRITICAL|Critical)$"
+            source     = "level"
+            replace    = "critical"
+          }
+
+          // ========================================================================
+          // Stage 5.5: Drop debug and trace level logs
+          // ========================================================================
+          // stage.match {
+          //   selector = "{level=~\"debug|trace\"}"
+          //   stage.drop {
+          //     expression = ".*"
+          //     drop_counter_reason = "debug_trace_level"
+          //   }
+          // }
+
+          // Stage 6: Use timestamp from CRI if available
+          stage.timestamp {
+            format = "RFC3339Nano"
+            source = "timestamp"
+          }
+
+          // Stage 6.5: Extract JSON portion from structured logs
+          stage.regex {
+            expression = `(?P<json_content>\{.+\})`
+          }
+
+          // Stage 6.6: Parse app timestamp if extracted
+          stage.match {
+            selector = "{app_ts!=\"\"}"
+            stage.timestamp {
+              source = "app_ts"
+              format = "2006-01-02T15:04:05.999Z"
+            }
+          }
+
+          // Stage 7: Parse JSON logs to extract structured fields
+          stage.json {
+            expressions = {
+              // Core fields
+              json_event    = "event",
+              json_level    = "level",
+              json_message  = "message",
+              json_method   = "method",
+              json_url      = "url",
+              json_route    = "route",
+
+              // User identification
+              user_id       = "user.userId",
+              user_type     = "user.type",
+              user_role     = "user.role",
+
+              // Error fields
+              error_name    = "error.name",
+              error_message = "error.message",
+              // REMOVED: stack - large field that bloats chunks
+
+              // Request fields - REMOVED req_body and req_query (large fields)
+              user_agent    = "request.headers.\"user-agent\"",
+              host          = "request.headers.host",
+            }
+            source = "json_content"  // Parse only the JSON portion
+          }
+          
+          // Stage 8: Extract high-cardinality fields as structured metadata (not indexed)
+          stage.structured_metadata {
+            values = {
+              // HIGH CARDINALITY LABELS - moved from indexed to structured metadata
+              // This reduces index size and improves query performance
+              pod           = "",  // Pod name (6000+ unique values)
+              node          = "",  // Node name (high cardinality)
+
+              // JSON-extracted fields
+              event         = "json_event",
+              method        = "json_method",
+              url           = "json_url",
+              route         = "json_route",
+              user_id       = "user_id",
+              user_type     = "user_type",
+              user_role     = "user_role",
+              error_name    = "error_name",
+              error_message = "error_message",
+              // REMOVED: stack, req_body, req_query - large fields that bloat chunks and slow queries
+              user_agent    = "user_agent",
+              host          = "host",
+            }
+          }
+
+          // Stage 9: Drop high-cardinality labels from index (now in structured metadata)
+          stage.label_drop {
+            values = ["pod", "node", "instance"]
+          }
+        }
+
+        // Kubernetes pod logs with processing pipeline
+        loki.source.kubernetes "pod_logs" {
+          targets    = discovery.relabel.pod_logs.output
+          forward_to = [loki.process.pod_logs.receiver]
+        }
+
+        // ----------------------------------------------------------------------------
+        // Kubernetes Events to Loki (Cluster-wide)
+        // ----------------------------------------------------------------------------
+        loki.source.kubernetes_events "cluster_events" {
+          job_name   = "integrations/kubernetes/eventhandler"
+          log_format = "logfmt"
+          forward_to = [loki.write.loki.receiver]
+        }
+
+        // ----------------------------------------------------------------------------
+        // Alloy Self-Monitoring
+        // ----------------------------------------------------------------------------
+        prometheus.exporter.self "alloy" {}
+        
+        prometheus.scrape "alloy" {
+          targets    = prometheus.exporter.self.alloy.targets
+          forward_to = [prometheus.remote_write.mimir.receiver]
+          
+          job_name = "alloy"
+        }
+        
+        // ----------------------------------------------------------------------------
+        // Node Exporter Metrics
+        // ----------------------------------------------------------------------------
+        prometheus.exporter.unix "node" {}
+        
+        prometheus.scrape "node" {
+          targets    = prometheus.exporter.unix.node.targets
+          forward_to = [prometheus.remote_write.mimir.receiver]
+          
+          job_name = "node-exporter"
+        }
+
+  # Controller scheduling
+  controller:
+    type: daemonset
+    priorityClassName: alloy-high-priority
+    terminationGracePeriodSeconds: 60
+    tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      - operator: Exists
+        effect: NoExecute
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      - name: http
+        port: 12345
+        targetPort: 12345
+        protocol: TCP
+      - name: otlp-grpc
+        port: 4317
+        targetPort: 4317
+        protocol: TCP
+      - name: otlp-http
+        port: 4318
+        targetPort: 4318
+        protocol: TCP
+  
+  # ServiceMonitor for monitoring Alloy itself
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+  
+  # RBAC for Kubernetes service discovery and events
+  rbac:
+    create: true
+    extraClusterRoleRules:
+      - apiGroups: [""]
+        resources: ["events"]
+        verbs: ["get", "list", "watch"]
+  
+  serviceAccount:
+    create: true
+    name: alloy
+  
+  # Pod disruption budget for HA
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  
+  # Pod security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    fsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+  
+  # Container security context
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+  
+  # Liveness and readiness probes
+  livenessProbe:
+    httpGet:
+      path: /-/healthy
+      port: 12345
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /-/ready
+      port: 12345
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+  
+  # Affinity rules for HA
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - alloy
+            topologyKey: kubernetes.io/hostname
+  
+  # Tolerations for node constraints
+  tolerations: []
+  
+  # Node selector
+  nodeSelector: {}
+  
+  # Volumes and mounts
+  extraVolumes:
+    # WAL and positions
+    - name: alloy-wal
+      emptyDir: {}
+    - name: log-positions
+      hostPath:
+        path: /var/lib/alloy/positions
+        type: DirectoryOrCreate
+    # Host log directories for Kubernetes logs
+    - name: varlog-pods
+      hostPath:
+        path: /var/log/pods
+        type: Directory
+    - name: varlog-containers
+      hostPath:
+        path: /var/log/containers
+        type: Directory
+
+  extraVolumeMounts:
+    - name: alloy-wal
+      mountPath: /tmp/alloy-wal
+    - name: log-positions
+      mountPath: /tmp/positions
+    - name: varlog-pods
+      mountPath: /var/log/pods
+      readOnly: true
+    - name: varlog-containers
+      mountPath: /var/log/containers
+      readOnly: true

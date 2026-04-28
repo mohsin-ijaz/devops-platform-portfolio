@@ -1,0 +1,1700 @@
+{
+  "description": "Real-time monitoring of pod failures: OOMKilled, CrashLoopBackOff, Failed, Evicted, and High Restart pods across ENTERPRISE and CONSUMER production clusters.",
+  "id": 2280,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "\ud83d\udd34 Pod Failure Summary",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Pods whose last container termination reason was OOMKilled (currently active)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "count(kube_pod_container_status_last_terminated_reason{reason=\"OOMKilled\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1) or vector(0)",
+          "instant": true,
+          "legendFormat": "OOMKilled",
+          "refId": "A"
+        }
+      ],
+      "title": "\ud83d\udca5 OOMKilled Pods",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Pods currently in CrashLoopBackOff waiting state",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "count(kube_pod_container_status_waiting_reason{reason=\"CrashLoopBackOff\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1) or vector(0)",
+          "instant": true,
+          "legendFormat": "CrashLoopBackOff",
+          "refId": "A"
+        }
+      ],
+      "title": "\ud83d\udd04 CrashLoopBackOff Pods",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Total pods in Failed phase or with Evicted status",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "count(kube_pod_status_phase{phase=\"Failed\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1) or vector(0)",
+          "instant": true,
+          "legendFormat": "Failed",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "count(kube_pod_status_reason{reason=\"Evicted\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1) or vector(0)",
+          "instant": true,
+          "legendFormat": "Evicted",
+          "refId": "B"
+        }
+      ],
+      "title": "\u274c Failed / Evicted Pods",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Containers with more than 5 restarts - potential CrashLoop candidates",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "count(kube_pod_container_status_restarts_total{cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} > 5) or vector(0)",
+          "instant": true,
+          "legendFormat": "High Restarts",
+          "refId": "A"
+        }
+      ],
+      "title": "\u26a0\ufe0f High Restart Pods (>5)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 6,
+      "title": "\ud83d\udca5 OOMKilled Pods",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "\u26a0\ufe0f WHY KUBECTL SHOWS 'RUNNING': kube_pod_container_status_last_terminated_reason tracks the LAST reason a container died. When OOMKilled \u2192 K8s auto-restarts the container \u2192 it shows Running now. But the metric still holds 'OOMKilled' until the pod is deleted or dies for a different reason. Run: kubectl describe pod <pod> -n <ns> \u2192 look for 'Last State: Terminated / Reason: OOMKilled'",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "displayMode": "auto",
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cluster"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Namespace"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 350
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Container"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "1": {
+                        "color": "red",
+                        "text": "ACTIVE"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Cluster"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "kube_pod_container_status_last_terminated_reason{reason=\"OOMKilled\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "OOMKilled Pods Detail",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "cluster",
+              "exported_namespace",
+              "exported_pod",
+              "container",
+              "reason"
+            ],
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "env": true,
+              "exported_container": true,
+              "instance": true,
+              "job": true,
+              "namespace": true,
+              "pod": true,
+              "project": true,
+              "region": true,
+              "service": true,
+              "uid": true
+            },
+            "renameByName": {
+              "Value": "Status",
+              "cluster": "Cluster",
+              "container": "Container",
+              "exported_namespace": "Namespace",
+              "exported_pod": "Pod",
+              "reason": "Reason"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 8,
+      "title": "\ud83d\udd04 CrashLoopBackOff Pods",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Pods currently waiting with CrashLoopBackOff reason. Check logs with: kubectl logs <pod> -n <namespace> --previous",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "displayMode": "auto",
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cluster"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Namespace"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 350
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Container"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "1": {
+                        "color": "red",
+                        "text": "CRASHING"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "kube_pod_container_status_waiting_reason{reason=\"CrashLoopBackOff\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "CrashLoopBackOff Pods Detail",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "cluster",
+              "exported_namespace",
+              "exported_pod",
+              "container",
+              "reason"
+            ],
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "env": true,
+              "exported_container": true,
+              "instance": true,
+              "job": true,
+              "namespace": true,
+              "pod": true,
+              "project": true,
+              "region": true,
+              "service": true,
+              "uid": true
+            },
+            "renameByName": {
+              "Value": "Status",
+              "cluster": "Cluster",
+              "container": "Container",
+              "exported_namespace": "Namespace",
+              "exported_pod": "Pod",
+              "reason": "Reason"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 10,
+      "title": "\u274c Failed Pods",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Pods currently in Failed phase or previously failed (tracked by kube-state-metrics). Value=1 means currently Failed.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "displayMode": "auto",
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cluster"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Namespace"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 350
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Phase"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": {
+                        "color": "blue",
+                        "text": "OLD"
+                      },
+                      "1": {
+                        "color": "red",
+                        "text": "FAILED"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "kube_pod_status_phase{phase=\"Failed\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Failed Pods Detail",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "cluster",
+              "exported_namespace",
+              "exported_pod",
+              "phase"
+            ],
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "env": true,
+              "instance": true,
+              "job": true,
+              "namespace": true,
+              "pod": true,
+              "project": true,
+              "region": true,
+              "service": true,
+              "uid": true
+            },
+            "renameByName": {
+              "cluster": "Cluster",
+              "exported_namespace": "Namespace",
+              "exported_pod": "Pod",
+              "phase": "Phase"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 12,
+      "title": "\ud83d\uddd1\ufe0f Evicted Pods",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Pods evicted by Kubernetes (usually due to node resource pressure - memory/disk). Value=1 means currently evicted state.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "displayMode": "auto",
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cluster"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Namespace"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 350
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Reason"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": {
+                        "color": "blue",
+                        "text": "TRACKED"
+                      },
+                      "1": {
+                        "color": "orange",
+                        "text": "EVICTED"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "kube_pod_status_reason{reason=\"Evicted\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Evicted Pods Detail",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "cluster",
+              "exported_namespace",
+              "exported_pod",
+              "reason"
+            ],
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "env": true,
+              "instance": true,
+              "job": true,
+              "namespace": true,
+              "pod": true,
+              "project": true,
+              "region": true,
+              "service": true,
+              "uid": true
+            },
+            "renameByName": {
+              "cluster": "Cluster",
+              "exported_namespace": "Namespace",
+              "exported_pod": "Pod",
+              "reason": "Reason"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "id": 14,
+      "title": "\u26a0\ufe0f High Restart Count Pods (> 5 restarts)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Containers with more than 5 restarts - likely experiencing intermittent crashes. Sorted by restart count descending.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "displayMode": "auto",
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "orange",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cluster"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Namespace"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 350
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Container"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Restart Count"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 15,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Restart Count"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "sort_desc(kube_pod_container_status_restarts_total{cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} > 5)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "High Restart Pods Detail",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "cluster",
+              "exported_namespace",
+              "exported_pod",
+              "container"
+            ],
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "env": true,
+              "exported_container": true,
+              "instance": true,
+              "job": true,
+              "namespace": true,
+              "pod": true,
+              "project": true,
+              "region": true,
+              "service": true,
+              "uid": true
+            },
+            "renameByName": {
+              "Value": "Restart Count",
+              "cluster": "Cluster",
+              "container": "Container",
+              "exported_namespace": "Namespace",
+              "exported_pod": "Pod"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 60
+      },
+      "id": 16,
+      "title": "\ud83d\udcc8 Restart Trends Over Time",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Restart count trends for the top 10 most-restarted pods. A steeply rising line indicates a CrashLoop.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 61
+      },
+      "id": 17,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "spanNulls": false,
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "topk(10, kube_pod_container_status_restarts_total{cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} > 0)",
+          "legendFormat": "{{cluster}} / {{exported_namespace}} / {{exported_pod}} / {{container}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "title": "Top 10 Pods - Restart Count Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Each line = one OOMKilled pod. Line appears when the pod last terminated with OOMKill and disappears when the pod is deleted. Hover to see pod names. Legend table shows all currently affected pods.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 71
+      },
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "kube_pod_container_status_last_terminated_reason{reason=\"OOMKilled\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1",
+          "legendFormat": "{{exported_pod}} ({{exported_namespace}})",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "title": "OOMKilled Pods \u2014 Which Pods & When",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Count of pods in CrashLoopBackOff state over time.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 71
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "count(kube_pod_container_status_waiting_reason{reason=\"CrashLoopBackOff\",cluster=~\"$cluster\",exported_namespace=~\"$namespace\"} == 1) or vector(0)",
+          "legendFormat": "CrashLoopBackOff pods",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "title": "CrashLoopBackOff Events Over Time",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 79
+      },
+      "id": 20,
+      "title": "\ud83e\udde0 OOMKilled Memory Spike Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": null,
+      "gridPos": {
+        "h": 10,
+        "w": 7,
+        "x": 0,
+        "y": 80
+      },
+      "id": 21,
+      "options": {
+        "content": "## \ud83d\udd0d OOMKilled vs Running \u2014 Explained\n\n`kube_pod_container_status_last_terminated_reason` records the **last** reason a container was killed.\n\n---\n\n### \ud83d\udcc5 Timeline of Events\n1. \ud83d\udd34 Container exceeds memory limit \u2192 **OOMKilled**\n2. \ud83d\udd04 Kubernetes auto-restarts the container\n3. \ud83d\udfe2 Pod now shows **`Running`** in `kubectl get pods`\n4. \ud83d\udcca Metric still shows `reason=OOMKilled` (last death)\n\n---\n\n### \u2705 To Verify Manually\n```\nkubectl describe pod <pod-name> \\\n  -n <namespace>\n```\nLook for:\n```\nLast State:  Terminated\n  Reason:    OOMKilled\n  Exit Code: 137\n```\n\n---\n\n### \ud83d\udd27 Fix\nIncrease `resources.limits.memory` in the container spec. The chart \u2192 shows how close current usage is to the limit.",
+        "mode": "markdown"
+      },
+      "title": "\ud83d\udcd6 Why Is The Pod Running But Shows OOMKilled?",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PAE45454D0EDB9216"
+      },
+      "description": "Solid lines = actual memory working set for ALL container instances of OOMKilled pods (including the dead one that actually hit the limit). Dashed RED line = memory limit.\n\n\ud83d\udccc You will see TWO solid lines for the same pod:\n\u2022 Dead container \u2192 line climbs up and cuts off sharply when the kernel killed it (at the limit)\n\u2022 Live container \u2192 starts near 0 after restart and grows again\n\nBoth are captured because we filter by pod name directly \u2014 NOT by current OOMKilled state \u2014 so historical data from before the kill is fully visible.\n\nMemory request = 512 MiB | Memory limit = 2 GiB",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "unit": "bytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^Limit:.*/"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 17,
+        "x": 7,
+        "y": 80
+      },
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "container_memory_working_set_bytes{cluster=~\"$cluster\", pod=~\"$oomkilled_pods\", container!=\"POD\", container!=\"\"}",
+          "interval": "1m",
+          "legendFormat": "Usage: {{pod}} / {{container}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PAE45454D0EDB9216"
+          },
+          "expr": "kube_pod_container_resource_limits{resource=\"memory\", cluster=~\"$cluster\", exported_namespace=~\"$namespace\", exported_pod=~\"$oomkilled_pods\"}",
+          "interval": "1m",
+          "legendFormat": "Limit: {{exported_pod}} / {{container}}",
+          "refId": "B"
+        }
+      ],
+      "timeFrom": null,
+      "title": "Memory Usage vs Limit \u2014 OOMKilled Pods (All Container Instances)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "2m",
+  "schemaVersion": 36,
+  "tags": [
+    "kubernetes",
+    "pods",
+    "troubleshooting",
+    "infrastructure",
+    "alerts",
+    "debugging"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PAE45454D0EDB9216"
+        },
+        "includeAll": true,
+        "label": "Cluster",
+        "multi": true,
+        "name": "cluster",
+        "query": "label_values(kube_pod_info, cluster)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PAE45454D0EDB9216"
+        },
+        "includeAll": true,
+        "label": "Namespace",
+        "multi": true,
+        "name": "namespace",
+        "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, exported_namespace)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PAE45454D0EDB9216"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "label": "OOMKilled Pods",
+        "multi": true,
+        "name": "oomkilled_pods",
+        "query": "label_values(kube_pod_container_status_last_terminated_reason{reason=\"OOMKilled\", cluster=~\"$cluster\", exported_namespace=~\"$namespace\"}, exported_pod)",
+        "refresh": 2,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": false,
+    "nowDelay": "",
+    "refresh_intervals": [
+      "30s",
+      "1m",
+      "2m",
+      "5m",
+      "10m",
+      "30m"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "14d",
+      "30d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Kubernetes Pod Failure Dashboard",
+  "uid": "k8s-pod-failures",
+  "version": 13
+}

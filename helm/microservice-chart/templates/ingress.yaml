@@ -1,0 +1,77 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "acme-app.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+{{- $hostOverride := .Values.ingress.hostOverride -}}
+{{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ include "acme-app.fullname" . }}-ingress
+  labels:
+    {{- include "acme-app.labels" . | nindent 4 }}
+    {{- include "acme-app.appLabels" (merge (dict "docType" "ingress") .) | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+    "helm.sh/resource-policy": keep
+spec:
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+  {{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion -}}
+    {{- range .Values.ingress.hosts }}
+    - host: {{ default .host $hostOverride | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          {{- if .sslRedirection }}
+          - path: {{ .path }}
+            backend:
+              service:
+                name: ssl-redirect
+                port: 
+                  name: use-annotation
+            pathType: Prefix
+          {{- end }}
+          - path: {{ .path }}
+            backend:
+              service:
+                name: {{ default (print $fullName "-service-http") .serviceName }}
+                port: 
+                  number: {{ default $svcPort .servicePort }}
+            pathType: {{ default (print "Prefix") .pathType }}
+          {{- end }}
+    {{- end }}
+  {{- else -}}
+    {{- range .Values.ingress.hosts }}
+    - host: {{ default .host $hostOverride | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          {{- if .sslRedirection }}
+          - path: {{ .path }}
+            backend:
+              serviceName: ssl-redirect
+              servicePort: use-annotation
+          {{- end }}
+          - path: {{ .path }}
+            backend:
+              serviceName: {{ default (print $fullName "-service") .serviceName }}
+              servicePort: {{ default $svcPort .servicePort }}
+          {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+

@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kafka
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/component: ksql
+  - includeSelectors: false
+    pairs:
+      env: stg
+resources:
+- deployment.yaml
+- service.yaml
+- jmx-exporter-config.yaml
+- service-metrics.yaml
+- servicemonitor.yaml
+- ksql-cli-wrapper.yaml

@@ -1,0 +1,59 @@
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  name: kiali
+  namespace: istio-system
+spec:
+  auth:
+    openid:
+      allowed_domains:
+      - <YOUR_DOMAIN>
+      - <YOUR_DOMAIN_2>
+      client_id: <GOOGLE_OAUTH_CLIENT_ID>
+      client_secret: <GOOGLE_OAUTH_CLIENT_SECRET>
+      disable_rbac: true
+      issuer_uri: https://accounts.google.com
+      redirect_uri: https://<YOUR_KIALI_HOST>/api/auth/openid_redirect
+      scopes:
+      - openid
+      - profile
+      - email
+      username_claim: email
+    strategy: openid
+  deployment:
+    accessible_namespaces:
+    - '**'
+    additional_remote_cluster_kubeconfigs:
+    - name: cluster-2
+      secret_name: cluster-2-kubeconfig
+  external_services:
+    grafana:
+      enabled: true
+      in_cluster_url: http://grafana.istio-system.svc.cluster.local
+    istio:
+      url_service_version: http://istiod.istio-system:15014/version
+    prometheus:
+      url: http://prometheus-server.istio-system.svc.cluster.local
+    tracing:
+      enabled: true
+      # FIXED: Point directly to LGTM Tempo IP instead of non-existent local service
+      in_cluster_url: http://<TEMPO_ILB_IP>:3200
+      provider: tempo
+      tempo_config:
+        datasource_uid: tempo
+        org_id: "1"
+        url_format: grafana
+      # Grafana URL for deep links to trace details
+      url: https://<YOUR_GRAFANA_URL>
+      use_grpc: false
+  server:
+    accessible_namespaces:
+    - '**'
+    args:
+    - --v=5
+    logger:
+      log_level: info
+    pod_annotations:
+      sidecar.istio.io/inject: "false"
+    web_external_url: https://<YOUR_KIALI_HOST>
+    web_root: /

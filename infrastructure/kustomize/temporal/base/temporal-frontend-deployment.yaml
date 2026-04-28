@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temporal-frontend
+  namespace: temporal
+  labels:
+    app.kubernetes.io/name: temporal
+    app.kubernetes.io/instance: temporal
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: temporal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: temporal
+      app.kubernetes.io/instance: temporal
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: temporal
+        app.kubernetes.io/instance: temporal
+        app.kubernetes.io/component: frontend
+        app.kubernetes.io/part-of: temporal
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+      initContainers:
+        - name: check-cassandra-service
+          image: busybox
+          command: ['sh', '-c', 'until nslookup cassandra-headless.cassandra.svc.cluster.local; do echo waiting for cassandra service; sleep 1; done;']
+        - name: check-cassandra
+          image: "cassandra:4.1.3"
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until cqlsh cassandra-headless.cassandra.svc.cluster.local 9042 -e "SHOW VERSION"; do echo waiting for cassandra to start; sleep 1; done;']
+        - name: check-cassandra-temporal-schema
+          image: "cassandra:4.1.3"
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until cqlsh cassandra-headless.cassandra.svc.cluster.local 9042 -e "SELECT keyspace_name FROM system_schema.keyspaces" | grep temporal$; do echo waiting for default keyspace to become ready; sleep 1; done;']
+        - name: check-cassandra-visibility-schema
+          image: "cassandra:4.1.3"
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until cqlsh cassandra-headless.cassandra.svc.cluster.local 9042 -e "SELECT keyspace_name FROM system_schema.keyspaces" | grep temporal_visibility$; do echo waiting for visibility keyspace to become ready; sleep 1; done;']
+        - name: check-elasticsearch-index
+          image: "temporalio/admin-tools:1.21.4"
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: ES_USER
+            valueFrom:
+              secretKeyRef:
+                name: temporal-es-visibility-store
+                key: es-kube-username
+          - name: ES_PWD
+            valueFrom:
+              secretKeyRef:
+                name: temporal-es-visibility-store
+                key: es-kube-password
+          command: ['sh', '-c', 'until curl --silent --fail -u "${ES_USER}":"${ES_PWD}" http://temporal-elasticsearch-es-http.elastic-system.svc.cluster.local:9200/temporal_visibility_v1 2>&1 > /dev/null; do echo waiting for elasticsearch index to become ready; sleep 1; done;']
+      containers:
+        - name: temporal-frontend
+          image: "temporalio/server:1.21.4"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ENABLE_ES
+              value: "true"
+            - name: ES_SEEDS
+              value: "temporal-elasticsearch-es-http.elastic-system.svc.cluster.local"
+            - name: ES_PORT
+              value: "9200"
+            - name: ES_VERSION
+              value: "v7"
+            - name: ES_SCHEME
+              value: "http"
+            - name: ES_VIS_INDEX
+              value: "temporal_visibility_v1"
+            - name: ES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-es-visibility-store
+                  key: es-kube-username
+            - name: ES_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-es-visibility-store
+                  key: es-kube-password
+            - name: SERVICES
+              value: frontend
+            - name: TEMPORAL_STORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-default-store
+                  key: password
+            - name: TEMPORAL_VISIBILITY_STORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-visibility-store
+                  key: password
+          ports:
+            - name: rpc
+              containerPort: 7233
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          livenessProbe:
+             initialDelaySeconds: 150
+             tcpSocket:
+               port: rpc
+          volumeMounts:
+            - name: config
+              mountPath: /etc/temporal/config/config_template.yaml
+              subPath: config_template.yaml
+            - name: dynamic-config
+              mountPath: /etc/temporal/dynamic_config
+          resources:
+            {}
+      volumes:
+        - name: config
+          configMap:
+            name: "temporal-frontend-config"
+        - name: dynamic-config
+          configMap:
+            name: "temporal-dynamic-config"
+            items:
+            - key: dynamic_config.yaml
+              path: dynamic_config.yaml

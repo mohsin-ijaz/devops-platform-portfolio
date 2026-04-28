@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ssl-exporter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ssl-exporter.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9219
+      targetPort: http-metrics
+      protocol: TCP
+      name: http-metrics
+  selector:
+    {{- include "ssl-exporter.selectorLabels" . | nindent 4 }}

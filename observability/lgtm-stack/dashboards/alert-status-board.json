@@ -1,0 +1,514 @@
+{
+  "description": "At-a-glance view of all 108 custom Grafana alert rules",
+  "editable": true,
+  "graphTooltip": 0,
+  "id": 2279,
+  "links": [
+    {
+      "icon": "bolt",
+      "title": "Alert Rules",
+      "type": "link",
+      "url": "/alerting/list"
+    },
+    {
+      "icon": "bell-slash",
+      "title": "Silences",
+      "type": "link",
+      "url": "/alerting/silences"
+    },
+    {
+      "icon": "envelope",
+      "title": "Contact Points",
+      "type": "link",
+      "url": "/alerting/notifications"
+    }
+  ],
+  "panels": [
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "alertInstanceLabelFilter": "severity=critical,alertname=~(High.*|Pods in.*|Container.*|Deployment.*|Kafka.*|MongoDB.*|CloudSQL.*|MySQL.*|Loki.*|Mimir.*|Domain.*|Multiple.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 30,
+        "sortOrder": 1,
+        "stateFilter": {
+          "error": false,
+          "firing": true,
+          "noData": false,
+          "normal": false,
+          "pending": false
+        },
+        "viewMode": "list"
+      },
+      "title": "\ud83d\udd34 CRITICAL FIRING",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "alertInstanceLabelFilter": "severity=warning,alertname=~(High.*|Pods in.*|Container.*|Deployment.*|Kafka.*|MongoDB.*|CloudSQL.*|MySQL.*|Loki.*|Mimir.*|Domain.*|Multiple.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 30,
+        "sortOrder": 1,
+        "stateFilter": {
+          "error": false,
+          "firing": true,
+          "noData": false,
+          "normal": false,
+          "pending": false
+        },
+        "viewMode": "list"
+      },
+      "title": "\ud83d\udfe0 WARNING FIRING",
+      "type": "alertlist"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 10,
+      "title": "\ud83d\udccb BY CATEGORY - ACTIVE ALERTS",
+      "type": "row"
+    },
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 6
+      },
+      "id": 11,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(High Node.*|High Pod.*|High PVC.*|Pods in.*|Container OOM.*|Deployment Has.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 10,
+        "sortOrder": 1,
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": true,
+          "normal": false,
+          "pending": true
+        },
+        "viewMode": "list"
+      },
+      "title": "INFRASTRUCTURE (10)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 6
+      },
+      "id": 12,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(Kafka.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 11,
+        "sortOrder": 1,
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": true,
+          "normal": false,
+          "pending": true
+        },
+        "viewMode": "list"
+      },
+      "title": "KAFKA (11)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "id": 13,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(MongoDB.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 19,
+        "sortOrder": 1,
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": true,
+          "normal": false,
+          "pending": true
+        },
+        "viewMode": "list"
+      },
+      "title": "MONGODB (19)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 11
+      },
+      "id": 14,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(CloudSQL.*|MySQL.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 34,
+        "sortOrder": 1,
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": true,
+          "normal": false,
+          "pending": true
+        },
+        "viewMode": "list"
+      },
+      "title": "CLOUDSQL (34)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 11
+      },
+      "id": 15,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(Loki.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 15,
+        "sortOrder": 1,
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": true,
+          "normal": false,
+          "pending": true
+        },
+        "viewMode": "list"
+      },
+      "title": "LOKI (15)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 11
+      },
+      "id": 16,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(Mimir .*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 13,
+        "sortOrder": 1,
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": true,
+          "normal": false,
+          "pending": true
+        },
+        "viewMode": "list"
+      },
+      "title": "MIMIR (13)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 16
+      },
+      "id": 17,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(Domain.*|Multiple Domains.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 6,
+        "sortOrder": 1,
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": true,
+          "normal": false,
+          "pending": true
+        },
+        "viewMode": "list"
+      },
+      "title": "DOMAINS (6)",
+      "type": "alertlist"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 20,
+      "title": "\u2705 ALL OK - NORMAL STATE (108 total alerts)",
+      "type": "row"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 22
+      },
+      "id": 31,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(High Node.*|High Pod.*|High PVC.*|Pods in.*|Container OOM.*|Deployment Has.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 10,
+        "sortOrder": 3,
+        "stateFilter": {
+          "error": false,
+          "firing": false,
+          "noData": false,
+          "normal": true,
+          "pending": false
+        },
+        "viewMode": "list"
+      },
+      "title": "Infrastructure OK (10)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 22
+      },
+      "id": 32,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(Kafka.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 11,
+        "sortOrder": 3,
+        "stateFilter": {
+          "error": false,
+          "firing": false,
+          "noData": false,
+          "normal": true,
+          "pending": false
+        },
+        "viewMode": "list"
+      },
+      "title": "Kafka OK (11)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 8,
+        "y": 22
+      },
+      "id": 33,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(MongoDB.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 19,
+        "sortOrder": 3,
+        "stateFilter": {
+          "error": false,
+          "firing": false,
+          "noData": false,
+          "normal": true,
+          "pending": false
+        },
+        "viewMode": "list"
+      },
+      "title": "MongoDB OK (19)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 22
+      },
+      "id": 34,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(CloudSQL.*|MySQL.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 34,
+        "sortOrder": 3,
+        "stateFilter": {
+          "error": false,
+          "firing": false,
+          "noData": false,
+          "normal": true,
+          "pending": false
+        },
+        "viewMode": "list"
+      },
+      "title": "CloudSQL OK (34)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 16,
+        "y": 22
+      },
+      "id": 35,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(Loki.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 15,
+        "sortOrder": 3,
+        "stateFilter": {
+          "error": false,
+          "firing": false,
+          "noData": false,
+          "normal": true,
+          "pending": false
+        },
+        "viewMode": "list"
+      },
+      "title": "Loki OK (15)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 20,
+        "y": 22
+      },
+      "id": 36,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(Mimir .*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 13,
+        "sortOrder": 3,
+        "stateFilter": {
+          "error": false,
+          "firing": false,
+          "noData": false,
+          "normal": true,
+          "pending": false
+        },
+        "viewMode": "list"
+      },
+      "title": "Mimir OK (13)",
+      "type": "alertlist"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 28
+      },
+      "id": 37,
+      "options": {
+        "alertInstanceLabelFilter": "alertname=~(Domain.*|Multiple Domains.*)",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 6,
+        "sortOrder": 3,
+        "stateFilter": {
+          "error": false,
+          "firing": false,
+          "noData": false,
+          "normal": true,
+          "pending": false
+        },
+        "viewMode": "list"
+      },
+      "title": "Domains OK (6)",
+      "type": "alertlist"
+    }
+  ],
+  "refresh": "30s",
+  "tags": [
+    "alerts",
+    "status",
+    "sre"
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Alert Status Board",
+  "uid": "alert-status-board",
+  "version": 11
+}

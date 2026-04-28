@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kafka-schema-registry
+  name: kafka-schema-registry
+spec:
+  ports:
+    - port: 8082
+      targetPort: 8082
+      protocol: TCP
+  selector:
+    app: kafka-schema-registry
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kafka-schema-registry
+spec:
+  selector:
+    matchLabels:
+      app: kafka-schema-registry
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kafka-schema-registry
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: kafka-schema-registry
+          image: confluentinc/cp-schema-registry:latest
+          env:
+            - name: SCHEMA_REGISTRY_HOST_NAME
+              value: kafka-schema-registry
+            - name: SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL
+              value: zk-kafka-0.zk-kafka-svc.default.svc.cluster.local:2181,zk-kafka-1.zk-kafka-svc.default.svc.cluster.local:2181,zk-kafka-2.zk-kafka-svc.default.svc.cluster.local:2181
+            - name: SCHEMA_REGISTRY_LISTENERS
+              value: http://0.0.0.0:8082
+            - name: SCHEMA_REGISTRY_KAFKASTORE_TIMEOUT_MS
+              value: "2000"
+            - name: SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL
+              value: "WARN"
+          ports:
+            - containerPort: 8082
+      nodeSelector: {{ node_selector }}
+      tolerations: {{ tolerations }}

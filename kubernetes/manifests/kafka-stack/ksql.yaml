@@ -1,0 +1,38 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ksql-server-kafka
+spec:
+  selector:
+    matchLabels:
+      app: ksql-server-kafka
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ksql-server-kafka
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: ksql-server-kafka
+          image: confluentinc/cp-ksql-server:5.4.0
+          env:
+            - name: KSQL_BOOTSTRAP_SERVERS
+              value: kafka-svc:9093
+            - name: KSQL_LISTENERS
+              value: http://0.0.0.0:8088
+            - name: KSQL_KSQL_SCHEMA_REGISTRY_URL
+              value: http://kafka-schema-registry:8082
+            - name: KSQL_KSQL_SERVICE_ID
+              value: ksql-server-kafka
+          resources: {{ resources_ksql }}
+          volumeMounts:
+            - name: ksql-volume
+              mountPath: /tmp
+      nodeSelector: {{ node_selector_ksql }}
+      tolerations: {{ tolerations_ksql }}
+      volumes:
+        - name: ksql-volume
+          gcePersistentDisk:
+            pdName: ksql-volume
+            fsType: ext4

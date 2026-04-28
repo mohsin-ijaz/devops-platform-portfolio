@@ -1,0 +1,133 @@
+
+partOf: lgtm-stack
+
+# Docker image configuration
+image:
+  tag: "v1.24.1"
+  pullPolicy: IfNotPresent
+
+# Node selector - use system pool
+nodeSelector:
+  workload: system
+
+# Tolerations for system pool
+tolerations:
+  - key: workload
+    operator: Equal
+    value: system
+    effect: NoSchedule
+
+# Resource configuration for prod
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# ServiceMonitor for Prometheus discovery
+serviceMonitor:
+  enabled: true
+  interval: "5m"  # Check domains every 5 minutes
+  scrapeTimeout: "30s"
+  labels:
+    app.kubernetes.io/name: domain-exporter
+    monitoring.grafana.com/scrape: "true"
+
+# Pod annotations
+podAnnotations:
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+# Pod labels
+podLabels:
+  app.kubernetes.io/part-of: lgtm-stack
+  sre.io/service: domain-exporter
+  sre.io/tier: monitoring
+
+# Acme domains to monitor for expiry
+# Removed 18 domains that were causing restart loop:
+#   .ph/.vn TLDs: WHOIS unsupported ("URL not supported")
+#   .me/.asia TLDs: WHOIS server timeouts
+#   acme.ae: IP blacklisted by WHOIS provider
+#   one2carbid.com/mobil123bid.com: WHOIS date parsing failures
+domains:
+  - acme-group.com
+  - acme.asia
+  - acme.com
+  - acme.com.my
+  - acme.com.sg
+  - acme.co.id
+  - acme.co.th
+  - acme.dev
+  - acme.id
+  - acme.it
+  - acme.kr
+  - acme.la
+  - acme.mx
+  - acme.my
+  - acme.sg
+  - acme.tech
+  - acme.tw
+  - acmeacademy.co.th
+  - acmeacademy.com
+  - acmeacademy.id
+  - acmeacademy.my
+  - acmeacademy.sg
+  - acmeapi.com
+  - acmeapi.dev
+  - acmeapis.com
+  - acmeapis.dev
+  - acmecapital.com
+  - acmegroup.com
+  - acmeracing.com
+  - acmesg.com
+  - boardac.com
+  - cartimes.com.sg
+  - platform-a.com.my
+  - platform-a.my
+  - carlists.my
+  - carlistbid.my
+  - carsentro.com
+  - platform-d.com
+  - platform-d.my
+  - platform-d.sg
+  - sgcarmart.com.my
+  - sgcarmart.my
+  - platform-g.co.id
+  - platform-g.com
+  - platform-g.com.my
+  - platform-g.my
+  - platform-g.sg
+  - bikelist.my
+  - bikelist.sg
+  - platform-c.co.id
+  - platform-c.com
+  - platform-c.id
+  - acme.com
+  - acme.info
+  - acme.mobi
+  - icarcdn.com
+  - icarsuite.com
+  - carl.st
+  - platform-b.co.id
+  - platform-b.com
+  - platform-b.id
+  - others.my
+  - caroftheyear.asia
+  - ityre.my
+  - testdrive.co.id
+  - testdrive.my
+  - test-drive.my
+  - livelifedrive.com
+  - ibroker.my
+  - platform-i.com
+  - mylist.my
+  - platform-e.com
+  - platform-h.co.id
+  - platform-h.co.th
+  - platform-h.com
+  - platform-h.id
+  - platform-f.com
+  - platform-f.com.my
+  - platform-f.my

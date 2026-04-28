@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: mysql
+
+resources:
+  - mysql-secret.yaml
+  - configmap-init-replication.yaml
+  - mysql-primary.yaml
+  - mysql-replica.yaml
+  - service-primary.yaml
+  - service-replica.yaml
+  - namespace.yaml

@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-jaas
+data:
+  kafka_jaas.conf: |-
+    KafkaServer {
+      org.apache.kafka.common.security.plain.PlainLoginModule required
+      user_kminion="kminion-exporter"
+      user_schema-registry="schema-registry"
+      user_eng-ancillary="<KAFKA_UI_PASSWORD>"
+      user_eng-transactions="<KAFKA_UI_PASSWORD>"
+      user_eng-inspection="<KAFKA_UI_PASSWORD>"
+      user_leads-ms="<KAFKA_UI_PASSWORD>"
+      user_nexus-vehicle="<KAFKA_UI_PASSWORD>"
+      user_nexus-lead="<KAFKA_UI_PASSWORD>";
+    };
+
+    // Client config user to connect to Zookeeper
+    Client {
+      org.apache.zookeeper.server.auth.DigestLoginModule required
+      username="kafka"
+      password="<ZOOKEEPER_CLIENT_PASSWORD>";
+    };

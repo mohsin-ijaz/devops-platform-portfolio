@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: temporal-web-ingress
+  namespace: temporal
+  labels:
+    app.kubernetes.io/name: temporal
+    app.kubernetes.io/instance: temporal
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: temporal
+  annotations:
+    kubernetes.io/ingress.class: gce
+    kubernetes.io/ingress.global-static-ip-name: temporal-web-external
+    kubernetes.io/ingress.allow-http: "false"
+    networking.gke.io/managed-certificates: temporal-cert
+spec:
+  tls:
+  - hosts:
+    - preprod-temporal.acme.dev
+  rules:
+  - host: preprod-temporal.acme.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: temporal-web
+            port:
+              number: 8080

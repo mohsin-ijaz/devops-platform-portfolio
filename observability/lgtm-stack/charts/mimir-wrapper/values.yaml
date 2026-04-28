@@ -1,0 +1,172 @@
+# Default values for mimir-wrapper chart
+# These are base values that get overridden by environment-specific files
+
+# Enable the official Mimir chart dependency
+mimir:
+  enabled: true
+  
+  # Default global configuration
+  global:
+    storageBackend: gcs
+    storageConfig:
+      gcs:
+        bucket_name: "lgtm-storage-changeme"  # Override in environment files
+
+  # Default ingester configuration
+  ingester:
+    replicas: 3
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 4Gi
+      limits:
+        cpu: 2000m
+        memory: 8Gi
+    persistentVolume:
+      enabled: true
+      size: 50Gi
+      storageClass: pd-ssd
+
+  # Default distributor configuration  
+  distributor:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+
+  # Default querier configuration
+  querier:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+
+  # Default query frontend configuration
+  query_frontend:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+  # Default store gateway configuration
+  store_gateway:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+    persistentVolume:
+      enabled: true
+      size: 20Gi
+      storageClass: pd-ssd
+
+  # Default compactor configuration
+  compactor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+    persistentVolume:
+      enabled: true
+      size: 20Gi
+      storageClass: pd-ssd
+
+  # Default ruler configuration
+  ruler:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 250m
+        memory: 1Gi
+
+  # Default alertmanager configuration
+  alertmanager:
+    enabled: true
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
+    persistentVolume:
+      enabled: true
+      size: 5Gi
+      storageClass: pd-ssd
+
+  # Disable internal memcached by default
+  memcached:
+    enabled: false
+
+  # Default external memcached configuration
+  externalMemcached:
+    chunks:
+      addresses: "memcached.default.svc.cluster.local:11211"
+    frontend:
+      addresses: "memcached.default.svc.cluster.local:11211"
+    metadata:
+      addresses: "memcached.default.svc.cluster.local:11211"
+    index_queries:
+      addresses: "memcached.default.svc.cluster.local:11211"
+
+  # Default service monitor configuration
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    labels: {}
+
+# Default configuration for additional resources
+workloadIdentity:
+  enabled: false  # Override to true in environment files
+  gcp_service_account: ""  # Set in environment files
+
+networkPolicy:
+  enabled: false  # Override to true for production
+
+podDisruptionBudget:
+  enabled: true
+
+# Default Mimir configuration
+mimirConfig:
+  multitenancy_enabled: false
+  
+  server:
+    http_listen_port: 8080
+    grpc_listen_port: 9095
+    
+  memberlist:
+    bind_port: 7946
+    
+  ingester:
+    ring:
+      replication_factor: 3
+      kvstore:
+        store: memberlist
+        
+  distributor:
+    ring:
+      kvstore:
+        store: memberlist

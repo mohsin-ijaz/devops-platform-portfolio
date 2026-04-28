@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: temporal-cert
+  namespace: temporal
+spec:
+  domains:
+    - preprod-temporal.acme.dev

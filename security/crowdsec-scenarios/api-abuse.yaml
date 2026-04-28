@@ -1,0 +1,59 @@
+# API Abuse Detection
+# Detects abuse of API endpoints
+
+type: leaky
+name: custom/api-abuse
+description: "Detects excessive API requests indicating abuse or scraping"
+filter: |
+  evt.Meta.log_type == 'http_access-log'
+  and (
+    evt.Parsed.request startsWith "/api/"
+    or evt.Parsed.request startsWith "/v1/"
+    or evt.Parsed.request startsWith "/v2/"
+    or evt.Parsed.request startsWith "/v3/"
+    or evt.Parsed.request startsWith "/graphql"
+    or evt.Parsed.request startsWith "/rest/"
+  )
+groupby: evt.Meta.source_ip
+
+capacity: 200                      # Alert after 200 API requests
+leakspeed: 1m                     # Per minute
+blackhole: 5m
+
+labels:
+  service: http
+  type: api-abuse
+  confidence: medium
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip
+---
+# Detect API enumeration (trying many different endpoints)
+type: leaky
+name: custom/api-enumeration
+description: "Detects API endpoint enumeration"
+filter: |
+  evt.Meta.log_type == 'http_access-log'
+  and (
+    evt.Parsed.request startsWith "/api/"
+    or evt.Parsed.request startsWith "/v1/"
+    or evt.Parsed.request startsWith "/v2/"
+  )
+groupby: evt.Meta.source_ip
+
+distinct: evt.Parsed.request      # Count unique API endpoints
+capacity: 30                       # Alert after 30 unique endpoints
+leakspeed: 2m
+blackhole: 10m
+
+labels:
+  service: http
+  type: api-enumeration
+  confidence: high
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip

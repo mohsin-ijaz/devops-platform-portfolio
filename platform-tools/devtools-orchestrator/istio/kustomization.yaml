@@ -1,0 +1,7 @@
+namespace: istio-system
+resources:
+  # - ../../base
+  - gateway.yaml
+  - service-entry.yaml
+  - enterprise-all-envoy-filter.yaml
+  - enterprise-api-gateway-envoy-filter.yaml

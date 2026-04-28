@@ -1,0 +1,591 @@
+variables:
+  TF_VERSION: "1.14.0"
+  AWS_REGION: "<AWS_REGION>"
+  TF_ROOT: ${CI_PROJECT_DIR}
+
+  # Account IDs
+  NETWORK_ACCOUNT_ID: "<AWS_NETWORK_ACCOUNT_ID>"
+  UAT_ACCOUNT_ID: "<AWS_ACCOUNT_ID>"
+  PROD_ACCOUNT_ID: "<AWS_ACCOUNT_ID>"
+
+stages:
+  - validate
+  - plan
+  - apply
+  - plan-addons
+  - apply-addons
+  - maintenance
+
+# ============================================
+# MAINTENANCE STAGE (Scheduled jobs only)
+# ============================================
+
+# Updates OIDC provider thumbprint when GitLab rotates their SSL certificate
+# Schedule this to run weekly via GitLab CI/CD > Schedules
+update-oidc-thumbprint:
+  stage: maintenance
+  image: alpine:latest
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  before_script:
+    - apk add --no-cache aws-cli jq openssl
+  script:
+    - |
+      set -e
+      echo "Fetching current GitLab SSL certificate thumbprint..."
+      THUMBPRINT=$(echo | openssl s_client -servername gitlab.com -connect gitlab.com:443 2>/dev/null | openssl x509 -fingerprint -sha1 -noout | sed 's/://g' | cut -d'=' -f2 | tr 'A-Z' 'a-z')
+      echo "Current GitLab thumbprint: ${THUMBPRINT}"
+
+      # Update UAT
+      echo "Updating UAT OIDC provider..."
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${UAT_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      CURRENT_UAT=$(aws iam get-open-id-connect-provider --open-id-connect-provider-arn "arn:aws:iam::${UAT_ACCOUNT_ID}:oidc-provider/gitlab.com" --query 'ThumbprintList[0]' --output text)
+      echo "UAT current thumbprint: ${CURRENT_UAT}"
+      if [ "${CURRENT_UAT}" != "${THUMBPRINT}" ]; then
+        echo "Updating UAT thumbprint..."
+        aws iam update-open-id-connect-provider-thumbprint \
+          --open-id-connect-provider-arn "arn:aws:iam::${UAT_ACCOUNT_ID}:oidc-provider/gitlab.com" \
+          --thumbprint-list "${THUMBPRINT}"
+        echo "UAT thumbprint updated!"
+      else
+        echo "UAT thumbprint already up to date"
+      fi
+
+      # Update Prod
+      echo "Updating Prod OIDC provider..."
+      unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${PROD_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      CURRENT_PROD=$(aws iam get-open-id-connect-provider --open-id-connect-provider-arn "arn:aws:iam::${PROD_ACCOUNT_ID}:oidc-provider/gitlab.com" --query 'ThumbprintList[0]' --output text)
+      echo "Prod current thumbprint: ${CURRENT_PROD}"
+      if [ "${CURRENT_PROD}" != "${THUMBPRINT}" ]; then
+        echo "Updating Prod thumbprint..."
+        aws iam update-open-id-connect-provider-thumbprint \
+          --open-id-connect-provider-arn "arn:aws:iam::${PROD_ACCOUNT_ID}:oidc-provider/gitlab.com" \
+          --thumbprint-list "${THUMBPRINT}"
+        echo "Prod thumbprint updated!"
+      else
+        echo "Prod thumbprint already up to date"
+      fi
+
+      echo "OIDC thumbprint update complete!"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+
+# Default settings for all jobs
+default:
+  image:
+    name: hashicorp/terraform:${TF_VERSION}
+    entrypoint: [""]
+  before_script:
+    - apk add --no-cache aws-cli jq
+    - terraform --version
+    - aws --version
+
+# ============================================
+# VALIDATE STAGE
+# ============================================
+
+validate:network:
+  stage: validate
+  script:
+    - cd ${TF_ROOT}/live/network
+    - terraform init -backend=false
+    - terraform validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - live/network/**/*
+        - modules/**/*
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/network/**/*
+        - modules/**/*
+
+validate:workload:
+  stage: validate
+  script:
+    - cd ${TF_ROOT}/live/workload
+    - terraform init -backend=false
+    - terraform validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - live/workload/**/*
+        - modules/**/*
+        - environments/**/*
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/workload/**/*
+        - modules/**/*
+        - environments/**/*
+
+# ============================================
+# PLAN STAGE
+# ============================================
+
+plan:network:
+  stage: plan
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      # Assume role explicitly
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${NETWORK_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      aws sts get-caller-identity
+
+      cd ${TF_ROOT}/live/network
+      terraform init
+      terraform plan -out=tfplan
+  artifacts:
+    paths:
+      - ${TF_ROOT}/live/network/tfplan
+      - ${TF_ROOT}/live/network/.terraform.lock.hcl
+    expire_in: 1 day
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/network/**/*
+        - modules/**/*
+
+plan:uat:
+  stage: plan
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      # Assume role explicitly
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${UAT_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      aws sts get-caller-identity
+
+      cd ${TF_ROOT}/live/workload
+      terraform init -backend-config=backend-uat.hcl -reconfigure -upgrade
+      terraform plan -var-file="../../environments/_common.tfvars" -var-file="../../environments/uat.tfvars" -var="gitlab_runner_token=${GITLAB_RUNNER_TOKEN_UAT}" -out=tfplan-uat
+  artifacts:
+    paths:
+      - ${TF_ROOT}/live/workload/tfplan-uat
+      - ${TF_ROOT}/live/workload/.terraform.lock.hcl
+    expire_in: 1 day
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/workload/**/*
+        - modules/**/*
+        - environments/_common.tfvars
+        - environments/uat.tfvars
+
+plan:prod:
+  stage: plan
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      # Assume role explicitly
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${PROD_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      aws sts get-caller-identity
+
+      cd ${TF_ROOT}/live/workload
+      terraform init -backend-config=backend-prod.hcl -reconfigure -upgrade
+      terraform plan -var-file="../../environments/_common.tfvars" -var-file="../../environments/prod.tfvars" -var="gitlab_runner_token=${GITLAB_RUNNER_TOKEN_PROD}" -out=tfplan-prod
+  artifacts:
+    paths:
+      - ${TF_ROOT}/live/workload/tfplan-prod
+      - ${TF_ROOT}/live/workload/.terraform.lock.hcl
+    expire_in: 1 day
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/workload/**/*
+        - modules/**/*
+        - environments/_common.tfvars
+        - environments/prod.tfvars
+
+# ============================================
+# APPLY STAGE (Manual approval required)
+# ============================================
+
+apply:network:
+  stage: apply
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      # Assume role explicitly
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${NETWORK_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      cd ${TF_ROOT}/live/network
+      terraform init
+      terraform apply tfplan
+  dependencies:
+    - plan:network
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/network/**/*
+        - modules/**/*
+      when: manual
+  environment:
+    name: network
+
+apply:uat:
+  stage: apply
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      # Assume role explicitly
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${UAT_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      cd ${TF_ROOT}/live/workload
+      terraform init -backend-config=backend-uat.hcl -reconfigure -upgrade
+      terraform apply tfplan-uat
+  dependencies:
+    - plan:uat
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/workload/**/*
+        - modules/**/*
+        - environments/_common.tfvars
+        - environments/uat.tfvars
+      when: manual
+  environment:
+    name: uat
+
+apply:prod:
+  stage: apply
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      # Assume role explicitly
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${PROD_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      cd ${TF_ROOT}/live/workload
+      terraform init -backend-config=backend-prod.hcl -reconfigure -upgrade
+      terraform apply tfplan-prod
+  dependencies:
+    - plan:prod
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/workload/**/*
+        - modules/**/*
+        - environments/_common.tfvars
+        - environments/prod.tfvars
+      when: manual
+  environment:
+    name: production
+
+# ============================================
+# PLAN-ADDONS STAGE (EKS Addons via in-cluster runner)
+# ============================================
+
+plan-addons:uat:
+  stage: plan-addons
+  tags:
+    - acme-platform-uat-runner
+  needs:
+    - job: apply:uat
+      optional: true
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${UAT_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      cd ${TF_ROOT}/live/eks-addons
+      terraform init -backend-config=backend-uat.hcl -reconfigure -upgrade
+      terraform plan \
+        -var-file="../../environments/addons-common.tfvars" \
+        -var-file="../../environments/addons-uat.tfvars" \
+        -out=tfplan-addons-uat
+  artifacts:
+    paths:
+      - ${TF_ROOT}/live/eks-addons/tfplan-addons-uat
+      - ${TF_ROOT}/live/eks-addons/.terraform.lock.hcl
+    expire_in: 1 day
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/eks-addons/**/*
+        - modules/eks-addons/**/*
+        - environments/addons-common.tfvars
+        - environments/addons-uat.tfvars
+        - environments/argocd-image-updater-values.yaml
+        - environments/argo-rollouts-values.yaml
+      when: manual
+
+plan-addons:prod:
+  stage: plan-addons
+  tags:
+    - acme-platform-prod-runner
+  needs:
+    - job: apply:prod
+      optional: true
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${PROD_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      cd ${TF_ROOT}/live/eks-addons
+      terraform init -backend-config=backend-prod.hcl -reconfigure -upgrade
+      terraform plan \
+        -var-file="../../environments/addons-common.tfvars" \
+        -var-file="../../environments/addons-prod.tfvars" \
+        -out=tfplan-addons-prod
+  artifacts:
+    paths:
+      - ${TF_ROOT}/live/eks-addons/tfplan-addons-prod
+      - ${TF_ROOT}/live/eks-addons/.terraform.lock.hcl
+    expire_in: 1 day
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/eks-addons/**/*
+        - modules/eks-addons/**/*
+        - environments/addons-common.tfvars
+        - environments/addons-prod.tfvars
+        - environments/argocd-values-prod.yaml
+        - environments/argocd-image-updater-values.yaml
+        - environments/argo-rollouts-values.yaml
+      when: manual
+
+# ============================================
+# APPLY-ADDONS STAGE (EKS Addons via in-cluster runner)
+# ============================================
+
+apply-addons:uat:
+  stage: apply-addons
+  tags:
+    - acme-platform-uat-runner
+  needs:
+    - job: plan-addons:uat
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${UAT_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      cd ${TF_ROOT}/live/eks-addons
+      terraform init -backend-config=backend-uat.hcl -reconfigure -upgrade
+      terraform apply tfplan-addons-uat
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/eks-addons/**/*
+        - modules/eks-addons/**/*
+        - environments/addons-common.tfvars
+        - environments/addons-uat.tfvars
+        - environments/argocd-image-updater-values.yaml
+        - environments/argo-rollouts-values.yaml
+      when: manual
+  environment:
+    name: uat-addons
+
+apply-addons:prod:
+  stage: apply-addons
+  tags:
+    - acme-platform-prod-runner
+  needs:
+    - job: plan-addons:prod
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - |
+      set -e
+      export AWS_DEFAULT_REGION="${AWS_REGION}"
+
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "arn:aws:iam::${PROD_ACCOUNT_ID}:role/GitLabCIRole" \
+        --role-session-name "gitlab-ci-${CI_PIPELINE_ID}" \
+        --web-identity-token "${GITLAB_OIDC_TOKEN}" \
+        --duration-seconds 3600 \
+        --output json)
+
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.Credentials.SessionToken')
+
+      cd ${TF_ROOT}/live/eks-addons
+      terraform init -backend-config=backend-prod.hcl -reconfigure -upgrade
+      terraform apply tfplan-addons-prod
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - live/eks-addons/**/*
+        - modules/eks-addons/**/*
+        - environments/addons-common.tfvars
+        - environments/addons-prod.tfvars
+        - environments/argocd-values-prod.yaml
+        - environments/argocd-image-updater-values.yaml
+        - environments/argo-rollouts-values.yaml
+      when: manual
+  environment:
+    name: prod-addons

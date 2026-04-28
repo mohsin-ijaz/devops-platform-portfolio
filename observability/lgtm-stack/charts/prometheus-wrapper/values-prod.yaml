@@ -1,0 +1,807 @@
+# Prometheus Stack - Production Values
+
+kube-prometheus-stack:
+  enabled: true
+  
+  # Prometheus
+  prometheus:
+    enabled: true
+    
+    prometheusSpec:
+      replicas: 2
+      retention: 30d
+      retentionSize: "500GB"
+
+      resources:
+        requests:
+          cpu: 700m
+          memory: 2Gi
+        limits:
+          cpu: 1400m
+          memory: 4Gi
+
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: premium-rwo
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 550Gi
+
+      nodeSelector:
+        workload: system
+
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: system
+          effect: NoSchedule
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: prometheus
+              topologyKey: kubernetes.io/hostname
+
+      serviceMonitorSelectorNilUsesHelmValues: false
+      serviceMonitorSelector:
+        matchExpressions:
+          - key: app.kubernetes.io/part-of
+            operator: In
+            values:
+              - lgtm-stack
+              - kube-prometheus-stack
+
+      serviceMonitorNamespaceSelector:
+        matchNames:
+          - lgtm-stack
+          - opencost
+
+      podMonitorSelector:
+        matchLabels:
+          app.kubernetes.io/part-of: lgtm-stack
+
+      podMonitorNamespaceSelector:
+        matchNames:
+          - lgtm-stack
+
+      probeSelector: {}
+      probeNamespaceSelector: {}
+
+      ruleSelector:
+        matchLabels:
+          app.kubernetes.io/part-of: lgtm-stack
+
+      ruleNamespaceSelector:
+        matchNames:
+          - lgtm-stack
+
+      metricRelabelings:
+        - sourceLabels: [job]
+          regex: "(opencost|.*kube-state-metrics.*)"
+          targetLabel: __tmp_skip_ns_filter
+          replacement: "true"
+        - sourceLabels: [__tmp_skip_ns_filter, namespace]
+          regex: "^$;^(?!lgtm-stack$).*"
+          action: drop
+        - sourceLabels: [__tmp_skip_ns_filter, exported_namespace]
+          regex: "^$;^(?!lgtm-stack$).*"
+          action: drop
+
+      additionalScrapeConfigs:
+        - job_name: 'grafana'
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                names:
+                  - lgtm-stack
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              regex: grafana
+              action: keep
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+
+        - job_name: "acme-<ENV>-cluster-mongo-metrics"
+          scrape_interval: 10s
+          metrics_path: /metrics
+          scheme: https
+          basic_auth:
+            username: lgtm-stack
+            password: lgtm-stack123
+          http_sd_configs:
+            - url: https://cloud.mongodb.com/prometheus/v1.0/groups/<MONGODB_ATLAS_GROUP_ID>/discovery
+              refresh_interval: 60s
+              basic_auth:
+                username: lgtm-stack
+                password: lgtm-stack123
+
+        - job_name: "acme-<ENV>-cluster-mongo-metrics"
+          scrape_interval: 10s
+          metrics_path: /metrics
+          scheme: https
+          basic_auth:
+            username: lgtm-stack
+            password: lgtm-stack123
+          http_sd_configs:
+            - url: https://cloud.mongodb.com/prometheus/v1.0/groups/<MONGODB_ATLAS_GROUP_ID>/discovery
+              refresh_interval: 60s
+              basic_auth:
+                username: lgtm-stack
+                password: lgtm-stack123
+
+        - job_name: "acme-<ENV>-cluster-mongo-metrics"
+          scrape_interval: 10s
+          metrics_path: /metrics
+          scheme: https
+          basic_auth:
+            username: lgtm-stack
+            password: lgtm-stack123
+          http_sd_configs:
+            - url: https://cloud.mongodb.com/prometheus/v1.0/groups/<MONGODB_ATLAS_GROUP_ID>/discovery
+              refresh_interval: 60s
+              basic_auth:
+                username: lgtm-stack
+                password: lgtm-stack123
+
+        - job_name: "acme-<ENV>-cluster-mongo-metrics"
+          scrape_interval: 10s
+          metrics_path: /metrics
+          scheme: https
+          basic_auth:
+            username: lgtm-stack
+            password: lgtm-stack123
+          http_sd_configs:
+            - url: https://cloud.mongodb.com/prometheus/v1.0/groups/<MONGODB_ATLAS_GROUP_ID>/discovery
+              refresh_interval: 60s
+              basic_auth:
+                username: lgtm-stack
+                password: lgtm-stack123
+
+      externalLabels:
+        cluster: <GCP_PROJECT_ID>
+        environment: production
+        region: <GCP_REGION>
+        prometheus_replica: $(POD_NAME)
+
+      web:
+        pageTitle: "LGTM Prometheus - Production"
+
+      enableFeatures:
+        - exemplar-storage
+        - memory-snapshot-on-shutdown
+
+      enforcedSampleLimit: 100000
+      enforcedTargetLimit: 1000
+      enforcedLabelLimit: 50
+      enforcedLabelNameLengthLimit: 512
+      enforcedLabelValueLengthLimit: 2048
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: prometheus
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
+    service:
+      type: ClusterIP
+      port: 9090
+      targetPort: 9090
+    
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      selfMonitor: true
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  # Alertmanager
+  alertmanager:
+    enabled: false
+  
+  # Grafana
+  grafana:
+    enabled: true
+    replicas: 2
+    defaultDashboardsEnabled: false
+
+    deploymentStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+
+    resources:
+      requests:
+        cpu: 175m
+        memory: 0.5Gi
+      limits:
+        cpu: 350m
+        memory: 0.5Gi
+
+    persistence:
+      enabled: false
+
+    nodeSelector:
+      workload: system
+
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: system
+        effect: NoSchedule
+
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - grafana
+            topologyKey: kubernetes.io/hostname
+
+    plugins:
+      - grafana-piechart-panel
+      - grafana-clock-panel
+
+    service:
+      type: ClusterIP
+      port: 80
+
+    securityContext:
+      runAsUser: 472
+      runAsGroup: 472
+      fsGroup: 472
+
+    additionalDataSources:
+      - name: Mimir
+        type: prometheus
+        access: proxy
+        url: http://mimir-prod-gateway.lgtm-stack.svc.cluster.local/prometheus
+        uid: mimir
+        isDefault: false
+        editable: false
+        jsonData:
+          httpMethod: POST
+          prometheusType: Mimir
+          timeInterval: 30s
+          incrementalQuerying: true
+          incrementalQueryOverlapWindow: 10m
+          httpHeaderName1: 'X-Scope-OrgID'
+          timeout: 1200
+        secureJsonData:
+          httpHeaderValue1: '<YOUR_TENANT_ID>'
+
+      - name: Loki
+        type: loki
+        uid: loki
+        access: proxy
+        url: http://loki-prod-gateway.lgtm-stack.svc.cluster.local
+        editable: false
+        jsonData:
+          maxLines: 1000
+          timeout: 1200
+          derivedFields:
+            - datasourceUid: tempo
+              matcherRegex: "trace_id=(\\w+)"
+              name: TraceID
+              url: "$${__value.raw}"
+        secureJsonData: {}
+        version: 1
+
+      - name: Tempo
+        type: tempo
+        access: proxy
+        url: http://tempo-prod-query-frontend.lgtm-stack.svc.cluster.local:3200
+        uid: tempo
+        editable: false
+        jsonData:
+          httpMethod: GET
+          timeout: 1200
+          tracesToLogs:
+            datasourceUid: loki
+            filterByTraceID: true
+            filterBySpanID: false
+          nodeGraph:
+            enabled: true
+          search:
+            hide: false
+          lokiSearch:
+            datasourceUid: loki
+
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        folderAnnotation: grafana_folder
+        defaultFolderName: ""
+        provider:
+          foldersFromFilesStructure: false
+      datasources:
+        enabled: true
+        defaultDatasourceEnabled: true
+        uid: prometheus
+
+    grafana.ini:
+      server:
+        root_url: "https://monitoring.acme.com"
+        domain: monitoring.acme.com
+      dataproxy:
+        timeout: 1200
+        dialTimeout: 30
+        keep_alive_seconds: 300
+      analytics:
+        reporting_enabled: false
+        check_for_updates: false
+      database:
+        locking: false
+      log:
+        mode: console
+        level: info
+      auth:
+        disable_login_form: true
+      auth.google:
+        enabled: true
+        client_id: ${GF_AUTH_GOOGLE_CLIENT_ID}
+        client_secret: ${GF_AUTH_GOOGLE_CLIENT_SECRET}
+        scopes: openid email profile
+        auth_url: https://accounts.google.com/o/oauth2/v2/auth
+        token_url: https://oauth2.googleapis.com/token
+        api_url: https://openidconnect.googleapis.com/v1/userinfo
+        allowed_domains: acme.com acme.com
+        allow_sign_up: true
+        skip_org_role_sync: true
+        role_attribute_path: (email == '<YOUR_EMAIL>' || email == '<YOUR_EMAIL>' || email == 'ally.shayan<YOUR_DOMAIN>' || email == 'ahmad.alkhoudary<YOUR_DOMAIN>' || email == 'ibrahim.alnameh<YOUR_DOMAIN>') && 'Admin' || 'Viewer'
+      auth.anonymous:
+        enabled: false
+      users:
+        auto_assign_org: true
+        auto_assign_org_role: Viewer
+        default_theme: dark
+      explore:
+        enabled: true
+      unified_alerting:
+        enabled: true
+      alerting:
+        enabled: false
+      date_formats:
+        default_timezone: Asia/Kuala_Lumpur
+      database:
+        type: postgres
+        host: grafana-postgresql-prod-primary.lgtm-stack.svc.cluster.local
+        port: 5432
+        name: grafana
+        user: grafana
+        password: $__env{GF_DATABASE_PASSWORD}
+        ssl_mode: disable
+        locking: false
+
+    envFromSecrets:
+      - name: grafana-google-oauth-prod
+      - name: grafana-db-secret-prod
+
+  # Prometheus Operator
+  prometheusOperator:
+    enabled: true
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 175m
+        memory: 256Mi
+
+    nodeSelector:
+      workload: system
+
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: system
+        effect: NoSchedule
+
+    admissionWebhooks:
+      enabled: true
+      patch:
+        enabled: true
+        nodeSelector:
+          workload: system
+        tolerations:
+          - key: workload
+            operator: Equal
+            value: system
+            effect: NoSchedule
+
+    tls:
+      enabled: true
+
+    serviceMonitor:
+      enabled: true
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  # Kube State Metrics
+  kube-state-metrics:
+    enabled: true
+    replicas: 1
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 175m
+        memory: 256Mi
+
+    nodeSelector:
+      workload: system
+
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: system
+        effect: NoSchedule
+
+    metricLabelsAllowlist:
+      - namespaces=[*]
+
+    rbac:
+      create: true
+      extraRules:
+        - apiGroups: ["autoscaling.k8s.io"]
+          resources: ["verticalpodautoscalers"]
+          verbs: ["list", "watch"]
+
+    customResourceState:
+      enabled: true
+      config:
+        kind: CustomResourceStateMetrics
+        spec:
+          resources:
+            - groupVersionKind:
+                group: autoscaling.k8s.io
+                version: v1
+                kind: VerticalPodAutoscaler
+              metricNamePrefix: kube_vpa
+              metrics:
+                - name: "info"
+                  help: "VPA information"
+                  each:
+                    type: Info
+                    info:
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                - name: "update_mode"
+                  help: "VPA update mode"
+                  each:
+                    type: Info
+                    info:
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                        update_mode: [spec, updatePolicy, updateMode]
+                - name: "container_recommendation_target_cpu"
+                  help: "VPA container recommendation target CPU"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [target, cpu]
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                        container: ["containerName"]
+                - name: "container_recommendation_target_memory"
+                  help: "VPA container recommendation target memory"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [target, memory]
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                        container: ["containerName"]
+                - name: "container_recommendation_lowerbound_cpu"
+                  help: "VPA container recommendation lower bound CPU"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [lowerBound, cpu]
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                        container: ["containerName"]
+                - name: "container_recommendation_lowerbound_memory"
+                  help: "VPA container recommendation lower bound memory"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [lowerBound, memory]
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                        container: ["containerName"]
+                - name: "container_recommendation_upperbound_cpu"
+                  help: "VPA container recommendation upper bound CPU"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [upperBound, cpu]
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                        container: ["containerName"]
+                - name: "container_recommendation_upperbound_memory"
+                  help: "VPA container recommendation upper bound memory"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [upperBound, memory]
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                        container: ["containerName"]
+                - name: "container_recommendation_uncapped_target_cpu"
+                  help: "VPA container recommendation uncapped target CPU"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [uncappedTarget, cpu]
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                        container: ["containerName"]
+                - name: "container_recommendation_uncapped_target_memory"
+                  help: "VPA container recommendation uncapped target memory"
+                  each:
+                    type: Gauge
+                    gauge:
+                      path: [status, recommendation, containerRecommendations]
+                      valueFrom: [uncappedTarget, memory]
+                      labelsFromPath:
+                        verticalpodautoscaler: [metadata, name]
+                        namespace: [metadata, namespace]
+                        target_api_version: [spec, targetRef, apiVersion]
+                        target_kind: [spec, targetRef, kind]
+                        target_name: [spec, targetRef, name]
+                        container: ["containerName"]
+
+    prometheus:
+      monitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          app.kubernetes.io/part-of: lgtm-stack
+        metricRelabelings:
+          - sourceLabels: []
+            targetLabel: cluster
+            replacement: <GKE_CLUSTER_NAME>
+
+  # Node Exporter
+  prometheus-node-exporter:
+    enabled: true
+    priorityClassName: lgtm-node-exporter-critical
+    hostNetwork: true
+    hostPID: true
+    hostRootFsMount:
+      enabled: true
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
+
+    prometheus:
+      monitor:
+        enabled: true
+        interval: 30s
+        labels:
+          app.kubernetes.io/part-of: lgtm-stack
+
+    tolerations:
+      - operator: Exists
+        effect: NoSchedule
+
+  # Default Rules
+  defaultRules:
+    create: true
+    rules:
+      alertmanager: false
+      etcd: false
+      configReloaders: true
+      general: true
+      k8s: true
+      kubeApiserverAvailability: true
+      kubeApiserverSlos: true
+      kubeControllerManager: true
+      kubelet: true
+      kubeProxy: true
+      kubePrometheusGeneral: true
+      kubePrometheusNodeRecording: true
+      kubernetesApps: true
+      kubernetesResources: true
+      kubernetesStorage: true
+      kubernetesSystem: true
+      kubeSchedulerAlerting: true
+      kubeSchedulerRecording: true
+      kubeStateMetrics: true
+      network: true
+      node: true
+      nodeExporterAlerting: true
+      nodeExporterRecording: true
+      prometheus: true
+      prometheusOperator: true
+    
+    labels:
+      app.kubernetes.io/part-of: lgtm-stack
+
+  kubeApiServer:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  kubelet:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  coreDns:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  kubeControllerManager:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  kubeScheduler:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  kubeProxy:
+    enabled: true
+    serviceMonitor:
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  kubeEtcd:
+    enabled: false
+
+workloadIdentity:
+  enabled: false
+
+networkPolicy:
+  enabled: true
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+mysqlDatasources:
+  enabled: true
+  database: performance_schema
+  proxyHost: wireguard-gateway
+  user: ${MYSQL_PERF_USER}
+  passwordEnvVar: MYSQL_PERF_PASSWORD
+  instances:
+    - name: V4B ID Prod CONSUMER
+      port: 3306
+      uid: acme-<COUNTRY>-prod-consumer-perf
+    - name: V4B MY Prod CONSUMER
+      port: 3307
+      uid: acme-<COUNTRY>-prod-consumer-perf
+    - name: V4B TH Prod CONSUMER
+      port: 3308
+      uid: acme-<COUNTRY>-prod-consumer-perf
+    - name: V3A ID Prod
+      port: 3309
+      uid: v3a-id-prod-perf
+    - name: V3A MY Prod
+      port: 3310
+      uid: v3a-my-prod-perf
+    - name: V3A TH Prod
+      port: 3311
+      uid: v3a-th-prod-perf
+    - name: Buyer Financing Prod MY
+      port: 3312
+      uid: buyer-financing-prod-my-perf
+    - name: Dealer Financing Prod MY
+      port: 3313
+      uid: dealer-financing-prod-my-perf
+    - name: Insurance Prod MY
+      port: 3314
+      uid: insurance-prod-my-perf
+    - name: Martech URL Shortener
+      port: 3315
+      uid: martech-urlshortener-perf
+    - name: Martech Voucherify ID
+      port: 3316
+      uid: martech-voucherify-id-perf
+    - name: Martech Voucherify MY
+      port: 3317
+      uid: martech-voucherify-my-perf
+    - name: Martech Voucherify TH
+      port: 3318
+      uid: martech-voucherify-th-perf
+    - name: ENTERPRISE Platform Prod
+      port: 3319
+      uid: enterprise-platform-prod-perf
+
+wireguardGateway:
+  enabled: true
+  address: <WIREGUARD_INTERFACE_CIDR>
+  peer:
+    endpoint: <WIREGUARD_PEER_ENDPOINT>:51820
+    publicKey: <WIREGUARD_PUBLIC_KEY>       # wg pubkey < privatekey
+    presharedKey: <WIREGUARD_PRESHARED_KEY> # wg genpsk

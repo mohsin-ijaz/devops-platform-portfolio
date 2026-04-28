@@ -1,0 +1,122 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+# Pod Disruption Budget for Mimir Ingester - CRITICAL component
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-mimir-ingester-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mimir-wrapper.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingester
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    sre.io/criticality: "high"
+spec:
+  minAvailable: 2  # Always keep at least 2 ingesters running
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+# Pod Disruption Budget for Mimir Distributor
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-mimir-distributor-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mimir-wrapper.labels" . | nindent 4 }}
+    app.kubernetes.io/component: distributor
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  minAvailable: 1  # Keep at least 1 distributor for ingestion
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir
+      app.kubernetes.io/component: distributor
+      app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+# Pod Disruption Budget for Mimir Querier
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-mimir-querier-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mimir-wrapper.labels" . | nindent 4 }}
+    app.kubernetes.io/component: querier
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  minAvailable: 1  # Keep at least 1 querier for queries
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir
+      app.kubernetes.io/component: querier
+      app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+# Pod Disruption Budget for Mimir Query Frontend
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-mimir-query-frontend-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mimir-wrapper.labels" . | nindent 4 }}
+    app.kubernetes.io/component: query-frontend
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  minAvailable: 1  # Keep at least 1 query-frontend
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+# Pod Disruption Budget for Mimir Store Gateway
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-mimir-store-gateway-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mimir-wrapper.labels" . | nindent 4 }}
+    app.kubernetes.io/component: store-gateway
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  minAvailable: 1  # Keep at least 1 store-gateway
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir
+      app.kubernetes.io/component: store-gateway
+      app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+# Pod Disruption Budget for Mimir Alertmanager - CRITICAL
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-mimir-alertmanager-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mimir-wrapper.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alertmanager
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    sre.io/criticality: "high"
+spec:
+  minAvailable: 1  # Keep at least 1 alertmanager for alerting
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir
+      app.kubernetes.io/component: alertmanager
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

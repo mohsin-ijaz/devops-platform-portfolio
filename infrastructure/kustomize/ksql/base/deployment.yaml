@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ksql
+  labels:
+    app: ksql
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ksql
+  template:
+    metadata:
+      labels:
+        app: ksql
+    spec:
+      initContainers:
+      - name: jmx-agent-downloader
+        image: busybox:1.36
+        imagePullPolicy: IfNotPresent
+        command: ["sh","-c"]
+        args:
+          - "wget -O /opt/jmx/jmx_prometheus_javaagent.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.20.0/jmx_prometheus_javaagent-0.20.0.jar"
+        volumeMounts:
+          - name: jmx-agent
+            mountPath: /opt/jmx
+      containers:
+      - name: ksql-server
+        image: confluentinc/ksqldb-server:0.29.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: server
+          containerPort: 8088
+          protocol: TCP
+        - name: jmx
+          containerPort: 5555
+        resources:
+          limits:
+            cpu: "1"
+            memory: 4Gi
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        env:
+          - name: KSQL_BOOTSTRAP_SERVERS
+            value: kafka:9092
+          - name: KSQL_LISTENERS
+            value: http://0.0.0.0:8088/
+          - name: KSQL_KSQL_SERVICE_ID
+            value: ksql
+          - name: KSQL_KSQL_SCHEMA_REGISTRY_URL
+            value: http://schema-registry:8081
+          - name: KSQL_OPTS
+            value: "-XX:MaxRAMPercentage=75.0 -javaagent:/opt/jmx/jmx_prometheus_javaagent.jar=5556:/etc/jmx-exporter/jmx-exporter-config.yaml"
+          - name: KSQL_JMX_PORT
+            value: "5555"
+          - name: PATH
+            value: /opt/ksql-cli:/opt/confluent/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        volumeMounts:
+        - name: jmx-agent
+          mountPath: /opt/jmx
+        - name: jmx-exporter-config
+          mountPath: /etc/jmx-exporter
+        - name: ksql-cli-wrapper
+          mountPath: /opt/ksql-cli
+      volumes:
+        - name: jmx-exporter-config
+          configMap:
+            name: ksql-jmx-exporter-config
+        - name: jmx-agent
+          emptyDir: {}
+        - name: ksql-cli-wrapper
+          configMap:
+            name: ksql-cli-wrapper
+            defaultMode: 0755

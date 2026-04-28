@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: devenv-app
+    restart: always
+    ports:
+      - "8501:8501"
+    volumes:
+      # Mount kubeconfig for cluster access
+      - ${HOME}/.kube/config:/root/.kube/config:ro
+      # Optional: Mount service account key if not using VM service account
+      # - ${HOME}/sa-key.json:/app/sa-key.json:ro
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Kuala_Lumpur
+      # Optional: Set if using service account key file
+      # - GOOGLE_APPLICATION_CREDENTIALS=/app/sa-key.json
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    networks:
+      - devenv-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  scheduler:
+    build: .
+    container_name: devenv-scheduler
+    restart: always
+    volumes:
+      # Mount kubeconfig for cluster access
+      - ${HOME}/.kube/config:/root/.kube/config:ro
+      # Optional: Mount service account key if not using VM service account
+      # - ${HOME}/sa-key.json:/app/sa-key.json:ro
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Kuala_Lumpur
+      # Optional: Set if using service account key file
+      # - GOOGLE_APPLICATION_CREDENTIALS=/app/sa-key.json
+    command: python scheduler.py
+    networks:
+      - devenv-network
+
+networks:
+  devenv-network:
+    driver: bridge

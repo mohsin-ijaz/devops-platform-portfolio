@@ -1,0 +1,99 @@
+# LibreChat Helm Values for Production Deployment
+replicaCount: 1
+
+# Use Recreate strategy to avoid volume mount conflicts with ReadWriteOnce PVC
+updateStrategy:
+  type: Recreate
+
+image:
+  repository: danny-avila/librechat
+  registry: ghcr.io
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+# Disable built-in MongoDB (using external MongoDB)
+mongodb:
+  enabled: false
+
+meilisearch:
+  enabled: false
+
+librechat:
+  # Inline librechat.yaml configuration
+  configYamlContent:
+    version: 1.2.1
+    cache: true
+    interface:
+      endpointsMenu: true
+      modelSelect: true
+      parameters: true
+      sidePanel: true
+      presets: true
+      bookmarks: true
+    mcpServers:
+      grafana:
+        type: streamable-http
+        url: http://grafana-mcp.lgtm-stack-prod.svc.cluster.local:8000/mcp
+        timeout: 60000
+        serverInstructions: "DATASOURCE RULES: ALWAYS use 'mimir' datasource first. Only use 'prometheus' datasource for lgtm-prod cluster self-monitoring (Mimir, Loki, Tempo, Grafana internal metrics). For all production workload clusters (c2b-prod, b2c-prod), always use 'mimir'. Never try prometheus first unless explicitly asking about lgtm-prod."
+    mcpSettings:
+      serverInstructions: true
+      allowedDomains:
+        - "grafana-mcp.lgtm-stack-prod.svc.cluster.local"
+        - "*.lgtm-stack-prod.svc.cluster.local"
+    endpoints:
+      azureOpenAI:
+        titleModel: gpt-5.2
+        plugins: true
+        groups:
+          - group: "Azure AI Foundry"
+            apiKey: "${AZURE_API_KEY}"
+            instanceName: "<YOUR_AZURE_RESOURCE_NAME>"
+            version: "2024-12-01-preview"
+            models:
+              gpt-5.2:
+                deploymentName: gpt-5.2
+                version: "2024-12-01-preview"
+
+  configEnv:
+    MONGO_URI: "mongodb://root:<MONGO_ROOT_PASSWORD>@mongodb.lgtm-stack-prod.svc.cluster.local:27017/librechat?authSource=admin"
+    HOST: "0.0.0.0"
+    PORT: "3080"
+    DEBUG_LOGGING: "false"
+    ALLOW_REGISTRATION: "false"
+    AZURE_API_KEY: "<AZURE_AI_API_KEY>"
+    ANTHROPIC_REVERSE_PROXY: "https://<YOUR_AZURE_ENDPOINT>.ai.azure.com/anthropic/"
+    ANTHROPIC_API_KEY: "<AZURE_AI_API_KEY>"
+    ANTHROPIC_MODELS: "claude-sonnet-4-6,claude-haiku-4-5"
+    ANTHROPIC_PROMPT_CACHE: "true"
+    ANTHROPIC_FOUNDRY_API_KEY: "<AZURE_AI_API_KEY>"
+    ANTHROPIC_FOUNDRY_RESOURCE: "<YOUR_AZURE_RESOURCE_NAME>"
+    # Google OAuth Configuration - NEEDS NEW CLIENT FOR PRODUCTION DOMAIN
+    DOMAIN_CLIENT: "https://chatops.acme.com"
+    DOMAIN_SERVER: "https://chatops.acme.com"
+    GOOGLE_CLIENT_ID: "768342250881-ii22inb4q42mf2ppekc0dvji3660s4gq.apps.googleusercontent.com"
+    GOOGLE_CLIENT_SECRET: "<GOOGLE_OAUTH_CLIENT_SECRET>"
+    GOOGLE_CALLBACK_URL: "/oauth/google/callback"
+    ALLOW_SOCIAL_LOGIN: "true"
+    ALLOW_SOCIAL_REGISTRATION: "true"
+    ALLOW_ACCOUNT_LINKING: "true"
+
+  imageVolume:
+    enabled: true
+    size: 10Gi
+    accessModes: ReadWriteOnce
+
+service:
+  type: ClusterIP
+  port: 3080
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits:
+    memory: "4Gi"
+    cpu: "2000m"

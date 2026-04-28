@@ -1,0 +1,11 @@
+apiVersion: builtin
+kind: HelmChartInflationGenerator
+metadata:
+  name: elasticsearch
+repo: https://prometheus-community.github.io/helm-charts
+name: prometheus-elasticsearch-exporter
+version: 4.15.1
+releaseName: prometheus
+namespace: elastic-system
+valuesFile: es-exporter-values.yaml
+includeCRDs: true

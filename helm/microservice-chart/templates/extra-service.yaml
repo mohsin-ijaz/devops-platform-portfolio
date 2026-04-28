@@ -1,0 +1,28 @@
+{{- if .Values.extraService.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "acme-app.fullname" . }}-service
+  labels:
+    {{- include "acme-app.labels" . | nindent 4 }}
+    {{- include "acme-app.appLabels" (merge (dict "docType" "service") .) | nindent 4 }}
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  type: {{ .Values.extraService.type }}
+  ports:
+  {{- if .Values.extraService.ports }}
+    {{- with .Values.extraService.ports }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- else }}
+    - port: {{ .Values.extraService.port }}
+      targetPort: {{ .Values.extraServiceTargetPort }}
+      protocol: TCP
+      name: http
+  {{- end }}
+  selector:
+    {{- include "acme-app.selectorLabels" . | nindent 4 }}
+    {{- include "acme-app.appLabels" . | nindent 4 }}
+{{- end -}}
+

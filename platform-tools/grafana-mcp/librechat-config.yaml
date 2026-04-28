@@ -1,0 +1,35 @@
+version: 1.2.1
+cache: true
+
+interface:
+  endpointsMenu: true
+  modelSelect: true
+  parameters: true
+  sidePanel: true
+  presets: true
+  bookmarks: true
+
+mcpSettings:
+  allowedDomains:
+    - "grafana-mcp.lgtm-stack.svc.cluster.local"
+    - "*.lgtm-stack.svc.cluster.local"
+
+mcpServers:
+  grafana:
+    type: streamable-http
+    url: "http://grafana-mcp.lgtm-stack.svc.cluster.local:8000/mcp"
+    timeout: 60000
+
+endpoints:
+  azureOpenAI:
+    titleModel: "gpt-5.2"
+    plugins: true
+    groups:
+      - group: "Azure AI Foundry"
+        apiKey: "<AZURE_AI_API_KEY>"
+        instanceName: "<YOUR_AZURE_RESOURCE_NAME>"
+        version: "2024-12-01-preview"
+        models:
+          gpt-5.2:
+            deploymentName: "gpt-5.2"
+            version: "2024-12-01-preview"

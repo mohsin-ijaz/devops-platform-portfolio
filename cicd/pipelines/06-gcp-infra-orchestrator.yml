@@ -1,0 +1,296 @@
+stages:
+  - triggers
+
+kafka-uat:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/kafka/build/uat/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+kafka-qa:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/kafka/build/qa/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+kafka-prod-temp:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/kafka/build/prod/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+kafka-prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/kafka/build/prod-enterprise/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+
+
+
+consumer-elasticsearch-uat:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/elasticsearch/build/uat/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+consumer-elasticsearch-qa:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/elasticsearch/build/qa/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+consumer-elasticsearch-prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/elasticsearch/build/prod-consumer/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+enterprise-elasticsearch-prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/elasticsearch/build/prod-enterprise/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+mongo_store_uat:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/mongo-store/build/uat/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+mongo_store_qa:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/mongo-store/build/qa/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+mongo_store_prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/mongo-store/build/prod/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+redis_store_uat:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/redis-store/build/uat/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+redis_store_qa:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/redis-store/build/qa/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+redis_store_prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/redis-store/build/prod/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+mysql_store_uat:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/mysql-store/build/uat/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+mysql_store_qa:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/mysql-store/build/qa/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+mysql_store_prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/mysql-store/build/prod/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+kafka_bidding_uat:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/kafka-bidding/build/uat/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+kafka_bidding_qa:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/kafka-bidding/build/qa/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+kafka_bidding_prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/kafka-bidding/build/prod/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+
+istio-config-uat-enterprise:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/istio-config/build/uat-enterprise/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+istio-config-uat-consumer:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/istio-config/build/uat-consumer/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+istio-config-qa-enterprise:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/istio-config/build/qa-enterprise/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+istio-config-qa-consumer:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/istio-config/build/qa-consumer/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+istio-config-prod-enterprise:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/istio-config/build/prod-enterprise/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+istio-config-prod-consumer:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/istio-config/build/prod-consumer/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+consumer-common-secrets-prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/common-secrets/build/prod-consumer/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+n8n-qa:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/n8n/build/qa/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_PIPELINE == "n8n"'
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+n8n-uat:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/n8n/build/uat/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_PIPELINE == "n8n"'
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+n8n-prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/n8n/build/prod/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+uptime-kuma-qa:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/uptime-kuma/build/qa/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual
+
+uptime-kuma-prod:
+  stage: triggers
+  trigger:
+    include:
+      - local: 'k8s/uptime-kuma/build/prod/gitlab-ci.yaml'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/gcp-gke-uat"'
+      when: manual

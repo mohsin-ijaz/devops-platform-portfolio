@@ -1,0 +1,116 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kafka-qa
+
+labels:
+- pairs:
+    env: qa
+
+# - kafka-ui-virtualservice.yaml
+resources:
+- ../../base
+- kafka-cluster-id-secret.yaml
+- kafka-ui-configmap.yaml
+
+# - namespace-patch.yaml
+
+# Service patches for LoadBalancer IPs
+
+# Kafka StatefulSet KRaft configuration
+
+# ConfigMap patches for KRaft
+
+
+# patchesStrategicMerge:
+# - namespace-patch.yaml
+# - kafka-configmap-patch.yaml
+# - kafka-internal-service-patch.yaml
+# - kafka-service-patch.yaml
+
+# Deployment patches
+patches:
+- path: kafka-internal-0-patch.yaml
+  target:
+    kind: Service
+    name: kafka-internal-0
+    version: v1
+- path: kafka-internal-1-patch.yaml
+  target:
+    kind: Service
+    name: kafka-internal-1
+    version: v1
+- path: kafka-internal-2-patch.yaml
+  target:
+    kind: Service
+    name: kafka-internal-2
+    version: v1
+- path: schema-registry-patch.yaml
+  target:
+    kind: Service
+    name: schema-registry
+    version: v1
+- path: kafka-patch-kraft.yaml
+  target:
+    kind: StatefulSet
+    name: kafka
+    version: v1
+- path: kafka-env-json-patch.yaml
+  target:
+    kind: StatefulSet
+    name: kafka
+    version: v1
+- path: kafka-fix-advertised-listeners.yaml
+  target:
+    kind: StatefulSet
+    name: kafka
+    version: v1
+- path: kafka-jaas-kraft-patch.yaml
+  target:
+    kind: ConfigMap
+    name: kafka-jaas
+    version: v1
+- path: kafka-ui-deployment-patch.yaml
+  target:
+    kind: Deployment
+    name: kafka-ui
+    version: v1
+- path: kafka-ui-security-patch.yaml
+  target:
+    kind: Deployment
+    name: kafka-ui
+    version: v1
+- path: kafka-ui-service-patch.yaml
+  target:
+    kind: Service
+    name: kafka-ui
+    version: v1
+- path: kafka-ui-service-port-jsonpatch.yaml
+  target:
+    kind: Service
+    name: kafka-ui
+    version: v1
+- path: kafka-ui-config-mount.yaml
+  target:
+    kind: Deployment
+    name: kafka-ui
+    version: v1
+- path: kafka-ui-remove-spring-security-merge.yaml
+  target:
+    kind: Deployment
+    name: kafka-ui
+    version: v1
+- path: schema-registry-deployment-patch.yaml
+  target:
+    kind: Deployment
+    name: schema-registry
+    version: v1
+- path: kafka-configmap-patch.yaml
+- path: kafka-internal-service-patch.yaml
+- path: kafka-service-patch.yaml
+
+images:
+- name: confluentinc/cp-kafka
+  newTag: 8.0.0
+- name: confluentinc/cp-schema-registry
+  newTag: 7.4.0

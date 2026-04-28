@@ -1,0 +1,437 @@
+# Mimir Wrapper - Production Values
+
+mimir:
+  enabled: true
+  serviceAccount:
+    create: false
+    name: mimir-sa
+
+  # Ingester
+  ingester:
+    zoneAwareReplication:
+      enabled: false
+    replicas: # TODO: scale based on cluster size
+    resources:
+      requests:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+      limits:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+    nodeSelector:
+      workload: ingester
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: ingester
+        effect: NoSchedule
+    persistentVolume:
+      enabled: true
+      size: # TODO: size based on retention period and ingestion rate
+      storageClass: premium-rwo
+    podAnnotations:
+      cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+
+    startupProbe:
+      httpGet:
+        path: /ready
+        port: http-metrics
+      failureThreshold: 360
+      periodSeconds: 10
+      timeoutSeconds: 2
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: http-metrics
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      failureThreshold: 3
+      timeoutSeconds: 2
+    livenessProbe:
+      httpGet:
+        path: /ready
+        port: http-metrics
+      periodSeconds: 30
+      failureThreshold: 3
+      timeoutSeconds: 2
+
+    terminationGracePeriodSeconds: 1800
+
+    serviceAccount:
+      create: false
+      name: mimir-sa
+
+  # Distributor
+  distributor:
+    replicas: # TODO: scale based on cluster size
+    resources:
+      requests:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+      limits:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+    extraArgs:
+      distributor.remote-timeout: 5s
+    nodeSelector:
+      workload: general
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 5
+      targetCPUUtilizationPercentage: 70
+    serviceAccount:
+      create: false
+      name: mimir-sa
+
+  # Querier
+  querier:
+    replicas: # TODO: scale based on cluster size
+    resources:
+      requests:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+      limits:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+    nodeSelector:
+      workload: query
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: query
+        effect: NoSchedule
+    serviceAccount:
+      create: false
+      name: mimir-sa
+
+  # Query Frontend
+  query_frontend:
+    replicas: # TODO: scale based on cluster size
+    resources:
+      requests:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+      limits:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+    extraArgs:
+      query-frontend.query-sharding-max-sharded-queries: "256"
+    nodeSelector:
+      workload: query
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: query
+        effect: NoSchedule
+    serviceAccount:
+      create: false
+      name: mimir-sa
+
+  # Gateway
+  gateway:
+    replicas: # TODO: scale based on cluster size
+    nginx:
+      config:
+        serverSnippet: |
+          proxy_read_timeout 1200;
+          proxy_send_timeout 1200;
+    nodeSelector:
+      workload: query
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: query
+        effect: NoSchedule
+
+  # Query Scheduler
+  query_scheduler:
+    enabled: true
+    replicas: # TODO: scale based on cluster size
+    resources:
+      requests:
+        cpu: # TODO: tune based on workload
+        memory: 256Mi
+      limits:
+        cpu: # TODO: tune based on workload
+        memory: 256Mi
+    nodeSelector:
+      workload: query
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: query
+        effect: NoSchedule
+
+  # Store Gateway
+  store_gateway:
+    zoneAwareReplication:
+      enabled: false
+    replicas: # TODO: scale based on cluster size
+    resources:
+      requests:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+      limits:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+    nodeSelector:
+      workload: general
+    persistentVolume:
+      enabled: true
+      size: # TODO: size based on retention period and ingestion rate
+      storageClass: premium-rwo
+    serviceAccount:
+      create: false
+      name: mimir-sa
+
+  # Compactor
+  compactor:
+    replicas: # TODO: scale based on cluster size
+    resources:
+      requests:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+      limits:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+    nodeSelector:
+      workload: general
+    persistentVolume:
+      enabled: true
+      size: # TODO: size based on retention period and ingestion rate
+      storageClass: premium-rwo
+    serviceAccount:
+      create: false
+      name: mimir-sa
+
+  # Ruler
+  ruler:
+    replicas: # TODO: scale based on cluster size
+    resources:
+      requests:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+      limits:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+    nodeSelector:
+      workload: general
+    serviceAccount:
+      create: false
+      name: mimir-sa
+
+  # Alertmanager
+  alertmanager:
+    enabled: true
+    replicas: # TODO: scale based on cluster size
+    resources:
+      requests:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+      limits:
+        cpu: # TODO: tune based on workload
+        memory: # TODO: tune based on workload
+    nodeSelector:
+      workload: ingester
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: ingester
+        effect: NoSchedule
+    persistentVolume:
+      enabled: true
+      size: # TODO: size based on retention period and ingestion rate
+      storageClass: premium-rwo
+    podAnnotations:
+      cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+    serviceAccount:
+      create: false
+      name: mimir-sa
+
+  memcached:
+    enabled: false
+
+  minio:
+    enabled: false
+
+  kafka:
+    enabled: false
+
+  rollout_operator:
+    enabled: false
+
+  externalMemcached:
+    chunks:
+      addresses: "<MEMCACHED_ADDRESS>"
+    frontend:
+      addresses: "<MEMCACHED_ADDRESS>"
+    metadata:
+      addresses: "<MEMCACHED_ADDRESS>"
+    index_queries:
+      addresses: "<MEMCACHED_ADDRESS>"
+
+  metaMonitoring:
+    serviceMonitor:
+      enabled: true
+      clusterLabel: ""
+      interval: 30s
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+      relabelings:
+        - sourceLabels: [__address__]
+          targetLabel: job
+          regex: "mimir-(.*):.*"
+          replacement: "mimir-$1"
+    
+    prometheusRule:
+      enabled: true
+      mimirAlerts: true
+      mimirRules: true
+      labels:
+        app.kubernetes.io/part-of: lgtm-stack
+
+  mimir:
+    structuredConfig:
+      ingest_storage:
+        enabled: false
+
+      server:
+        grpc_server_max_recv_msg_size: 104857600
+        grpc_server_max_send_msg_size: 104857600
+        http_server_write_timeout: 6m
+        http_server_read_timeout: 6m
+
+      frontend:
+        parallelize_shardable_queries: true
+        query_sharding_target_series_per_shard: 2500
+        split_queries_by_interval: 24h
+        cache_results: true
+        results_cache:
+          backend: memcached
+          memcached:
+            addresses: "<MEMCACHED_ADDRESS>"
+            timeout: 5s
+            max_idle_connections: 256
+            max_item_size: 5242880
+            max_async_concurrency: 50
+            max_get_multi_concurrency: 100
+            max_get_multi_batch_size: 100
+
+      ingester:
+        push_grpc_method_enabled: true
+        ring:
+          replication_factor: 3
+          zone_awareness_enabled: false
+          kvstore:
+            store: memberlist
+
+      distributor:
+        ring:
+          kvstore:
+            store: memberlist
+
+      common:
+        storage:
+          backend: gcs
+          gcs:
+            bucket_name: "<GCS_BUCKET_NAME>"
+
+      blocks_storage:
+        backend: gcs
+        storage_prefix: "blocks"
+        gcs:
+          bucket_name: "<GCS_BUCKET_NAME>"
+        bucket_store:
+          max_concurrent: 100
+          chunks_cache:
+            backend: memcached
+            memcached:
+              addresses: "<MEMCACHED_ADDRESS>"
+              timeout: 5s
+              max_idle_connections: 256
+              max_item_size: 5242880
+              max_async_concurrency: 50
+              max_get_multi_concurrency: 100
+              max_get_multi_batch_size: 100
+          metadata_cache:
+            backend: memcached
+            memcached:
+              addresses: "<MEMCACHED_ADDRESS>"
+              timeout: 5s
+              max_idle_connections: 256
+              max_item_size: 5242880
+              max_async_concurrency: 50
+              max_get_multi_concurrency: 100
+              max_get_multi_batch_size: 100
+          index_cache:
+            backend: memcached
+            memcached:
+              addresses: "<MEMCACHED_ADDRESS>"
+              timeout: 5s
+              max_idle_connections: 256
+              max_item_size: 5242880
+              max_async_concurrency: 50
+              max_get_multi_concurrency: 100
+              max_get_multi_batch_size: 100
+
+      alertmanager_storage:
+        backend: gcs
+        storage_prefix: "alertmanager"
+        gcs:
+          bucket_name: "<GCS_BUCKET_NAME>"
+
+      ruler_storage:
+        backend: gcs
+        storage_prefix: "ruler"
+        gcs:
+          bucket_name: "<GCS_BUCKET_NAME>"
+
+      querier:
+        timeout: 5m
+        query_store_after: 12h
+        max_concurrent: 32
+
+      query_scheduler:
+        max_outstanding_requests_per_tenant: 4000
+
+      store_gateway:
+        sharding_ring:
+          zone_awareness_enabled: false
+          kvstore:
+            store: memberlist
+
+      limits:
+        # Retention: delete metrics older than 45 days
+        compactor_blocks_retention_period: # TODO: set retention period
+
+        max_global_series_per_user: # TODO: set series limit
+        ingestion_rate: # TODO: set ingestion rate limit
+        ingestion_burst_size: # TODO: set burst size
+        max_fetched_series_per_query: 1000000
+        max_fetched_chunks_per_query: 20000000
+        max_label_names_per_series: 60
+        max_label_name_length: 1024
+        max_label_value_length: 2048
+        out_of_order_time_window: 30m
+
+        metric_relabel_configs:
+          - source_labels: [namespace]
+            regex: "^(<your-namespace-1>|<your-namespace-2>)$"  # TODO: list your namespaces
+            action: keep
+
+workloadIdentity:
+  enabled: true
+  gcp_service_account: <GCP_SERVICE_ACCOUNT>
+
+networkPolicy:
+  enabled: true
+  
+podDisruptionBudget:
+  enabled: true
+
+rulesSync:
+  enabled: true
+  tenantId: "<YOUR_TENANT_ID>"
+  image: "curlimages/curl:8.5.0"
+  serviceAccountName: "mimir-sa"

@@ -1,0 +1,71 @@
+{{- if .Values.rulesSync.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "mimir-wrapper.fullname" . }}-rules-sync
+  labels:
+    {{- include "mimir-wrapper.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        {{- include "mimir-wrapper.selectorLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.rulesSync.serviceAccountName | default "default" }}
+      containers:
+        - name: rules-sync
+          image: {{ .Values.rulesSync.image | default "curlimages/curl:8.5.0" }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              
+              MIMIR_URL="http://{{ .Release.Name }}-ruler:8080"
+              TENANT_ID="{{ .Values.rulesSync.tenantId | default "<YOUR_TENANT_ID>" }}"
+              
+              echo "Syncing rules to Mimir ruler at ${MIMIR_URL}..."
+              
+              # Process each rule namespace
+              for ns_file in /rules/*.yaml; do
+                if [ ! -f "$ns_file" ]; then continue; fi
+                
+                filename=$(basename "$ns_file")
+                namespace="${filename%.yaml}"
+                
+                echo "Deploying rules namespace: ${namespace}"
+                
+                response=$(curl -s -w "\n%{http_code}" -X POST \
+                  -H "X-Scope-OrgID: ${TENANT_ID}" \
+                  -H "Content-Type: application/yaml" \
+                  --data-binary "@${ns_file}" \
+                  "${MIMIR_URL}/prometheus/config/v1/rules/${namespace}")
+                
+                http_code=$(echo "$response" | tail -n1)
+                
+                if [ "$http_code" = "202" ]; then
+                  echo "  ✓ Successfully deployed ${namespace}"
+                else
+                  echo "  ✗ Failed to deploy ${namespace} (HTTP ${http_code})"
+                  echo "$response" | sed '$d'
+                  exit 1
+                fi
+              done
+              
+              echo "Rules sync completed successfully!"
+          volumeMounts:
+            - name: rules
+              mountPath: /rules
+              readOnly: true
+      volumes:
+        - name: rules
+          configMap:
+            name: {{ include "mimir-wrapper.fullname" . }}-rules
+{{- end }}

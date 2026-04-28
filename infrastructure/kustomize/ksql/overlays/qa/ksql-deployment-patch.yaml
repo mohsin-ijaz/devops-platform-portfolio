@@ -1,0 +1,6 @@
+- op: replace
+  path: /spec/template/spec/containers/0/env/0/value
+  value: kafka.kafka-qa.svc.cluster.local:9092
+- op: replace
+  path: /spec/template/spec/containers/0/env/3/value
+  value: http://schema-registry.kafka-qa.svc.cluster.local:8081

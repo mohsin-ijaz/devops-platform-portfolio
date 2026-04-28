@@ -1,0 +1,37 @@
+# Discovery script - show Resume Updates button only on frozen applications
+discovery.lua: |
+  actions = {}
+
+  if obj.metadata.annotations ~= nil then
+    if obj.metadata.annotations["rollback.acme.com/frozen"] ~= nil then
+      actions["resume-updates"] = {["disabled"] = false}
+    end
+  end
+
+  return actions
+
+# Action definitions
+definitions:
+  - name: resume-updates
+    action.lua: |
+      if obj.metadata.annotations == nil then
+        obj.metadata.annotations = {}
+      end
+
+      -- Find and remove ignore-tags annotation for any alias
+      local keysToRemove = {}
+      for key, _ in pairs(obj.metadata.annotations) do
+        if string.match(key, "argocd%-image%-updater%.argoproj%.io/.*%.ignore%-tags") then
+          table.insert(keysToRemove, key)
+        end
+      end
+      for _, key in ipairs(keysToRemove) do
+        obj.metadata.annotations[key] = nil
+      end
+
+      -- Remove rollback frozen markers
+      obj.metadata.annotations["rollback.acme.com/frozen"] = nil
+      obj.metadata.annotations["rollback.acme.com/frozen-at"] = nil
+      obj.metadata.annotations["rollback.acme.com/frozen-commit"] = nil
+
+      return obj

@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kafka
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/component: kafka
+  - includeSelectors: false
+    pairs:
+      env: stg
+resources:
+- namespace.yaml
+- pvc.yaml
+- kafka.yaml
+- kafka-ui.yaml
+- kafka-configmap.yaml
+- kafka-service.yaml
+- kafka-internal-service.yaml
+- kafka-localhost-service.yaml
+- kafka-jaas.yaml
+- schema-registry.yaml
+- schema-registry-service.yaml
+- schema-registry-configmap.yaml
+- kafka-jmx-exporter-config.yaml
+- schema-registry-jmx-exporter-config.yaml
+- schema-registry-service-metrics.yaml
+- servicemonitor-schema-registry.yaml
+- kafka-broker-jmx-service.yaml
+- kafka-broker-exporter-service.yaml

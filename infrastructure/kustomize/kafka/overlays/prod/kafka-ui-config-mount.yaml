@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui
+spec:
+  template:
+    spec:
+      volumes:
+        - name: kafka-ui-config
+          configMap:
+            name: kafka-ui-config
+      containers:
+        - name: kafka-ui
+          env:
+            - name: SPRING_CONFIG_LOCATION
+              value: file:/config/application.yml
+          volumeMounts:
+            - name: kafka-ui-config
+              mountPath: /config

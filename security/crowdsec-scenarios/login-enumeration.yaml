@@ -1,0 +1,71 @@
+# Login Enumeration / Brute Force Detection
+# Detects credential stuffing and brute force attacks
+
+type: leaky
+name: custom/login-bruteforce
+description: "Detects brute force attacks on login endpoints"
+filter: |
+  evt.Meta.log_type == 'http_access-log'
+  and evt.Parsed.verb == "POST"
+  and (
+    evt.Parsed.request contains "/login"
+    or evt.Parsed.request contains "/signin"
+    or evt.Parsed.request contains "/auth"
+    or evt.Parsed.request contains "/authenticate"
+    or evt.Parsed.request contains "/session"
+    or evt.Parsed.request contains "/oauth"
+    or evt.Parsed.request contains "/token"
+    or evt.Parsed.request contains "/wp-login"
+    or evt.Parsed.request contains "/user/login"
+    or evt.Parsed.request contains "/account/login"
+    or evt.Parsed.request contains "/api/login"
+    or evt.Parsed.request contains "/api/auth"
+  )
+groupby: evt.Meta.source_ip
+
+capacity: 10                       # Alert after 10 login attempts
+leakspeed: 1m                     # Per minute
+blackhole: 15m                    # Block for 15 minutes
+
+labels:
+  service: http
+  type: brute-force
+  confidence: high
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip
+---
+# Detect failed logins specifically (4xx responses on login)
+type: leaky
+name: custom/login-failed-attempts
+description: "Detects multiple failed login attempts"
+filter: |
+  evt.Meta.log_type == 'http_access-log'
+  and evt.Parsed.verb == "POST"
+  and (
+    evt.Parsed.request contains "/login"
+    or evt.Parsed.request contains "/signin"
+    or evt.Parsed.request contains "/auth"
+  )
+  and (
+    evt.Parsed.http_status == "401"
+    or evt.Parsed.http_status == "403"
+    or evt.Parsed.http_status == "400"
+  )
+groupby: evt.Meta.source_ip
+
+capacity: 5                        # Alert after just 5 failed attempts
+leakspeed: 5m
+blackhole: 30m                    # Longer block for confirmed failures
+
+labels:
+  service: http
+  type: credential-stuffing
+  confidence: high
+  remediation: true
+
+scope:
+  type: ip
+  expression: evt.Meta.source_ip

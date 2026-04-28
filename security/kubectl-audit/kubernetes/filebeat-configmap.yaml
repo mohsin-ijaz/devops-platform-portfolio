@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-audit-config
+  namespace: kube-system
+  labels:
+    app: filebeat-audit
+    compliance: iso27001
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+      - type: log
+        id: k8s-audit-log
+        enabled: true
+        paths:
+          - /var/log/kubernetes/audit/audit.log
+        json.keys_under_root: true
+        json.add_error_key: true
+        json.message_key: ""
+        multiline.type: pattern
+        multiline.pattern: '^\{'
+        multiline.negate: true
+        multiline.match: after
+        tags: ["kubernetes-audit", "iso27001"]
+        fields:
+          cluster: "<YOUR_CLUSTER_NAME>"
+          environment: "<YOUR_ENVIRONMENT>"
+          compliance_framework: "iso27001"
+          log_source: "kube-apiserver-audit"
+        fields_under_root: true
+
+        processors:
+          # drop health probes before they even leave the node
+          - drop_event:
+              when:
+                or:
+                  - contains:
+                      requestURI: "/healthz"
+                  - contains:
+                      requestURI: "/readyz"
+                  - contains:
+                      requestURI: "/livez"
+                  - contains:
+                      requestURI: "/metrics"
+
+          # enrich events with risk tier and actor type at collection time
+          - script:
+              lang: javascript
+              id: iso27001_enrichment
+              source: >
+                function process(event) {
+                  var verb = event.Get("verb") || "";
+                  var res = event.Get("objectRef.resource") || "";
+                  var user = event.Get("user.username") || "";
+
+                  var critical = ["secrets", "pods/exec", "pods/attach",
+                                  "pods/portforward", "clusterrolebindings",
+                                  "rolebindings", "serviceaccounts/token"];
+                  var high = ["roles", "clusterroles", "networkpolicies",
+                              "webhookconfigurations", "nodes"];
+
+                  if (critical.indexOf(res) >= 0) {
+                    event.Put("audit.risk_tier", "critical");
+                  } else if (high.indexOf(res) >= 0) {
+                    event.Put("audit.risk_tier", "high");
+                  } else {
+                    event.Put("audit.risk_tier", "normal");
+                  }
+
+                  if (verb === "create" && res === "pods/exec") {
+                    event.Put("audit.alert_type", "container_exec");
+                  } else if (verb === "create" && res === "pods/portforward") {
+                    event.Put("audit.alert_type", "port_forward");
+                  } else if ((verb === "create" || verb === "update") &&
+                             (res === "clusterrolebindings" || res === "rolebindings")) {
+                    event.Put("audit.alert_type", "privilege_escalation");
+                  } else if (verb === "get" && res === "secrets") {
+                    event.Put("audit.alert_type", "secret_access");
+                  } else if (user.indexOf("system:serviceaccount") < 0 &&
+                             verb !== "get" && verb !== "list" && verb !== "watch") {
+                    event.Put("audit.alert_type", "human_mutation");
+                  }
+
+                  // tag with ISO controls for Grafana filtering
+                  if (res === "secrets" || res === "serviceaccounts/token") {
+                    event.Put("audit.iso_controls", ["A.9.4.2", "A.12.4.1"]);
+                  } else if (res.indexOf("role") >= 0) {
+                    event.Put("audit.iso_controls", ["A.9.2.3", "A.12.4.3"]);
+                  } else {
+                    event.Put("audit.iso_controls", ["A.12.4.1"]);
+                  }
+
+                  // normalise the username — splits service accounts into ns/name
+                  if (user.indexOf("system:serviceaccount:") === 0) {
+                    var parts = user.split(":");
+                    event.Put("audit.actor_type", "service_account");
+                    event.Put("audit.actor_name", parts[3] || user);
+                    event.Put("audit.actor_namespace", parts[2] || "");
+                  } else if (user.indexOf("system:") === 0) {
+                    event.Put("audit.actor_type", "system_component");
+                    event.Put("audit.actor_name", user);
+                  } else {
+                    event.Put("audit.actor_type", "human");
+                    event.Put("audit.actor_name", user);
+                  }
+                }
+
+    output.elasticsearch:
+      hosts: ["${ELASTICSEARCH_HOST}"]
+      username: "${ELASTICSEARCH_USERNAME}"
+      password: "${ELASTICSEARCH_PASSWORD}"
+      ssl.enabled: true
+      ssl.certificate_authorities: ["/etc/ssl/certs/ca-certificates.crt"]
+
+      # daily indices so retention is easy to manage
+      index: "k8s-audit-%{[cluster]}-%{+yyyy.MM.dd}"
+
+      ilm.enabled: true
+      ilm.rollover_alias: "k8s-audit-<YOUR_CLUSTER_NAME>"
+      ilm.pattern: "{now/d}-000001"
+      ilm.policy: "k8s-audit-retention-policy"
+
+    monitoring.enabled: false
+
+    # buffer up to 4k events if ES is having a moment
+    queue.mem:
+      events: 4096
+      flush.min_events: 512
+      flush.timeout: 5s
+
+    logging.level: warning
+    logging.to_files: true
+    logging.files:
+      path: /var/log/filebeat
+      name: filebeat-audit
+      keepfiles: 3
