@@ -23,16 +23,16 @@ class MongoController(ICarBaseController):
     required = {'backup': [], 'migrate': [], 'restore_data': ['source']}
     messages = {'default': 'Backup Mongo {name} for {environment}'}
     scope = 'cluster'
-    config = {'bucket': 'data-backup-19anrz7d490d8mmz'}
+    config = {'bucket': '<GCS_BACKUP_BUCKET>'}
     credentials = {
         'preprod': {
             'user': 'root_admin',
-            'pass': 'gears6',
+            'pass': '<MONGO_PASSWORD>',
             'hosts': '<GCP_PROJECT_PREPROD>mongo0.<GCP_PROJECT_DOMAIN>:27017,<GCP_PROJECT_PREPROD>mongo1.<GCP_PROJECT_DOMAIN>:27017,<GCP_PROJECT_PREPROD>mongo2.<GCP_PROJECT_DOMAIN>:27017'
         },
         'production': {
             'user': 'root_admin',
-            'pass': 'gears6',
+            'pass': '<MONGO_PASSWORD>',
             'hosts': 'mongo0.<GCP_PROJECT_DOMAIN>:27017,mongo1.<GCP_PROJECT_DOMAIN>:27017,mongo2.<GCP_PROJECT_DOMAIN>:27017'
         }
 
@@ -153,8 +153,8 @@ class MongoController(ICarBaseController):
     def backup_shards(self):
 
         # define mongodb credentials based on environment
-        credentials = {'preprod': {'mongo_user': 'main_admin', 'mongo_pass': 'NNTi63US5INw'},
-                       'production': {'mongo_user': 'main_admin', 'mongo_pass': 'NNTi63US5INw'}}
+        credentials = {'preprod': {'mongo_user': 'main_admin', 'mongo_pass': '<MONGO_PASSWORD>'},
+                       'production': {'mongo_user': 'main_admin', 'mongo_pass': '<MONGO_PASSWORD>'}}
         config = credentials.get(self.app.pargs.environment)
         if config is None:
             raise ValueError('Environment not found.')

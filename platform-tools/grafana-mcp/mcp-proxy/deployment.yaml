@@ -92,4 +92,4 @@ metadata:
 type: Opaque
 stringData:
   # Change this to a secure random string
-  api-key: "mcp-proxy-secret-key-change-me"
+  api-key: "<MCP_PROXY_API_KEY>"

@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mohsin Ijaz | Senior DevOps / SRE / Platform Engineer</title>
+    <meta name="description" content="Production-oriented DevOps, SRE, and platform engineering portfolio for Kubernetes, AWS, GCP, Terraform, GitOps, observability, and automation.">
+    <meta name="author" content="Mohsin Ijaz">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://mohsin-ijaz.github.io/devops-platform-portfolio/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Mohsin Ijaz | Senior DevOps / SRE / Platform Engineer">
+    <meta property="og:description" content="Kubernetes, AWS/GCP, Terraform, SRE, GitOps, observability, and production reliability portfolio.">
+    <meta property="og:url" content="https://mohsin-ijaz.github.io/devops-platform-portfolio/">
+    <meta property="og:site_name" content="Mohsin Ijaz DevOps Platform Portfolio">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Mohsin Ijaz | DevOps / SRE / Platform Engineer">
+    <meta name="twitter:description" content="Production platform engineering portfolio for Kubernetes, AWS/GCP, Terraform, SRE, GitOps, and observability.">
+
+    <meta name="theme-color" content="#07111f">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <canvas id="network-canvas" aria-hidden="true"></canvas>
+
+    <header class="site-header">
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="brand" href="#top" aria-label="Mohsin Ijaz portfolio home">
+          <span class="brand-mark">MI</span>
+          <span>Mohsin Ijaz</span>
+        </a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+          <span class="sr-only">Toggle navigation</span>
+        </button>
+        <div class="nav-links" id="nav-links">
+          <a href="#impact">Impact</a>
+          <a href="#engineering">Engineering</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#sre">SRE</a>
+          <a href="#automation">Automation</a>
+          <a href="#repository">Repository</a>
+          <a class="nav-cta" href="https://github.com/mohsin-ijaz/devops-platform-portfolio">GitHub</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero section-shell" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Senior DevOps / SRE / Platform Engineer</p>
+          <h1 id="hero-title">I build infrastructure that ships faster, recovers cleanly, and costs less to operate.</h1>
+          <p class="hero-lede">
+            Production-focused platform engineering across Kubernetes, AWS, GCP, Terraform, GitOps,
+            observability, security, and automation.
+          </p>
+          <div class="hero-meta" aria-label="Profile facts">
+            <span>Location: Malaysia</span>
+            <span>Citizenship: Pakistan</span>
+            <span>8+ years production experience</span>
+          </div>
+          <div class="hero-actions">
+            <a class="button primary" href="#engineering">View engineering work</a>
+            <a class="button secondary" href="https://github.com/mohsin-ijaz/devops-platform-portfolio">Open repository</a>
+          </div>
+        </div>
+
+        <div class="terminal-card reveal" aria-label="Animated platform terminal">
+          <div class="terminal-topbar">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="terminal-body">
+            <p><span class="prompt">$</span> <span data-terminal-line>terraform plan -var-file environments/prod.tfvars</span></p>
+            <p><span class="prompt">$</span> kubectl rollout status deploy/platform-api</p>
+            <p><span class="prompt">$</span> mimirtool rules sync finops-recording-rules.yaml</p>
+            <p class="terminal-status">platform signal: healthy | blast radius: controlled | rollback: ready</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell impact-section" id="impact" aria-labelledby="impact-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Selected impact</p>
+          <h2 id="impact-title">Verified professional outcomes</h2>
+          <p>
+            These metrics are anonymized production outcomes from professional experience.
+            They are not presented as results produced solely by this repository.
+          </p>
+        </div>
+
+        <div class="metric-grid" aria-label="Professional impact metrics">
+          <article class="metric-card reveal">
+            <strong data-count="150" data-suffix="+">0</strong>
+            <span>services and applications supported</span>
+          </article>
+          <article class="metric-card reveal">
+            <strong data-count="20" data-suffix="+">0</strong>
+            <span>Kubernetes clusters</span>
+          </article>
+          <article class="metric-card reveal">
+            <strong data-count="200" data-suffix="+">0</strong>
+            <span>production nodes</span>
+          </article>
+          <article class="metric-card reveal">
+            <strong data-count="10" data-prefix="<" data-suffix="m">0</strong>
+            <span>production downtime during major AWS to GCP migration</span>
+          </article>
+          <article class="metric-card reveal">
+            <strong data-count="60" data-prefix="US$" data-suffix="K+">0</strong>
+            <span>annual cloud savings</span>
+          </article>
+          <article class="metric-card reveal">
+            <strong data-count="5" data-prefix="<" data-suffix="m">0</strong>
+            <span>release cycle after improvement from about 45 minutes</span>
+          </article>
+          <article class="metric-card reveal">
+            <strong data-count="100" data-prefix="<" data-suffix="ms">0</strong>
+            <span>observability query latency after high-cardinality tuning</span>
+          </article>
+          <article class="metric-card reveal">
+            <strong data-count="40" data-suffix="+">0</strong>
+            <span>automation and remediation workflows</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-shell" id="engineering" aria-labelledby="engineering-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Featured engineering</p>
+          <h2 id="engineering-title">The strongest technical material in this repository</h2>
+          <p>
+            The portfolio prioritizes repo-backed work: Kubernetes platform engineering, GitOps/CI/CD,
+            SRE observability, automation, and security.
+          </p>
+        </div>
+
+        <div class="project-grid">
+          <article class="project-card reveal">
+            <div class="project-kicker">Kubernetes Platform</div>
+            <h3>AWS EKS Terraform platform</h3>
+            <dl>
+              <dt>Problem</dt>
+              <dd>Reusable EKS infrastructure with controlled access, networking, delivery roles, and environment separation.</dd>
+              <dt>Architecture</dt>
+              <dd>Terraform modules for VPC, EKS, node groups, ECR, bastion, transit/VPN, security groups, endpoints, and GitLab CI OIDC.</dd>
+              <dt>Engineering decisions</dt>
+              <dd>Uses access entries, IRSA/OIDC patterns, managed node groups, Bottlerocket settings, and explicit environment tfvars.</dd>
+              <dt>Implementation</dt>
+              <dd>Includes live network/workload stacks, backend bootstrap, scripts, and modules for cluster and delivery primitives.</dd>
+              <dt>Operational value</dt>
+              <dd>Shows how production clusters can be built with repeatable boundaries, auditable CI access, and multi-account design.</dd>
+            </dl>
+            <a href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/infrastructure/terraform-aws-eks">View AWS EKS folder</a>
+          </article>
+
+          <article class="project-card reveal">
+            <div class="project-kicker">GCP Platform</div>
+            <h3>GKE and GCP Terraform modules</h3>
+            <dl>
+              <dt>Problem</dt>
+              <dd>Standardize GCP platform building blocks across clusters, projects, networking, IAM, and managed services.</dd>
+              <dt>Architecture</dt>
+              <dd>Modules cover GKE, shared VPC, VPN, NAT, service accounts, Secret Manager, Cloud SQL, Redis, Artifact Registry, and storage.</dd>
+              <dt>Engineering decisions</dt>
+              <dd>Separates platform concerns into focused modules and supports private connectivity and workload identity patterns.</dd>
+              <dt>Implementation</dt>
+              <dd>Reusable Terraform modules plus a GCP Kubernetes bootstrap path with Ansible and generated inventory.</dd>
+              <dt>Operational value</dt>
+              <dd>Gives teams a repeatable base for GKE environments, migration work, and platform service provisioning.</dd>
+            </dl>
+            <a href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/infrastructure/terraform-gcp-platform">View GCP platform folder</a>
+          </article>
+
+          <article class="project-card reveal">
+            <div class="project-kicker">GitOps and Delivery</div>
+            <h3>CI/CD and Kustomize delivery system</h3>
+            <dl>
+              <dt>Problem</dt>
+              <dd>Move infrastructure and application changes through repeatable validation, approval, deployment, and promotion flows.</dd>
+              <dt>Architecture</dt>
+              <dd>GitLab CI/CD pipelines coordinate Terraform, Helm, ECR, GCP provisioning, Semgrep SAST, Kustomize promotion, and trigger orchestration.</dd>
+              <dt>Engineering decisions</dt>
+              <dd>Uses OIDC role assumption, manual production gates, artifacts for plans, environment rules, and rollback-aware Helm settings.</dd>
+              <dt>Implementation</dt>
+              <dd>Pipeline YAML, Bash scripts, Argo CD entry points, Helm chart templates, and Kustomize bases/overlays.</dd>
+              <dt>Operational value</dt>
+              <dd>Demonstrates delivery paths that are reviewable, gated, and aligned with real cluster operations.</dd>
+            </dl>
+            <a href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/cicd/pipelines">View CI/CD pipelines</a>
+          </article>
+
+          <article class="project-card reveal">
+            <div class="project-kicker">SRE Observability</div>
+            <h3>LGTM stack and anomaly detection</h3>
+            <dl>
+              <dt>Problem</dt>
+              <dd>Make production systems observable enough to debug, alert, manage cost, and control high-cardinality telemetry.</dd>
+              <dt>Architecture</dt>
+              <dd>Grafana, Loki, Tempo, Mimir, Prometheus, Alloy, dashboards, alert rules, internal load balancers, and telemetry ML scoring.</dd>
+              <dt>Engineering decisions</dt>
+              <dd>Separates ingester/query/system node pools, uses Workload Identity, remote write, structured metadata, FinOps recording rules, and query sharding.</dd>
+              <dt>Implementation</dt>
+              <dd>Terraform, Helm wrappers, dashboards, Mimir rules, Alloy config, tracing manifests, and Python train/score services.</dd>
+              <dt>Operational value</dt>
+              <dd>Shows how observability can become an operating layer for reliability, cost, and faster incident investigation.</dd>
+            </dl>
+            <a href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/observability/lgtm-stack">View LGTM stack</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-shell architecture-section" id="architecture" aria-labelledby="architecture-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Platform architecture</p>
+          <h2 id="architecture-title">A production platform shape, not a pile of examples</h2>
+        </div>
+
+        <div class="architecture-layout">
+          <div class="topology reveal" aria-label="Platform topology diagram">
+            <svg viewBox="0 0 820 520" role="img" aria-labelledby="topology-title topology-desc">
+              <title id="topology-title">Platform topology</title>
+              <desc id="topology-desc">GitOps, infrastructure, clusters, observability, security, and automation connected as a platform operating model.</desc>
+              <defs>
+                <linearGradient id="nodeGradient" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#67e8f9"></stop>
+                  <stop offset="100%" stop-color="#8b5cf6"></stop>
+                </linearGradient>
+              </defs>
+              <path class="topology-line" d="M410 92 L195 210 L195 365 L410 440 L625 365 L625 210 Z"></path>
+              <path class="topology-line muted" d="M195 210 L410 285 L625 210"></path>
+              <path class="topology-line muted" d="M195 365 L410 285 L625 365"></path>
+              <g class="topology-node node-pulse">
+                <circle cx="410" cy="92" r="48"></circle>
+                <text x="410" y="86">GitOps</text>
+                <text x="410" y="106">Control</text>
+              </g>
+              <g class="topology-node">
+                <circle cx="195" cy="210" r="54"></circle>
+                <text x="195" y="204">AWS EKS</text>
+                <text x="195" y="224">Terraform</text>
+              </g>
+              <g class="topology-node">
+                <circle cx="625" cy="210" r="54"></circle>
+                <text x="625" y="204">GKE</text>
+                <text x="625" y="224">Modules</text>
+              </g>
+              <g class="topology-node node-pulse slow">
+                <circle cx="410" cy="285" r="58"></circle>
+                <text x="410" y="277">Platform</text>
+                <text x="410" y="299">Services</text>
+              </g>
+              <g class="topology-node">
+                <circle cx="195" cy="365" r="54"></circle>
+                <text x="195" y="359">SRE</text>
+                <text x="195" y="379">Telemetry</text>
+              </g>
+              <g class="topology-node">
+                <circle cx="625" cy="365" r="54"></circle>
+                <text x="625" y="359">Security</text>
+                <text x="625" y="379">Audit</text>
+              </g>
+              <g class="topology-node">
+                <circle cx="410" cy="440" r="48"></circle>
+                <text x="410" y="434">Automation</text>
+                <text x="410" y="454">Ops</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="architecture-notes reveal">
+            <div>
+              <h3>Reusable infrastructure</h3>
+              <p>Cluster, network, IAM, storage, registry, and managed service modules are separated so environments can evolve without rewriting the platform.</p>
+            </div>
+            <div>
+              <h3>Delivery guardrails</h3>
+              <p>OIDC-based CI access, manual production gates, plan artifacts, Helm atomic deploys, Kustomize overlays, and Argo CD patterns keep changes reviewable.</p>
+            </div>
+            <div>
+              <h3>Operating feedback</h3>
+              <p>Dashboards, alerts, audit logs, FinOps rules, tracing, and anomaly detection make reliability visible before incidents turn into guesswork.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell stack-section" id="stack" aria-labelledby="stack-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Core stack</p>
+          <h2 id="stack-title">Tools used where they earn their keep</h2>
+        </div>
+        <div class="stack-grid">
+          <article class="stack-card reveal">
+            <h3>Kubernetes</h3>
+            <p>EKS, GKE, Helm, Kustomize, Argo CD, Argo Rollouts, HPA, service accounts, node pools, topology spread, probes.</p>
+          </article>
+          <article class="stack-card reveal">
+            <h3>Cloud and IaC</h3>
+            <p>AWS, GCP, Terraform, IAM, OIDC, Workload Identity, ECR, Artifact Registry, Cloud SQL, Redis, GCS, VPN, NAT.</p>
+          </article>
+          <article class="stack-card reveal">
+            <h3>Delivery</h3>
+            <p>GitLab CI/CD, Terraform plan/apply, Helm upgrades, Kustomize image edits, SAST with Semgrep, manual production approvals.</p>
+          </article>
+          <article class="stack-card reveal">
+            <h3>Observability</h3>
+            <p>Prometheus, Grafana, Loki, Tempo, Mimir, Alloy, OpenTelemetry/OTLP, dashboards, alert rules, FinOps recording rules.</p>
+          </article>
+          <article class="stack-card reveal">
+            <h3>Automation</h3>
+            <p>Python, Bash, Cloud Run jobs, GKE scheduling, Cloud SQL backup validation, endpoint scanners, platform CLI controllers.</p>
+          </article>
+          <article class="stack-card reveal">
+            <h3>Security</h3>
+            <p>Kubernetes audit policy, CrowdSec scenarios, secret access alerts, RBAC alerts, runtime detection, forensic queries.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-shell sre-section" id="sre" aria-labelledby="sre-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Reliability and SRE</p>
+          <h2 id="sre-title">Operational signals that help teams act</h2>
+        </div>
+
+        <div class="sre-grid">
+          <article class="sre-panel reveal">
+            <h3>High-cardinality telemetry</h3>
+            <p>Alloy and Loki processing move expensive fields into structured metadata, drop noisy traffic, and keep labels useful for fast query paths.</p>
+          </article>
+          <article class="sre-panel reveal">
+            <h3>Mimir query performance</h3>
+            <p>Mimir values tune query sharding, cache behavior, scheduler capacity, retention, tenant boundaries, and remote-write ingestion.</p>
+          </article>
+          <article class="sre-panel reveal">
+            <h3>FinOps signals</h3>
+            <p>Recording rules estimate current cost, optimized cost, savings, overprovisioning, and right-sizing opportunities by cluster, namespace, and workload.</p>
+          </article>
+          <article class="sre-panel reveal">
+            <h3>Audit response</h3>
+            <p>Kubernetes audit policy and Loki alert rules highlight exec, port-forward, RBAC changes, anonymous access, manual token creation, and secret reads.</p>
+          </article>
+        </div>
+
+        <div class="pipeline reveal" aria-label="Delivery and reliability flow">
+          <span>Plan</span>
+          <span>Approve</span>
+          <span>Deploy</span>
+          <span>Observe</span>
+          <span>Rollback</span>
+          <div class="pipeline-track" aria-hidden="true"><i></i></div>
+        </div>
+      </section>
+
+      <section class="section-shell automation-section" id="automation" aria-labelledby="automation-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Automation</p>
+          <h2 id="automation-title">Operational work made repeatable</h2>
+        </div>
+        <div class="automation-list">
+          <article class="automation-item reveal">
+            <span>01</span>
+            <div>
+              <h3>GKE environment scheduler</h3>
+              <p>Coordinates GKE node pools, Cloud SQL, Argo CD projects, Kubernetes resources, and PDB state so non-production environments can stop/start safely.</p>
+              <a href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/automation/gke-env-scheduler">Open scheduler</a>
+            </div>
+          </article>
+          <article class="automation-item reveal">
+            <span>02</span>
+            <div>
+              <h3>Cloud SQL backup validation</h3>
+              <p>Creates backups, restores into test instances, validates data shape, emits reports, uploads artifacts, and refuses unsafe deletion targets.</p>
+              <a href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/automation/cloudrun-backup">Open backup workflow</a>
+            </div>
+          </article>
+          <article class="automation-item reveal">
+            <span>03</span>
+            <div>
+              <h3>Database endpoint migration tools</h3>
+              <p>Scans ConfigMaps and Secrets for database endpoints, redacts credentials in reports, and supports dry-run patching for MySQL endpoint changes.</p>
+              <a href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/automation/k8s-db-scanner">Open scanner</a>
+            </div>
+          </article>
+          <article class="automation-item reveal">
+            <span>04</span>
+            <div>
+              <h3>Platform CLI controllers</h3>
+              <p>Centralizes repeated build, CI/CD, Kubernetes, database, storage, Kafka, Redis, Solr, and Kustomize operations into reusable commands.</p>
+              <a href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/automation/platform-cli">Open platform CLI</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-shell principles-section" id="principles" aria-labelledby="principles-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Engineering principles</p>
+          <h2 id="principles-title">How I approach platform work</h2>
+        </div>
+        <div class="principles-grid">
+          <p class="reveal">Infrastructure should be repeatable, reviewable, and boring in the best possible way.</p>
+          <p class="reveal">Delivery systems should make safe releases easier than risky ones.</p>
+          <p class="reveal">Observability is part of the product surface for engineers, not an afterthought.</p>
+          <p class="reveal">Automation should reduce toil while preserving visibility and rollback options.</p>
+          <p class="reveal">Cost, security, and reliability are engineering constraints from day one.</p>
+          <p class="reveal">Public claims should be grounded in code, architecture, and verified outcomes.</p>
+        </div>
+      </section>
+
+      <section class="section-shell repository-section" id="repository" aria-labelledby="repository-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Repository explorer</p>
+          <h2 id="repository-title">Direct links to the work</h2>
+        </div>
+        <div class="repo-grid">
+          <a class="repo-link reveal" href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/infrastructure/terraform-aws-eks">
+            <span>AWS EKS</span>
+            <small>Terraform modules, live stacks, OIDC, networking</small>
+          </a>
+          <a class="repo-link reveal" href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/infrastructure/terraform-gcp-platform">
+            <span>GCP platform</span>
+            <small>GKE, shared VPC, IAM, Cloud SQL, Redis, storage</small>
+          </a>
+          <a class="repo-link reveal" href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/infrastructure/kustomize">
+            <span>Kustomize</span>
+            <small>Kafka, Debezium, KSQL, Temporal, Argo CD overlays</small>
+          </a>
+          <a class="repo-link reveal" href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/helm/microservice-chart">
+            <span>Helm chart</span>
+            <small>Microservice chart with probes, HPA, topology rules</small>
+          </a>
+          <a class="repo-link reveal" href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/cicd/pipelines">
+            <span>CI/CD</span>
+            <small>Terraform, Helm, GitOps, SAST, orchestrator pipelines</small>
+          </a>
+          <a class="repo-link reveal" href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/observability/lgtm-stack">
+            <span>LGTM stack</span>
+            <small>Dashboards, alerts, rules, tracing, load balancers</small>
+          </a>
+          <a class="repo-link reveal" href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/observability/anomaly-detection">
+            <span>Anomaly detection</span>
+            <small>Telemetry extraction, training, scoring, Kubernetes deploy</small>
+          </a>
+          <a class="repo-link reveal" href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/automation">
+            <span>Automation</span>
+            <small>GKE scheduler, Cloud SQL validation, CLI, DB tools</small>
+          </a>
+          <a class="repo-link reveal" href="https://github.com/mohsin-ijaz/devops-platform-portfolio/tree/main/security">
+            <span>Security</span>
+            <small>Audit policy, alerting, CrowdSec, forensics</small>
+          </a>
+        </div>
+      </section>
+
+      <section class="section-shell cta-section" id="contact" aria-labelledby="contact-title">
+        <div class="cta-panel reveal">
+          <p class="eyebrow">GitHub and consulting fit</p>
+          <h2 id="contact-title">Need a platform engineer who has operated serious production infrastructure?</h2>
+          <p>
+            This portfolio is built for CTOs, engineering managers, and consulting clients who need Kubernetes,
+            cloud infrastructure, delivery reliability, observability, and automation that survive contact with production.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://github.com/mohsin-ijaz">View GitHub profile</a>
+            <a class="button secondary" href="https://github.com/mohsin-ijaz/devops-platform-portfolio">Review portfolio repo</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Mohsin Ijaz - Senior DevOps / SRE / Platform Engineer</p>
+      <a href="#top">Back to top</a>
+    </footer>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
