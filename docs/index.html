@@ -24,6 +24,7 @@
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
+    <div class="scroll-progress" aria-hidden="true"><span></span></div>
     <canvas id="network-canvas" aria-hidden="true"></canvas>
 
     <header class="site-header">
@@ -53,8 +54,11 @@
     <main id="main">
       <section class="hero section-shell" id="top" aria-labelledby="hero-title">
         <div class="hero-copy reveal">
-          <p class="eyebrow">Senior DevOps / SRE / Platform Engineer</p>
-          <h1 id="hero-title">I build infrastructure that ships faster, recovers cleanly, and costs less to operate.</h1>
+          <p class="eyebrow"><span class="signal-dot" aria-hidden="true"></span> Senior DevOps / SRE / Platform Engineer</p>
+          <h1 id="hero-title">
+            I build infrastructure that <span class="headline-accent">ships faster</span>,
+            recovers cleanly, and costs less to operate.
+          </h1>
           <p class="hero-lede">
             Production-focused platform engineering across Kubernetes, AWS, GCP, Terraform, GitOps,
             observability, security, and automation.
@@ -70,17 +74,40 @@
           </div>
         </div>
 
-        <div class="terminal-card reveal" aria-label="Animated platform terminal">
+        <div class="terminal-card reveal" aria-label="Illustrative platform control plane">
           <div class="terminal-topbar">
-            <span></span>
-            <span></span>
-            <span></span>
+            <div class="window-controls" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="terminal-title">
+              <small>Platform control plane</small>
+              <strong>platform / multi-cloud</strong>
+            </div>
+            <span class="health-badge"><i aria-hidden="true"></i> Healthy</span>
           </div>
           <div class="terminal-body">
-            <p><span class="prompt">$</span> <span data-terminal-line>terraform plan -var-file environments/prod.tfvars</span></p>
-            <p><span class="prompt">$</span> kubectl rollout status deploy/platform-api</p>
-            <p><span class="prompt">$</span> mimirtool rules sync finops-recording-rules.yaml</p>
-            <p class="terminal-status">platform signal: healthy | blast radius: controlled | rollback: ready</p>
+            <div class="terminal-line active-line">
+              <span class="prompt">$</span>
+              <span data-terminal-line>terraform plan -var-file environments/prod.tfvars</span><span class="cursor" aria-hidden="true"></span>
+            </div>
+            <div class="terminal-line"><span class="prompt">$</span> kubectl rollout status deploy/platform-api</div>
+            <div class="terminal-line"><span class="prompt">$</span> mimirtool rules sync finops-recording-rules.yaml</div>
+            <div class="signal-trace" aria-hidden="true">
+              <svg viewBox="0 0 520 74" preserveAspectRatio="none">
+                <path class="trace-grid" d="M0 18 H520 M0 37 H520 M0 56 H520"></path>
+                <path class="trace-line" d="M0 54 C42 52 48 36 88 39 S138 58 180 42 S228 16 270 29 S324 55 364 38 S416 18 452 30 S490 22 520 18"></path>
+              </svg>
+            </div>
+            <div class="terminal-status">
+              <span><i aria-hidden="true"></i> Plan verified</span>
+              <span><i aria-hidden="true"></i> Health observed</span>
+              <span><i aria-hidden="true"></i> Rollback ready</span>
+            </div>
+          </div>
+          <div class="control-footer" aria-hidden="true">
+            <span>01 Discover</span><i></i><span>02 Reconcile</span><i></i><span>03 Observe</span>
           </div>
         </div>
       </section>
@@ -97,35 +124,35 @@
 
         <div class="metric-grid" aria-label="Professional impact metrics">
           <article class="metric-card reveal">
-            <strong data-count="150" data-suffix="+">0</strong>
+            <strong data-count="150" data-suffix="+">150+</strong>
             <span>services and applications supported</span>
           </article>
           <article class="metric-card reveal">
-            <strong data-count="20" data-suffix="+">0</strong>
+            <strong data-count="20" data-suffix="+">20+</strong>
             <span>Kubernetes clusters</span>
           </article>
           <article class="metric-card reveal">
-            <strong data-count="200" data-suffix="+">0</strong>
+            <strong data-count="200" data-suffix="+">200+</strong>
             <span>production nodes</span>
           </article>
           <article class="metric-card reveal">
-            <strong data-count="10" data-prefix="<" data-suffix="m">0</strong>
+            <strong data-count="10" data-prefix="<" data-suffix="m">&lt;10m</strong>
             <span>production downtime during major AWS to GCP migration</span>
           </article>
           <article class="metric-card reveal">
-            <strong data-count="60" data-prefix="US$" data-suffix="K+">0</strong>
+            <strong data-count="60" data-prefix="US$" data-suffix="K+">US$60K+</strong>
             <span>annual cloud savings</span>
           </article>
           <article class="metric-card reveal">
-            <strong data-count="5" data-prefix="<" data-suffix="m">0</strong>
+            <strong data-count="5" data-prefix="<" data-suffix="m">&lt;5m</strong>
             <span>release cycle after improvement from about 45 minutes</span>
           </article>
           <article class="metric-card reveal">
-            <strong data-count="100" data-prefix="<" data-suffix="ms">0</strong>
+            <strong data-count="100" data-prefix="<" data-suffix="ms">&lt;100ms</strong>
             <span>observability query latency after high-cardinality tuning</span>
           </article>
           <article class="metric-card reveal">
-            <strong data-count="40" data-suffix="+">0</strong>
+            <strong data-count="40" data-suffix="+">40+</strong>
             <span>automation and remediation workflows</span>
           </article>
         </div>
@@ -230,7 +257,8 @@
               <defs>
                 <linearGradient id="nodeGradient" x1="0" x2="1" y1="0" y2="1">
                   <stop offset="0%" stop-color="#67e8f9"></stop>
-                  <stop offset="100%" stop-color="#8b5cf6"></stop>
+                  <stop offset="55%" stop-color="#6ee7b7"></stop>
+                  <stop offset="100%" stop-color="#fbbf24"></stop>
                 </linearGradient>
               </defs>
               <path class="topology-line" d="M410 92 L195 210 L195 365 L410 440 L625 365 L625 210 Z"></path>
