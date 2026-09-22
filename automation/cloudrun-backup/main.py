@@ -25,7 +25,7 @@ except ImportError:
 
 
 # Configuration from environment
-PROJECT_ID = os.environ.get("PROJECT_ID", "cs-uat-apps")
+PROJECT_ID = os.environ.get("PROJECT_ID", "<GCP_PROJECT_ID>")
 REGION = os.environ.get("REGION", "<GCP_REGION>")
 LOG_BUCKET = os.environ.get("LOG_BUCKET", f"{PROJECT_ID}-cloudsql-backup-logs")
 DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
@@ -46,7 +46,7 @@ ROW_TOLERANCE_PCT = float(os.environ.get("ROW_TOLERANCE_PCT", "5"))
 
 # Safety constants
 RESTORE_TEST_SUFFIX = "-restore-test-"
-ALLOWED_PROJECTS = ("<YOUR_TENANT_ID>", "cs-uat-apps")
+ALLOWED_PROJECTS = ("<YOUR_TENANT_ID>", "<GCP_PROJECT_ID>")
 
 
 def log(msg: str, level: str = "INFO"):

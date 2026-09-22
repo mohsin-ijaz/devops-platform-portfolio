@@ -17,7 +17,7 @@ from resources.messages import messages
 
 class DebeziumController(ICarBaseController):
     # this is a read-only password
-    BITBUCKET = {'username': 'wengkhamkan', 'password': '<REDIS_PASSWORD>'}
+    BITBUCKET = {'username': '<BITBUCKET_USERNAME>', 'password': '<BITBUCKET_READONLY_PASSWORD>'}
     BITBUCKET_PLUGS_URL = 'https://api.bitbucket.org/2.0/repositories/<GCP_PROJECT>/plugs/src/master'
     BITBUCKET_KAFKA_DIR = 'kafka'
     PERMITTED_PROJECTS = ['crm', 'listing', 'accounts']
@@ -126,7 +126,7 @@ class DebeziumController(ICarBaseController):
             echo(f"ENV {self.app.pargs.env} is not up.", "yellow")
         
 
-    # curl -u "wengkham:hSAZZCvKW6GaY6BEdF4M" "https://api.bitbucket.org/2.0/repositories/<GCP_PROJECT>/plugs/src/master/kafka/staging" | jq
+    # curl -u "<BITBUCKET_USERNAME>:<BITBUCKET_READONLY_PASSWORD>" "https://api.bitbucket.org/2.0/repositories/<GCP_PROJECT>/plugs/src/master/kafka/staging" | jq
     @command
     @expose(help='Delete all Kafka connectors in specific test env, --env')
     def delete_all(self):
